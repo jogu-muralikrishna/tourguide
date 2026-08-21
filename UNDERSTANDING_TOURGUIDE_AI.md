@@ -110,7 +110,7 @@ The core user flow guides the traveler step-by-step through designing and execut
 tourguide-ai/
 ├── server.ts                 # Express backend server with Gemini API endpoints, audit logging, & geocoding
 ├── package.json              # Project dependencies (@google/genai, react, vite, express, leaflet, motion)
-├── metadata.json             # App metadata for AI Studio / Web Runner
+├── metadata.json             # Application metadata configuration
 ├── index.html                # HTML entry point with Leaflet CSS link
 ├── src/
 │   ├── App.tsx               # Main application component & step management state
