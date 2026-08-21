@@ -1,0 +1,6 @@
+{
+  "name": "TOURGUIDE AI",
+  "description": "Real-time travel booking system with distance calculation, car rental, hotel stay, food stops, live route map, secure user login, and instant booking confirmation.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

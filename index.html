@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOURGUIDE AI — Real-Time Highway Travel & Booking System</title>
+    <meta name="description" content="Next-generation luxury AI-powered travel planner, fleet selection, gourmet highway stops, hotel stays, and live booking command center." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  </head>
+  <body class="bg-[#050505] text-[#FAFAFA] antialiased selection:bg-[#D4AF37]/30 selection:text-[#F3E5AB]">
+    <div id="root">
+      <!-- Fallback Loading Ambiance while React renders -->
+      <div id="initial-loading-fallback" style="min-height: 100vh; background-color: #050508; color: #FAFAFA; display: flex; flex-direction: column; items-center; justify-content: center; align-items: center; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
+        <div style="width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, #F3E5AB, #8C6D1F); padding: 1px; margin-bottom: 20px; box-shadow: 0 0 30px rgba(212,175,55,0.4);">
+          <div style="width: 100%; height: 100%; background-color: #09090C; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-weight: bold; color: #D4AF37; font-size: 24px;">TG</div>
+        </div>
+        <h1 style="font-family: 'Cinzel', serif; font-size: 24px; font-weight: 700; color: #FFFFFF; margin-bottom: 8px;">TOURGUIDE AI</h1>
+        <p style="color: #D4AF37; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px;">Initializing Real-Time System...</p>
+        <div style="width: 40px; height: 40px; border: 3px solid rgba(212,175,55,0.2); border-top-color: #D4AF37; border-radius: 50%; animation: tg-spin 1s linear infinite;"></div>
+        <style>
+          @keyframes tg-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      </div>
+    </div>
+
+    <noscript>
+      <div style="padding: 30px; text-align: center; color: #FF6B6B; font-family: sans-serif;">
+        <h2>JavaScript Required</h2>
+        <p>Please enable JavaScript in your browser settings to run TOURGUIDE AI.</p>
+      </div>
+    </noscript>
+
+    <script>
+      // Emergency fallback script if React does not replace #root within 4 seconds (e.g. file:// protocol issue or server unreached)
+      setTimeout(function() {
+        var fallback = document.getElementById('initial-loading-fallback');
+        if (fallback) {
+          fallback.innerHTML = `
+            <div style="max-width: 500px; background: #0A0A0E; border: 2px solid rgba(212,175,55,0.4); border-radius: 24px; padding: 32px; box-shadow: 0 0 50px rgba(0,0,0,0.9);">
+              <div style="color: #D4AF37; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Application Control</div>
+              <h2 style="font-family: 'Cinzel', serif; font-size: 22px; color: #FFF; margin-bottom: 12px;">TOURGUIDE AI Server Link</h2>
+              <p style="color: #A1A1AA; font-size: 13px; margin-bottom: 24px; line-height: 1.6;">
+                Please ensure the server is running and open <strong style="color: #F3E5AB;">http://localhost:3000</strong> in your web browser.
+              </p>
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="http://localhost:3000" style="padding: 12px 24px; background: linear-gradient(135deg, #F3E5AB, #D4AF37); color: #000; font-weight: bold; text-decoration: none; border-radius: 12px; font-size: 12px; text-transform: uppercase; tracking: 1px;">Open http://localhost:3000</a>
+                <button onclick="window.location.reload()" style="padding: 12px 24px; background: #181820; border: 1px solid #3F3F46; color: #FFF; font-weight: bold; border-radius: 12px; font-size: 12px; text-transform: uppercase; cursor: pointer;">Reload Page</button>
+              </div>
+            </div>
+          `;
+        }
+      }, 4000);
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+﻿server.ts(266,29): error TS2339: Property 'carCost' does not exist on type 'Partial<Booking>'.
+server.ts(303,7): error TS2353: Object literal may only specify known properties, and 'carCost' does not exist in type 'Booking'.
+src/App.tsx(351,9): error TS2741: Property 'numberOfPeople' is missing in type '{ fullName: any; phone: any; email: any; specialRequests: any; travelersCount: any; travelDate: any; travelTime: any; isVerified: true; }' but required in type 'UserData'.
+src/components/admin/AgencyAdminDashboard.tsx(105,39): error TS2339: Property 'getStayPermissions' does not exist on type 'typeof AdminService'.
+src/components/admin/AgencyAdminDashboard.tsx(120,20): error TS2339: Property 'createStayPermissionRequest' does not exist on type 'typeof AdminService'.
+src/components/admin/HotelAdminDashboard.tsx(93,39): error TS2339: Property 'getStayPermissions' does not exist on type 'typeof AdminService'.
+src/components/admin/HotelAdminDashboard.tsx(105,20): error TS2339: Property 'grantStayPermission' does not exist on type 'typeof AdminService'.
+src/components/admin/HotelAdminDashboard.tsx(114,20): error TS2339: Property 'processGuestCheckIn' does not exist on type 'typeof AdminService'.
+src/components/admin/HotelAdminDashboard.tsx(123,20): error TS2339: Property 'processGuestCheckOut' does not exist on type 'typeof AdminService'.
+src/components/admin/PartnerRegistrationModal.tsx(43,34): error TS2339: Property 'validatePartnerCredential' does not exist on type 'typeof AdminService'.
+src/components/admin/PartnerRegistrationModal.tsx(65,37): error TS2339: Property 'registerPartnerWithPreAuth' does not exist on type 'typeof AdminService'.
+src/components/admin/SuperAdminDashboard.tsx(142,42): error TS2339: Property 'getPreAuthCredentials' does not exist on type 'typeof AdminService'.
+src/components/admin/SuperAdminDashboard.tsx(143,43): error TS2339: Property 'getStayPermissions' does not exist on type 'typeof AdminService'.
+src/components/admin/SuperAdminDashboard.tsx(158,34): error TS2339: Property 'generatePartnerCredential' does not exist on type 'typeof AdminService'.
+src/components/admin/SuperAdminDashboard.tsx(177,20): error TS2339: Property 'verifyPartnerRegistration' does not exist on type 'typeof AdminService'.
+src/components/AdminPanelModal.tsx(930,22): error TS2552: Cannot find name 'User'. Did you mean 'Users'?
+src/components/EmergencyModal.tsx(16,10): error TS2305: Module '"../types"' has no exported member 'EmergencyFacility'.
+src/components/GroupExpenseModal.tsx(15,10): error TS2305: Module '"../types"' has no exported member 'GroupExpense'.
+src/components/GroupExpenseModal.tsx(15,24): error TS2305: Module '"../types"' has no exported member 'DebtSettlement'.
+src/components/LiveTravelModeModal.tsx(22,10): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/components/LiveTravelModeModal.tsx(22,16): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/components/LiveTravelModeModal.tsx(22,43): error TS2305: Module '"../types"' has no exported member 'DailyItineraryItem'.
+src/components/PostTripModal.tsx(17,10): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/components/PostTripModal.tsx(17,16): error TS2305: Module '"../types"' has no exported member 'PostTripSummary'.
+src/components/StepAiItinerary.tsx(23,3): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/components/StepAiItinerary.tsx(24,3): error TS2305: Module '"../types"' has no exported member 'OptimizationMode'.
+src/components/StepAiItinerary.tsx(25,3): error TS2305: Module '"../types"' has no exported member 'DailyItineraryItem'.
+src/components/StepChariot.tsx(4,19): error TS2305: Module '"../types"' has no exported member 'VehicleCategory'.
+src/components/StepChariot.tsx(123,34): error TS2339: Property 'categoryLabel' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(154,34): error TS2339: Property 'subtitle' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(161,48): error TS2339: Property 'passengers' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(165,48): error TS2339: Property 'topSpeed' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(169,69): error TS2339: Property 'luxuryClass' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(173,48): error TS2339: Property 'range' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(181,78): error TS2339: Property 'rating' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(182,43): error TS2339: Property 'reviewsCount' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(186,42): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(187,42): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(191,38): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(204,36): error TS2339: Property 'priceUnit' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(236,34): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(253,40): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(254,40): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(263,36): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(266,36): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(271,85): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(274,42): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(286,36): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(295,36): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(304,36): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepChariot.tsx(316,35): error TS2339: Property 'driver' does not exist on type 'Vehicle'.
+src/components/StepCommandCenter.tsx(5,28): error TS2305: Module '"../types"' has no exported member 'SanctuaryHotel'.
+src/components/StepCommandCenter.tsx(5,44): error TS2305: Module '"../types"' has no exported member 'RouteState'.
+src/components/StepCommandCenter.tsx(5,56): error TS2305: Module '"../types"' has no exported member 'TravelerInfo'.
+src/components/StepPitstops.tsx(69,30): error TS2339: Property 'category' does not exist on type 'Pitstop'.
+src/components/StepPitstops.tsx(73,30): error TS2339: Property 'duration' does not exist on type 'Pitstop'.
+src/components/StepPitstops.tsx(94,30): error TS2339: Property 'cuisineOrType' does not exist on type 'Pitstop'.
+src/components/StepRegistration.tsx(4,10): error TS2305: Module '"../types"' has no exported member 'TravelerInfo'.
+src/components/StepRoute.tsx(20,3): error TS2305: Module '"../types"' has no exported member 'RouteState'.
+src/components/StepRoute.tsx(21,3): error TS2305: Module '"../types"' has no exported member 'TripPlanRequest'.
+src/components/StepRoute.tsx(22,3): error TS2305: Module '"../types"' has no exported member 'TravelStyle'.
+src/components/StepRoute.tsx(23,3): error TS2305: Module '"../types"' has no exported member 'TransportPreference'.
+src/components/StepSanctuary.tsx(4,10): error TS2305: Module '"../types"' has no exported member 'SanctuaryHotel'.
+src/components/StepSanctuary.tsx(5,10): error TS2305: Module '"../data/mockData"' has no exported member 'SANCTUARIES_DATA'.
+src/components/StepTacticalMap.tsx(23,10): error TS2305: Module '"../types"' has no exported member 'RouteState'.
+src/components/StepTacticalMap.tsx(23,31): error TS2305: Module '"../types"' has no exported member 'SanctuaryHotel'.
+src/components/StepTacticalMap.tsx(24,10): error TS2305: Module '"../data/mockData"' has no exported member 'INITIAL_WEATHER'.
+src/components/TravelAlertsDrawer.tsx(14,10): error TS2305: Module '"../types"' has no exported member 'TravelAlert'.
+src/components/UserAuthModal.tsx(4,23): error TS2305: Module '"../types"' has no exported member 'UserRole'.
+src/providers/booking/BookingProvider.ts(1,19): error TS2305: Module '"../../types"' has no exported member 'BookingPricing'.
+src/providers/booking/BookingProvider.ts(1,35): error TS2305: Module '"../../types"' has no exported member 'SanctuaryHotel'.
+src/providers/booking/BookingProvider.ts(1,69): error TS2305: Module '"../../types"' has no exported member 'TravelerInfo'.
+src/providers/booking/demoBookingProvider.ts(1,19): error TS2305: Module '"../../types"' has no exported member 'BookingStatus'.
+src/providers/booking/demoBookingProvider.ts(54,7): error TS2820: Type '"CONFIRMED"' is not assignable to type '"Confirmed" | "Pending" | "Cancelled"'. Did you mean '"Confirmed"'?
+src/providers/booking/demoBookingProvider.ts(77,66): error TS2339: Property 'transitId' does not exist on type 'Booking'.
+src/providers/booking/demoBookingProvider.ts(88,7): error TS2820: Type '"CANCELLED"' is not assignable to type '"Confirmed" | "Pending" | "Cancelled"'. Did you mean '"Cancelled"'?
+src/providers/booking/demoBookingProvider.ts(102,64): error TS2339: Property 'totalCost' does not exist on type 'Booking'.
+src/providers/booking/demoBookingProvider.ts(109,56): error TS2339: Property 'transitId' does not exist on type 'Booking'.
+src/repositories/LocalTripRepository.ts(1,10): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/repositories/LocalTripRepository.ts(1,16): error TS2305: Module '"../types"' has no exported member 'TripStatus'.
+src/repositories/TripRepository.ts(1,10): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/repositories/TripRepository.ts(1,16): error TS2305: Module '"../types"' has no exported member 'TripStatus'.
+src/services/adminService.ts(1803,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(1804,17): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1814,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(1815,30): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1837,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(1839,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(1855,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(1856,30): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1860,12): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(1862,12): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(1881,30): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1912,25): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1924,27): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1946,12): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(1949,29): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(1971,12): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(1995,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(1998,30): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2004,12): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2007,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(2027,23): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2044,23): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2072,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2074,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(2095,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(2096,23): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2111,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2114,26): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2119,14): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2123,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(2139,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(2140,23): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2147,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2150,26): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2154,14): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2158,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(2174,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(2175,23): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2182,10): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2185,26): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2190,14): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2194,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/adminService.ts(2216,10): error TS2339: Property 'checkPermission' does not exist on type 'AdminService'.
+src/services/adminService.ts(2219,27): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2224,14): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2227,29): error TS2576: Property 'load' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.load' instead?
+src/services/adminService.ts(2232,14): error TS2576: Property 'save' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.save' instead?
+src/services/adminService.ts(2236,10): error TS2576: Property 'recordAudit' does not exist on type 'AdminService'. Did you mean to access the static member 'AdminService.recordAudit' instead?
+src/services/alertService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'TravelAlert'.
+src/services/alertService.ts(1,23): error TS2305: Module '"../types"' has no exported member 'AlertType'.
+src/services/alertService.ts(1,34): error TS2305: Module '"../types"' has no exported member 'AlertSeverity'.
+src/services/alertService.ts(1,49): error TS2305: Module '"../types"' has no exported member 'DailyItineraryItem'.
+src/services/alertService.ts(87,17): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/alertService.ts(91,20): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/authService.ts(1,23): error TS2305: Module '"../types"' has no exported member 'UserRole'.
+src/services/authService.ts(10,5): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'UserProfile'.
+src/services/authService.ts(25,5): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'UserProfile'.
+src/services/authService.ts(74,7): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'UserProfile'.
+src/services/authService.ts(94,74): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/authService.ts(99,7): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'UserProfile'.
+src/services/authService.ts(117,75): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/authService.ts(133,72): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/authService.ts(141,75): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/bookingService.ts(8,19): error TS2305: Module '"../types"' has no exported member 'BookingPricing'.
+src/services/bookingService.ts(8,35): error TS2305: Module '"../types"' has no exported member 'RevenueRecord'.
+src/services/bookingService.ts(8,59): error TS2305: Module '"../types"' has no exported member 'SanctuaryHotel'.
+src/services/bookingService.ts(8,84): error TS2305: Module '"../types"' has no exported member 'TravelerInfo'.
+src/services/bookingService.ts(96,20): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/bookingService.ts(125,45): error TS2339: Property 'name' does not exist on type 'UserProfile'.
+src/services/bookingService.ts(153,22): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/bookingService.ts(169,62): error TS2339: Property 'transitId' does not exist on type 'Booking'.
+src/services/bookingService.ts(199,61): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/copilotService.ts(2,3): error TS2305: Module '"../types"' has no exported member 'TravelContext'.
+src/services/copilotService.ts(3,3): error TS2305: Module '"../types"' has no exported member 'ChatMessage'.
+src/services/copilotService.ts(4,3): error TS2305: Module '"../types"' has no exported member 'CopilotAction'.
+src/services/copilotService.ts(5,3): error TS2305: Module '"../types"' has no exported member 'DailyItineraryItem'.
+src/services/copilotService.ts(6,3): error TS2305: Module '"../types"' has no exported member 'PostTripSummary'.
+src/services/copilotService.ts(7,3): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/services/copilotService.ts(8,3): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/services/copilotService.ts(38,22): error TS2367: This comparison appears to be unintentional because the types '"Confirmed" | "Pending" | "Cancelled"' and '"CONFIRMED"' have no overlap.
+src/services/copilotService.ts(39,56): error TS2339: Property 'totalCost' does not exist on type 'Booking'.
+src/services/emergencyService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'EmergencyFacility'.
+src/services/emergencyService.ts(1,29): error TS2305: Module '"../types"' has no exported member 'GeoCoordinates'.
+src/services/eventBus.ts(1,10): error TS2305: Module '"../types"' has no exported member 'AppEvent'.
+src/services/expenseService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'GroupExpense'.
+src/services/expenseService.ts(1,24): error TS2305: Module '"../types"' has no exported member 'DebtSettlement'.
+src/services/geminiService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'TripPlanRequest'.
+src/services/geminiService.ts(1,27): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/services/geminiService.ts(1,45): error TS2305: Module '"../types"' has no exported member 'OptimizationMode'.
+src/services/geminiService.ts(1,63): error TS2305: Module '"../types"' has no exported member 'ChatMessage'.
+src/services/itineraryService.ts(2,3): error TS2305: Module '"../types"' has no exported member 'DailyItineraryItem'.
+src/services/itineraryService.ts(3,3): error TS2305: Module '"../types"' has no exported member 'BudgetBreakdown'.
+src/services/itineraryService.ts(4,3): error TS2305: Module '"../types"' has no exported member 'TravelPlace'.
+src/services/itineraryService.ts(5,3): error TS2305: Module '"../types"' has no exported member 'Restaurant'.
+src/services/itineraryService.ts(7,3): error TS2305: Module '"../types"' has no exported member 'TripPlanRequest'.
+src/services/itineraryService.ts(8,3): error TS2305: Module '"../types"' has no exported member 'DataStatus'.
+src/services/itineraryService.ts(47,31): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/itineraryService.ts(49,62): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/itineraryService.ts(50,41): error TS2551: Property 'tempC' does not exist on type 'WeatherData'. Did you mean 'temp'?
+src/services/metricsService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'StartupMetrics'.
+src/services/metricsService.ts(18,58): error TS2367: This comparison appears to be unintentional because the types '"Confirmed" | "Pending" | "Cancelled"' and '"CONFIRMED"' have no overlap.
+src/services/metricsService.ts(19,58): error TS2367: This comparison appears to be unintentional because the types '"Confirmed" | "Pending" | "Cancelled"' and '"CANCELLED"' have no overlap.
+src/services/travelDataService.ts(2,3): error TS2305: Module '"../types"' has no exported member 'TripPlanRequest'.
+src/services/travelDataService.ts(3,3): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/services/travelDataService.ts(4,3): error TS2305: Module '"../types"' has no exported member 'LocationDetail'.
+src/services/travelDataService.ts(5,3): error TS2305: Module '"../types"' has no exported member 'RouteCalculation'.
+src/services/travelDataService.ts(7,3): error TS2305: Module '"../types"' has no exported member 'TravelPlace'.
+src/services/travelDataService.ts(8,3): error TS2305: Module '"../types"' has no exported member 'Restaurant'.
+src/services/travelDataService.ts(10,3): error TS2305: Module '"../types"' has no exported member 'TransportOption'.
+src/services/travelDataService.ts(11,3): error TS2305: Module '"../types"' has no exported member 'OptimizationMode'.
+src/services/travelDataService.ts(70,7): error TS2740: Type 'WeatherData' is missing the following properties from type 'WeatherData': temp, icon, visibility, high, and 2 more.
+src/services/travelDataService.ts(73,7): error TS2322: Type 'import("C:/Users/jogum/Downloads/tourguide-ai/src/types/travel").Hotel[]' is not assignable to type 'import("C:/Users/jogum/Downloads/tourguide-ai/src/types").Hotel[]'.
+  Type 'Hotel' is missing the following properties from type 'Hotel': category, reviewsCount, available, contact, and 2 more.
+src/services/travelDataService.ts(136,42): error TS2339: Property 'forecast' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(139,36): error TS2339: Property 'forecast' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(140,40): error TS2339: Property 'forecast' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(141,46): error TS2339: Property 'forecast' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(155,41): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(158,54): error TS2551: Property 'tempC' does not exist on type 'WeatherData'. Did you mean 'temp'?
+src/services/travelDataService.ts(160,54): error TS2339: Property 'rainProbability' does not exist on type 'WeatherData'.
+src/services/travelDataService.ts(161,76): error TS2551: Property 'visibilityKm' does not exist on type 'WeatherData'. Did you mean 'visibility'?
+src/services/travelDataService.ts(199,23): error TS2339: Property 'dataStatus' does not exist on type 'Hotel'.
+src/services/travelDataService.ts(200,19): error TS2339: Property 'source' does not exist on type 'Hotel'.
+src/services/travelDataService.ts(201,22): error TS2339: Property 'bookingUrl' does not exist on type 'Hotel'.
+src/services/tripService.ts(1,10): error TS2305: Module '"../types"' has no exported member 'Trip'.
+src/services/tripService.ts(1,16): error TS2305: Module '"../types"' has no exported member 'TripPlanRequest'.
+src/services/tripService.ts(1,33): error TS2305: Module '"../types"' has no exported member 'TripPlanResponse'.
+src/services/tripService.ts(1,51): error TS2305: Module '"../types"' has no exported member 'TripStatus'.
+src/services/tripService.ts(1,63): error TS2305: Module '"../types"' has no exported member 'BookingStatus'.
+src/services/tripService.ts(1,87): error TS2305: Module '"../types"' has no exported member 'SanctuaryHotel'.
+src/services/tripService.ts(19,20): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/tripService.ts(54,67): error TS2339: Property 'id' does not exist on type 'UserProfile'.
+src/services/tripService.ts(83,64): error TS2339: Property 'id' does not exist on type 'UserProfile'.

@@ -1,0 +1,206 @@
+﻿src/components/PostTripModal.tsx(50,9): error TS2322: Type 'PostTripSummary | { tripId: string; title: string; destination: string; durationDays: number; placesVisitedCount: number; culinaryVisitedCount: number; totalDistanceKm: number; ... 6 more ...; recommendedNextDestinations: { ...; }[]; }' is not assignable to type 'PostTripSummary'.
+  Object literal may only specify known properties, and 'title' does not exist in type 'PostTripSummary'.
+src/components/PostTripModal.tsx(81,9): error TS2322: Type '"COMPLETED"' is not assignable to type 'BookingStatus'.
+src/components/PostTripModal.tsx(92,38): error TS2339: Property 'title' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(92,65): error TS2339: Property 'placesVisitedCount' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(92,112): error TS2339: Property 'durationDays' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(125,26): error TS2339: Property 'title' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(125,44): error TS2339: Property 'durationDays' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(145,26): error TS2339: Property 'placesVisitedCount' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(153,26): error TS2339: Property 'culinaryVisitedCount' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(169,26): error TS2339: Property 'currency' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(169,44): error TS2339: Property 'recordedSpent' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(171,70): error TS2339: Property 'currency' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(171,88): error TS2339: Property 'plannedBudget' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(182,26): error TS2339: Property 'favoriteActivities' does not exist on type 'PostTripSummary'.
+src/components/PostTripModal.tsx(212,24): error TS2339: Property 'recommendedNextDestinations' does not exist on type 'PostTripSummary'.
+src/components/StepAiItinerary.tsx(183,24): error TS2339: Property 'dayNumber' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(186,55): error TS2339: Property 'dayNumber' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(193,30): error TS2339: Property 'dayNumber' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(203,32): error TS2339: Property 'travelTime' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(207,32): error TS2339: Property 'approxDistance' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(226,71): error TS2339: Property 'morningActivity' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(239,71): error TS2339: Property 'afternoonActivity' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(252,71): error TS2339: Property 'eveningActivity' does not exist on type 'DailyItineraryItem'.
+src/components/StepAiItinerary.tsx(266,28): error TS2339: Property 'recommendedFood' does not exist on type 'DailyItineraryItem'.
+src/components/StepChariot.tsx(161,48): error TS2339: Property 'passengers' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(165,48): error TS2339: Property 'topSpeed' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(169,69): error TS2339: Property 'luxuryClass' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(173,48): error TS2339: Property 'range' does not exist on type 'string[]'.
+src/components/StepChariot.tsx(186,49): error TS2339: Property 'avatar' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(236,41): error TS2339: Property 'clearanceLevel' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(253,47): error TS2339: Property 'avatar' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(266,43): error TS2339: Property 'title' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(286,43): error TS2339: Property 'experience' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(295,43): error TS2339: Property 'languages' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(304,43): error TS2339: Property 'badges' does not exist on type 'DriverInfo'.
+src/components/StepChariot.tsx(316,42): error TS2339: Property 'bio' does not exist on type 'DriverInfo'.
+src/components/StepCommandCenter.tsx(203,72): error TS2339: Property 'baseCost' does not exist on type 'PricingDetails'.
+src/components/StepCommandCenter.tsx(207,72): error TS2551: Property 'taxes' does not exist on type 'PricingDetails'. Did you mean 'tax'?
+src/components/StepRoute.tsx(129,7): error TS2353: Object literal may only specify known properties, and 'travelDates' does not exist in type 'TripPlanRequest'.
+src/components/StepSanctuary.tsx(65,30): error TS2339: Property 'architectVerified' does not exist on type 'Hotel'.
+src/components/StepSanctuary.tsx(92,44): error TS2339: Property 'starRating' does not exist on type 'Hotel'.
+src/components/StepSanctuary.tsx(110,77): error TS2339: Property 'suiteType' does not exist on type 'Hotel'.
+src/components/StepSanctuary.tsx(114,32): error TS2339: Property 'description' does not exist on type 'Hotel'.
+src/providers/booking/demoBookingProvider.ts(43,7): error TS2353: Object literal may only specify known properties, and 'tripId' does not exist in type 'Booking'.
+src/providers/booking/demoBookingProvider.ts(89,7): error TS2353: Object literal may only specify known properties, and 'paymentStatus' does not exist in type 'Booking'.
+src/repositories/LocalTripRepository.ts(33,7): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'Booking'.
+src/repositories/LocalTripRepository.ts(65,7): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'Booking'.
+src/repositories/LocalTripRepository.ts(74,34): error TS2322: Type 'TripStatus' is not assignable to type 'BookingStatus'.
+  Type '"PLANNED"' is not assignable to type 'BookingStatus'.
+src/repositories/LocalTripRepository.ts(97,26): error TS2339: Property 'title' does not exist on type 'Booking'.
+src/repositories/LocalTripRepository.ts(97,44): error TS2339: Property 'destination' does not exist on type 'Booking'.
+src/repositories/LocalTripRepository.ts(98,7): error TS2322: Type '"DRAFT"' is not assignable to type 'BookingStatus'.
+src/services/adminService.ts(1305,21): error TS2345: Argument of type '{ type: string; payload: { bookingId: string; transitId: string; total: number; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { bookingId: string; transitId: string; total: number; }; }' but required in type 'AppEvent'.
+src/services/adminService.ts(1310,21): error TS2345: Argument of type '{ type: string; payload: { bookingId: string; reason: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { bookingId: string; reason: string; }; }' but required in type 'AppEvent'.
+src/services/adminService.ts(1803,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(1814,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(1855,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(2095,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(2139,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(2174,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/adminService.ts(2216,10): error TS2551: Property 'checkPermission' does not exist on type 'typeof AdminService'. Did you mean 'hasPermission'?
+src/services/alertService.ts(36,59): error TS2339: Property 'createdAt' does not exist on type 'TravelAlert'.
+src/services/alertService.ts(48,7): error TS2353: Object literal may only specify known properties, and 'createdAt' does not exist in type 'TravelAlert'.
+src/services/alertService.ts(57,19): error TS2345: Argument of type '{ type: string; payload: { alertId: string; type: AlertType; title: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { alertId: string; type: AlertType; title: string; }; }' but required in type 'AppEvent'.
+src/services/alertService.ts(80,46): error TS2339: Property 'read' does not exist on type 'TravelAlert'.
+src/services/alertService.ts(115,9): error TS2345: Argument of type '"BUDGET"' is not assignable to parameter of type 'AlertType'.
+src/services/alertService.ts(124,9): error TS2345: Argument of type '"BUDGET"' is not assignable to parameter of type 'AlertType'.
+src/services/authService.ts(14,5): error TS2353: Object literal may only specify known properties, and 'preferredCurrency' does not exist in type 'UserProfile'.
+src/services/authService.ts(29,5): error TS2353: Object literal may only specify known properties, and 'preferredCurrency' does not exist in type 'UserProfile'.
+src/services/authService.ts(77,7): error TS2353: Object literal may only specify known properties, and 'preferredCurrency' does not exist in type 'UserProfile'.
+src/services/authService.ts(84,52): error TS2322: Type '"USER"' is not assignable to type 'UserRole'.
+src/services/authService.ts(94,24): error TS2345: Argument of type '{ type: string; payload: { userId: string; email: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { userId: string; email: string; }; }' but required in type 'AppEvent'.
+src/services/authService.ts(102,7): error TS2353: Object literal may only specify known properties, and 'preferredCurrency' does not exist in type 'UserProfile'.
+src/services/authService.ts(117,22): error TS2345: Argument of type '{ type: string; payload: { userId: string; email: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { userId: string; email: string; }; }' but required in type 'AppEvent'.
+src/services/authService.ts(133,22): error TS2345: Argument of type '{ type: string; payload: { userId: string; email: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { userId: string; email: string; }; }' but required in type 'AppEvent'.
+src/services/authService.ts(141,24): error TS2345: Argument of type '{ type: string; payload: { userId: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { userId: string; }; }' but required in type 'AppEvent'.
+src/services/bookingService.ts(51,7): error TS2353: Object literal may only specify known properties, and 'baseCost' does not exist in type 'PricingDetails'.
+src/services/bookingService.ts(71,22): error TS2345: Argument of type '{ type: string; payload: { bookingId: string; tripId: string; total: number; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { bookingId: string; tripId: string; total: number; }; }' but required in type 'AppEvent'.
+src/services/bookingService.ts(81,25): error TS2339: Property 'currency' does not exist on type 'PricingDetails'.
+src/services/bookingService.ts(114,13): error TS2322: Type '"ACTIVE"' is not assignable to type 'BookingStatus'.
+src/services/bookingService.ts(127,29): error TS2339: Property 'contactPhone' does not exist on type 'TravelerInfo'.
+src/services/bookingService.ts(135,13): error TS2739: Type 'PricingDetails' is missing the following properties from type '{ total: number; baseCost: number; taxes: number; serviceFee: number; currency: string; }': baseCost, taxes, currency
+src/services/bookingService.ts(152,9): error TS2353: Object literal may only specify known properties, and 'tripId' does not exist in type 'RevenueRecord'.
+src/services/bookingService.ts(160,27): error TS2339: Property 'currency' does not exist on type 'PricingDetails'.
+src/services/bookingService.ts(167,24): error TS2345: Argument of type '{ type: string; payload: { bookingId: string; transitId: string; total: number; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { bookingId: string; transitId: string; total: number; }; }' but required in type 'AppEvent'.
+src/services/bookingService.ts(180,24): error TS2345: Argument of type '{ type: string; payload: { bookingId: string; reason: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { bookingId: string; reason: string; }; }' but required in type 'AppEvent'.
+src/services/copilotService.ts(28,31): error TS2339: Property 'destination' does not exist on type 'Booking'.
+src/services/copilotService.ts(29,26): error TS2339: Property 'origin' does not exist on type 'Booking'.
+src/services/copilotService.ts(29,48): error TS2339: Property 'origin' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(30,26): error TS2339: Property 'budget' does not exist on type 'Booking'.
+src/services/copilotService.ts(30,48): error TS2551: Property 'estimatedBudget' does not exist on type 'TripPlanResponse'. Did you mean 'totalEstimatedBudget'?
+src/services/copilotService.ts(31,28): error TS2339: Property 'currency' does not exist on type 'Booking'.
+src/services/copilotService.ts(31,52): error TS2339: Property 'currency' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(32,29): error TS2339: Property 'itinerary' does not exist on type 'Booking'.
+src/services/copilotService.ts(45,7): error TS2353: Object literal may only specify known properties, and 'tripId' does not exist in type 'TravelContext'.
+src/services/copilotService.ts(50,56): error TS2339: Property 'originCoordinates' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(51,66): error TS2339: Property 'destinationCoordinates' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(52,24): error TS2339: Property 'startDate' does not exist on type 'Booking'.
+src/services/copilotService.ts(53,22): error TS2339: Property 'endDate' does not exist on type 'Booking'.
+src/services/copilotService.ts(54,26): error TS2551: Property 'travelDates' does not exist on type 'Booking'. Did you mean 'travelDate'?
+src/services/copilotService.ts(61,32): error TS2339: Property 'transportation' does not exist on type 'Booking'.
+src/services/copilotService.ts(61,62): error TS2339: Property 'transportation' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(62,29): error TS2339: Property 'selectedHotel' does not exist on type 'Booking'.
+src/services/copilotService.ts(62,51): error TS2339: Property 'selectedHotel' does not exist on type 'Booking'.
+src/services/copilotService.ts(62,80): error TS2339: Property 'hotels' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(63,35): error TS2339: Property 'activities' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(67,28): error TS2339: Property 'weatherInfo' does not exist on type 'TripPlanResponse'.
+src/services/copilotService.ts(74,23): error TS2339: Property 'mode' does not exist on type 'Booking'.
+src/services/copilotService.ts(93,23): error TS2339: Property 'dayNumber' does not exist on type 'DailyItineraryItem'.
+src/services/copilotService.ts(94,25): error TS2339: Property 'morningActivity' does not exist on type 'DailyItineraryItem'.
+src/services/copilotService.ts(97,28): error TS2339: Property 'approxDistance' does not exist on type 'DailyItineraryItem'.
+src/services/copilotService.ts(100,23): error TS2339: Property 'dayNumber' does not exist on type 'DailyItineraryItem'.
+src/services/copilotService.ts(101,25): error TS2339: Property 'afternoonActivity' does not exist on type 'DailyItineraryItem'.
+src/services/copilotService.ts(156,30): error TS2339: Property 'currency' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(157,26): error TS2339: Property 'destination' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(158,29): error TS2339: Property 'weather' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(159,26): error TS2339: Property 'itinerary' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(203,13): error TS2353: Object literal may only specify known properties, and 'toolType' does not exist in type 'CopilotAction'.
+src/services/copilotService.ts(221,36): error TS2339: Property 'budgetStatus' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(222,25): error TS2339: Property 'budget' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(224,37): error TS2339: Property 'budget' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(239,11): error TS2353: Object literal may only specify known properties, and 'toolType' does not exist in type 'CopilotAction'.
+src/services/copilotService.ts(271,11): error TS2353: Object literal may only specify known properties, and 'toolType' does not exist in type 'CopilotAction'.
+src/services/copilotService.ts(284,37): error TS2339: Property 'bookings' does not exist on type 'TravelContext'.
+src/services/copilotService.ts(290,13): error TS2353: Object literal may only specify known properties, and 'toolType' does not exist in type 'CopilotAction'.
+src/services/copilotService.ts(310,31): error TS2339: Property 'itinerary' does not exist on type 'Booking'.
+src/services/copilotService.ts(311,23): error TS2339: Property 'destination' does not exist on type 'Booking'.
+src/services/copilotService.ts(315,7): error TS2353: Object literal may only specify known properties, and 'title' does not exist in type 'PostTripSummary'.
+src/services/copilotService.ts(315,19): error TS2339: Property 'title' does not exist on type 'Booking'.
+src/services/copilotService.ts(321,27): error TS2339: Property 'budget' does not exist on type 'Booking'.
+src/services/copilotService.ts(322,74): error TS2339: Property 'budget' does not exist on type 'Booking'.
+src/services/copilotService.ts(323,22): error TS2339: Property 'currency' does not exist on type 'Booking'.
+src/services/emergencyService.ts(17,19): error TS2345: Argument of type '{ type: string; payload: { location: string; type: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { location: string; type: string; }; }' but required in type 'AppEvent'.
+src/services/emergencyService.ts(32,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(42,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(52,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(62,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(77,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(87,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(97,11): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(115,9): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(125,9): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/emergencyService.ts(135,9): error TS2561: Object literal may only specify known properties, but 'distanceKm' does not exist in type 'EmergencyFacility'. Did you mean to write 'distance'?
+src/services/expenseService.ts(12,34): error TS2339: Property 'tripId' does not exist on type 'GroupExpense'.
+src/services/expenseService.ts(30,7): error TS2353: Object literal may only specify known properties, and 'tripId' does not exist in type 'GroupExpense'.
+src/services/expenseService.ts(50,19): error TS2345: Argument of type '{ type: string; payload: { expenseId: string; amount: number; paidBy: string; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { expenseId: string; amount: number; paidBy: string; }; }' but required in type 'AppEvent'.
+src/services/expenseService.ts(123,30): error TS2339: Property 'splitBetween' does not exist on type 'GroupExpense'.
+src/services/expenseService.ts(126,32): error TS2339: Property 'splitBetween' does not exist on type 'GroupExpense'.
+src/services/expenseService.ts(161,11): error TS2353: Object literal may only specify known properties, and 'currency' does not exist in type 'DebtSettlement'.
+src/services/geminiService.ts(28,15): error TS2339: Property 'travelers' does not exist on type 'TripPlanRequest'.
+src/services/geminiService.ts(29,15): error TS2339: Property 'budget' does not exist on type 'TripPlanRequest'.
+src/services/geminiService.ts(62,19): error TS2339: Property 'origin' does not exist on type 'TripPlanResponse'.
+src/services/geminiService.ts(71,29): error TS2339: Property 'origin' does not exist on type 'TripPlanResponse'.
+src/services/geminiService.ts(73,9): error TS2353: Object literal may only specify known properties, and 'travelDates' does not exist in type 'TripPlanRequest'.
+src/services/geminiService.ts(73,37): error TS2339: Property 'duration' does not exist on type 'TripPlanResponse'.
+src/services/geminiService.ts(76,31): error TS2339: Property 'currency' does not exist on type 'TripPlanResponse'.
+src/services/itineraryService.ts(70,7): error TS2353: Object literal may only specify known properties, and 'dayNumber' does not exist in type 'DailyItineraryItem'.
+src/services/itineraryService.ts(110,7): error TS2353: Object literal may only specify known properties, and 'transportation' does not exist in type 'BudgetBreakdown'.
+src/services/metricsService.ts(16,48): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"COMPLETED"' have no overlap.
+src/services/metricsService.ts(23,64): error TS2339: Property 'budget' does not exist on type 'Booking'.
+src/services/metricsService.ts(26,81): error TS2339: Property 'netRevenue' does not exist on type 'RevenueRecord'.
+src/services/metricsService.ts(31,22): error TS2339: Property 'destination' does not exist on type 'Booking'.
+src/services/metricsService.ts(43,23): error TS2339: Property 'travelStyle' does not exist on type 'Booking'.
+src/services/metricsService.ts(52,7): error TS2353: Object literal may only specify known properties, and 'totalUsers' does not exist in type 'StartupMetrics'.
+src/services/travelDataService.ts(70,7): error TS2740: Type 'WeatherData' is missing the following properties from type 'WeatherData': temp, icon, visibility, high, and 2 more.
+src/services/travelDataService.ts(87,30): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(89,17): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(91,17): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(119,15): error TS2339: Property 'travelers' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(124,15): error TS2339: Property 'budget' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(173,20): error TS2339: Property 'tripSummary' does not exist on type 'Partial<TripPlanResponse>'.
+src/services/travelDataService.ts(181,25): error TS2339: Property 'currency' does not exist on type 'TripPlanRequest'.
+src/services/travelDataService.ts(182,7): error TS2322: Type 'number | DailyItineraryItem[]' is not assignable to type 'number'.
+  Type 'DailyItineraryItem[]' is not assignable to type 'number'.
+src/services/travelDataService.ts(182,47): error TS2339: Property 'length' does not exist on type 'number'.
+src/services/tripService.ts(23,26): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(24,24): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(25,28): error TS2339: Property 'travelDates' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(26,26): error TS2339: Property 'travelers' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(27,23): error TS2339: Property 'budget' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(28,25): error TS2339: Property 'currency' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(32,30): error TS2339: Property 'personalNotes' does not exist on type 'TripPlanRequest'.
+src/services/tripService.ts(35,28): error TS2339: Property 'transportation' does not exist on type 'TripPlanResponse'.
+src/services/tripService.ts(40,7): error TS2322: Type '"PLANNED"' is not assignable to type 'BookingStatus'.
+src/services/tripService.ts(45,22): error TS2345: Argument of type '{ type: string; payload: { tripId: string; title: any; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { tripId: string; title: any; }; }' but required in type 'AppEvent'.
+src/services/tripService.ts(47,61): error TS2339: Property 'title' does not exist on type 'Booking'.
+src/services/tripService.ts(69,24): error TS2345: Argument of type '{ type: string; payload: { tripId: string; status: BookingStatus; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { tripId: string; status: BookingStatus; }; }' but required in type 'AppEvent'.
+src/services/tripService.ts(84,22): error TS2345: Argument of type '{ type: string; payload: { tripId: string; destination: any; budget: any; }; }' is not assignable to parameter of type 'AppEvent'.
+  Property 'timestamp' is missing in type '{ type: string; payload: { tripId: string; destination: any; budget: any; }; }' but required in type 'AppEvent'.
+src/services/tripService.ts(86,65): error TS2339: Property 'destination' does not exist on type 'Booking'.
+src/services/tripService.ts(86,97): error TS2339: Property 'budget' does not exist on type 'Booking'.
