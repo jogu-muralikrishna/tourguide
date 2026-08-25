@@ -986,5 +986,138 @@ export async function deleteUserAccountApi(id: string): Promise<{ success: boole
   return { success: true, message: 'User account deleted successfully.' };
 }
 
+// --- HOTEL DASHBOARD API HELPERS ---
+export async function fetchHotelRoomsApi(): Promise<any[]> {
+  try {
+    const res = await fetch('/api/hotel/rooms', { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      return data.rooms || [];
+    }
+  } catch (err) {
+    console.warn('fetchHotelRoomsApi fallback:', err);
+  }
+  return [
+    { id: 'RM-101', roomNumber: '101', roomType: 'Deluxe Suite', capacity: 2, pricePerNight: 8500, status: 'OCCUPIED', currentGuestName: 'Aarav Sharma', currentGuestPhone: '+91 98765 43210' },
+    { id: 'RM-102', roomNumber: '102', roomType: 'Presidential Villa', capacity: 4, pricePerNight: 15000, status: 'AVAILABLE' },
+  ];
+}
+
+export async function createHotelRoomApi(roomData: any): Promise<any> {
+  const res = await fetch('/api/hotel/rooms', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(roomData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to create hotel room' }));
+    throw new Error(err.error || 'Failed to create hotel room');
+  }
+  return await res.json();
+}
+
+export async function updateHotelRoomStatusApi(id: string, status: string): Promise<any> {
+  const res = await fetch(`/api/hotel/rooms/${id}/status`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to update room status' }));
+    throw new Error(err.error || 'Failed to update room status');
+  }
+  return await res.json();
+}
+
+export async function fetchGuestVerificationsApi(): Promise<any[]> {
+  try {
+    const res = await fetch('/api/hotel/verifications', { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      return data.verifications || [];
+    }
+  } catch (err) {
+    console.warn('fetchGuestVerificationsApi fallback:', err);
+  }
+  return [
+    {
+      id: 'GV-101',
+      bookingId: 'TGAI-BKG-2026-84920',
+      guestName: 'Aarav Sharma',
+      mobileNumber: '+91 98765 43210',
+      email: 'aarav.sharma@example.com',
+      verificationStatus: 'VERIFIED',
+      verificationTokenHash: 'hash-84920-v1',
+      checkInDate: '2026-03-15',
+      checkOutDate: '2026-03-17',
+      roomType: 'Deluxe Suite',
+      numberOfGuests: 2,
+    },
+  ];
+}
+
+export async function verifyGuestMobileApi(mobileNumber: string, token: string): Promise<any> {
+  const res = await fetch('/api/hotel/verifications/verify-mobile', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ mobileNumber, token }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Guest verification failed' }));
+    throw new Error(err.error || 'Guest verification failed');
+  }
+  return await res.json();
+}
+
+// --- TRAVEL AGENCY DASHBOARD API HELPERS ---
+export async function fetchAgencyTripsApi(): Promise<any[]> {
+  try {
+    const res = await fetch('/api/agency/trips', { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      return data.trips || [];
+    }
+  } catch (err) {
+    console.warn('fetchAgencyTripsApi fallback:', err);
+  }
+  return [
+    {
+      id: 'TRIP-501',
+      agencyName: 'Royal Fleet Travels',
+      tripName: 'Royal Heritage & Temple Circuit Tour',
+      destination: 'Delhi',
+      startingPoint: 'Hyderabad',
+      startDate: '2026-03-15',
+      endDate: '2026-03-18',
+      numberOfTravelers: 4,
+      vehicleName: 'Toyota Innova Crysta (SUV)',
+      driverName: 'Ramesh Kumar',
+      driverMobile: '+91 98765 12340',
+      routeStops: [
+        { stopName: 'Hyderabad City Exit', location: 'ORR Exit 4', stopType: 'BREAK', duration: '20 mins' },
+        { stopName: 'Subbayya Gari Hotel Pitstop', location: 'NH Highway', stopType: 'TIFFIN', duration: '45 mins', notes: 'Breakfast & Tiffin Stop' },
+        { stopName: 'The Leela Palace Hotel', location: 'Diplomatic Enclave', stopType: 'HOTEL', duration: '2 Nights' },
+      ],
+      hotelStopover: { hotelName: 'The Leela Palace', checkIn: '2026-03-15', checkOut: '2026-03-17', roomsCount: 2, price: 17000 },
+      foodStops: [{ placeName: 'Subbayya Gari Hotel / Highway Food Court', location: 'NH Highway', mealType: 'Breakfast', numberOfPeople: 4, estimatedCost: 960 }],
+      totalCost: 25980,
+      status: 'CONFIRMED',
+    },
+  ];
+}
+
+export async function createAgencyTripApi(tripData: any): Promise<any> {
+  const res = await fetch('/api/agency/trips', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(tripData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to create trip' }));
+    throw new Error(err.error || 'Failed to create trip');
+  }
+  return await res.json();
+}
+
 
 

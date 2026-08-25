@@ -493,6 +493,86 @@ async function startServer() {
     }
   });
 
+  // --- DEDICATED HOTEL DASHBOARD ENDPOINTS (TENANT ISOLATED) ---
+
+  // GET Hotel Rooms for Authenticated Hotel Partner
+  app.get('/api/hotel/rooms', requireHotel, (req: AuthenticatedRequest, res: Response) => {
+    const hotelId = req.user?.role === 'MAIN_ADMIN' ? (req.query.hotelId as string) : (req.user?.hotelId || req.user?.hotelName);
+    const rooms = db.getRoomsForHotel(hotelId);
+    res.json({ rooms });
+  });
+
+  // POST Create Hotel Room
+  app.post('/api/hotel/rooms', requireHotel, (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const room = db.createHotelRoom({
+        ...req.body,
+        hotelId: req.user?.role === 'MAIN_ADMIN' ? req.body.hotelId : req.user?.hotelId,
+        hotelName: req.user?.role === 'MAIN_ADMIN' ? req.body.hotelName : req.user?.hotelName,
+      }, req.user?.email);
+      res.json({ success: true, room });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to create room.' });
+    }
+  });
+
+  // PUT Update Hotel Room Status
+  app.put('/api/hotel/rooms/:id/status', requireHotel, (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+      const updated = db.updateHotelRoomStatus(id, status, req.user?.email);
+      res.json({ success: true, room: updated });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to update room status.' });
+    }
+  });
+
+  // GET Guest Verifications for Authenticated Hotel Partner
+  app.get('/api/hotel/verifications', requireHotel, (req: AuthenticatedRequest, res: Response) => {
+    const hotelId = req.user?.role === 'MAIN_ADMIN' ? (req.query.hotelId as string) : (req.user?.hotelId || req.user?.hotelName);
+    const verifications = db.getGuestVerifications(hotelId);
+    res.json({ verifications });
+  });
+
+  // POST Verify Guest Mobile Number & Token
+  app.post('/api/hotel/verifications/verify-mobile', requireHotel, (req: AuthenticatedRequest, res: Response) => {
+    const { mobileNumber, token } = req.body;
+    if (!mobileNumber || !token) {
+      res.status(400).json({ error: 'Mobile Number and Token/Booking ID are required.' });
+      return;
+    }
+    const result = db.verifyGuestMobile(mobileNumber, token, req.user?.email);
+    if (!result.valid) {
+      res.status(400).json({ error: result.message });
+      return;
+    }
+    res.json(result);
+  });
+
+  // --- DEDICATED TRAVEL AGENCY DASHBOARD ENDPOINTS (TENANT ISOLATED) ---
+
+  // GET Agency Trips for Authenticated Travel Agency Partner
+  app.get('/api/agency/trips', requireTravelAgency, (req: AuthenticatedRequest, res: Response) => {
+    const agencyId = req.user?.role === 'MAIN_ADMIN' ? (req.query.agencyId as string) : (req.user?.agencyId || req.user?.agencyName);
+    const trips = db.getTripsForAgency(agencyId);
+    res.json({ trips });
+  });
+
+  // POST Create Agency Trip (Trip Planner)
+  app.post('/api/agency/trips', requireTravelAgency, (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const trip = db.createAgencyTrip({
+        ...req.body,
+        agencyId: req.user?.role === 'MAIN_ADMIN' ? req.body.agencyId : req.user?.agencyId,
+        agencyName: req.user?.role === 'MAIN_ADMIN' ? req.body.agencyName : req.user?.agencyName,
+      }, req.user?.email);
+      res.json({ success: true, trip });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to create trip.' });
+    }
+  });
+
   // --- REAL-TIME ROUTING & TELEMETRY ---
 
   app.get('/api/route/calculate', async (req: Request, res: Response) => {

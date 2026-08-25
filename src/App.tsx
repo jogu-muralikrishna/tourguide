@@ -19,6 +19,8 @@ import { Step7Review } from './components/Step7Review';
 import { FinalTicketModal } from './components/FinalTicketModal';
 import { MyTripsModal } from './components/MyTripsModal';
 import { AdminPanelModal } from './components/AdminPanelModal';
+import { HotelDashboard } from './components/HotelDashboard';
+import { AgencyDashboard } from './components/AgencyDashboard';
 import { WeatherModal } from './components/WeatherModal';
 import { RequestAdminModal } from './components/RequestAdminModal';
 import { Chatbot } from './components/Chatbot';
@@ -453,7 +455,17 @@ export default function App() {
     );
   }
 
-  // 2. If logged in and journey NOT active -> Show USER PROFILE SCREEN
+  // 2. Dedicated Hotel Dashboard View for HOTEL_ADMIN
+  if (currentUser.role === 'HOTEL_ADMIN') {
+    return <HotelDashboard user={currentUser} onLogout={handleLogout} />;
+  }
+
+  // 3. Dedicated Travel Agency Dashboard View for TRAVEL_ADMIN
+  if (currentUser.role === 'TRAVEL_ADMIN') {
+    return <AgencyDashboard user={currentUser} onLogout={handleLogout} />;
+  }
+
+  // 4. If logged in and journey NOT active -> Show USER PROFILE SCREEN
   if (!isJourneyActive) {
     return (
       <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] font-sans pb-16 sm:pb-0 transition-colors">

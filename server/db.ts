@@ -44,6 +44,96 @@ export interface AuditLogRecord {
   timestamp: string;
 }
 
+export interface HotelRoomRecord {
+  id: string;
+  hotelId: string;
+  hotelName: string;
+  roomNumber: string;
+  roomType: 'Deluxe Suite' | 'Presidential Villa' | 'Luxury Oceanfront' | 'Heritage Suite' | 'Standard Villa';
+  capacity: number;
+  pricePerNight: number;
+  currency: string;
+  status: 'AVAILABLE' | 'RESERVED' | 'OCCUPIED' | 'MAINTENANCE';
+  amenities: string[];
+  currentGuestName?: string;
+  currentGuestPhone?: string;
+  updatedAt: string;
+}
+
+export interface GuestVerificationRecord {
+  id: string;
+  bookingId: string;
+  hotelId: string;
+  guestName: string;
+  mobileNumber: string;
+  email: string;
+  verificationStatus: 'VERIFIED' | 'PENDING' | 'EXPIRED';
+  verificationTokenHash: string;
+  verificationMethod: string;
+  verifiedAt?: string;
+  checkInDate: string;
+  checkOutDate: string;
+  roomType: string;
+  numberOfGuests: number;
+  bookingStatus: string;
+  specialRequests?: string;
+  createdAt: string;
+}
+
+export interface AgencyTripStop {
+  stopName: string;
+  location: string;
+  stopType: 'BREAK' | 'HOTEL' | 'RESTAURANT' | 'TIFFIN' | 'ATTRACTION' | 'FUEL' | 'OTHER';
+  arrivalTime?: string;
+  departureTime?: string;
+  duration?: string;
+  notes?: string;
+}
+
+export interface AgencyFoodStop {
+  placeName: string;
+  location: string;
+  mealType: 'Breakfast' | 'Tiffin' | 'Lunch' | 'Snacks' | 'Dinner';
+  arrivalTime?: string;
+  departureTime?: string;
+  numberOfPeople: number;
+  estimatedCost: number;
+  notes?: string;
+}
+
+export interface AgencyTripRecord {
+  id: string;
+  agencyId: string;
+  agencyName: string;
+  tripName: string;
+  destination: string;
+  startingPoint: string;
+  startDate: string;
+  endDate: string;
+  numberOfTravelers: number;
+  vehicleId: string;
+  vehicleName: string;
+  driverName?: string;
+  driverMobile?: string;
+  routeStops: AgencyTripStop[];
+  hotelStopover?: {
+    hotelId?: string;
+    hotelName: string;
+    checkIn: string;
+    checkOut: string;
+    roomsCount: number;
+    guestsCount: number;
+    roomType: string;
+    price: number;
+    status: string;
+  };
+  foodStops: AgencyFoodStop[];
+  totalCost: number;
+  status: 'PLANNED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  notes?: string;
+  createdAt: string;
+}
+
 class Database {
   private users: Map<string, AuthUser> = new Map();
   private bookings: Map<string, Booking> = new Map();
@@ -52,6 +142,9 @@ class Database {
   private pitstops: Map<string, Pitstop> = new Map();
   private adminRequests: Map<string, AdminRequest> = new Map();
   private auditLogs: AuditLogRecord[] = [];
+  private hotelRooms: Map<string, HotelRoomRecord> = new Map();
+  private guestVerifications: Map<string, GuestVerificationRecord> = new Map();
+  private agencyTrips: Map<string, AgencyTripRecord> = new Map();
 
   constructor() {
     this.seedDatabase();
@@ -181,6 +274,111 @@ class Database {
       createdAt: '2026-02-20T11:00:00Z',
     };
     this.adminRequests.set(sampleRequest.id, sampleRequest);
+
+    // Seed Sample Hotel Rooms
+    const sampleRooms: HotelRoomRecord[] = [
+      {
+        id: 'RM-101',
+        hotelId: 'hotel-leela-palace',
+        hotelName: 'The Leela Palace',
+        roomNumber: '101',
+        roomType: 'Deluxe Suite',
+        capacity: 2,
+        pricePerNight: 8500,
+        currency: 'INR',
+        status: 'OCCUPIED',
+        amenities: ['King Bed', 'Jacuzzi', 'Ocean View', 'Free WiFi', 'Breakfast Included'],
+        currentGuestName: 'Aarav Sharma',
+        currentGuestPhone: '+91 98765 43210',
+        updatedAt: '2026-03-01T10:00:00Z',
+      },
+      {
+        id: 'RM-102',
+        hotelId: 'hotel-leela-palace',
+        hotelName: 'The Leela Palace',
+        roomNumber: '102',
+        roomType: 'Presidential Villa',
+        capacity: 4,
+        pricePerNight: 15000,
+        currency: 'INR',
+        status: 'AVAILABLE',
+        amenities: ['Private Pool', 'Butler Service', 'Garden Access', 'King Bed'],
+        updatedAt: '2026-03-01T10:00:00Z',
+      },
+    ];
+    for (const rm of sampleRooms) {
+      this.hotelRooms.set(rm.id, rm);
+    }
+
+    // Seed Sample Guest Verifications
+    const sampleVerifications: GuestVerificationRecord[] = [
+      {
+        id: 'GV-101',
+        bookingId: 'TGAI-BKG-2026-84920',
+        hotelId: 'hotel-leela-palace',
+        guestName: 'Aarav Sharma',
+        mobileNumber: '+91 98765 43210',
+        email: 'aarav.sharma@example.com',
+        verificationStatus: 'VERIFIED',
+        verificationTokenHash: 'hash-84920-v1',
+        verificationMethod: 'OTP_SMS',
+        verifiedAt: '2026-03-15T08:30:00Z',
+        checkInDate: '2026-03-15',
+        checkOutDate: '2026-03-17',
+        roomType: 'Deluxe Suite',
+        numberOfGuests: 2,
+        bookingStatus: 'Confirmed',
+        specialRequests: 'High floor, early check-in requested.',
+        createdAt: '2026-02-15T10:30:00Z',
+      },
+    ];
+    for (const gv of sampleVerifications) {
+      this.guestVerifications.set(gv.id, gv);
+    }
+
+    // Seed Sample Agency Trips
+    const sampleTrips: AgencyTripRecord[] = [
+      {
+        id: 'TRIP-501',
+        agencyId: 'agency-royal-fleet',
+        agencyName: 'Royal Fleet Travels',
+        tripName: 'Royal Heritage & Temple Circuit Tour',
+        destination: 'Delhi',
+        startingPoint: 'Hyderabad',
+        startDate: '2026-03-15',
+        endDate: '2026-03-18',
+        numberOfTravelers: 4,
+        vehicleId: 'car-innova-crysta',
+        vehicleName: 'Toyota Innova Crysta (SUV)',
+        driverName: 'Ramesh Kumar',
+        driverMobile: '+91 98765 12340',
+        routeStops: [
+          { stopName: 'Hyderabad City Exit', location: 'ORR Exit 4', stopType: 'BREAK', duration: '20 mins' },
+          { stopName: 'Subbayya Gari Hotel Pitstop', location: 'NH Highway', stopType: 'TIFFIN', duration: '45 mins', notes: 'Breakfast & Tiffin Stop' },
+          { stopName: 'The Leela Palace Hotel', location: 'Diplomatic Enclave', stopType: 'HOTEL', duration: '2 Nights' },
+        ],
+        hotelStopover: {
+          hotelName: 'The Leela Palace',
+          checkIn: '2026-03-15',
+          checkOut: '2026-03-17',
+          roomsCount: 2,
+          guestsCount: 4,
+          roomType: 'Deluxe Suite',
+          price: 17000,
+          status: 'CONFIRMED',
+        },
+        foodStops: [
+          { placeName: 'Subbayya Gari Hotel / Highway Food Court', location: 'NH-65 Highway', mealType: 'Breakfast', numberOfPeople: 4, estimatedCost: 960, notes: 'Authentic South Indian Tiffin & Coffee' },
+        ],
+        totalCost: 25980,
+        status: 'CONFIRMED',
+        notes: 'VIP Luxury Travel Escort with Dedicated Chauffeur',
+        createdAt: '2026-02-15T10:30:00Z',
+      },
+    ];
+    for (const tr of sampleTrips) {
+      this.agencyTrips.set(tr.id, tr);
+    }
 
     // Initial Audit Logs
     this.recordAuditLog('SYSTEM_INIT', 'SYSTEM', 'system@tourguide.com', 'SYSTEM', 'PLATFORM', 'TG-01', 'Platform database and security roles initialized.');
@@ -635,6 +833,119 @@ class Database {
 
   public submitAdminRequest(req: Partial<AdminRequest>): AdminRequest {
     return this.createAdminRequest(req);
+  }
+
+  // --- HOTEL DASHBOARD METHODS & TENANT ISOLATION ---
+  public getRoomsForHotel(hotelId?: string): HotelRoomRecord[] {
+    const rooms = Array.from(this.hotelRooms.values());
+    if (!hotelId) return rooms;
+    return rooms.filter(r => r.hotelId === hotelId || r.hotelName === hotelId);
+  }
+
+  public createHotelRoom(data: Partial<HotelRoomRecord>, actorEmail: string = 'hotel1@tourguide.com'): HotelRoomRecord {
+    const id = `RM-${Date.now()}-${Math.floor(10 + Math.random() * 90)}`;
+    const room: HotelRoomRecord = {
+      id,
+      hotelId: data.hotelId || 'hotel-leela-palace',
+      hotelName: data.hotelName || 'The Leela Palace',
+      roomNumber: data.roomNumber || '103',
+      roomType: data.roomType || 'Deluxe Suite',
+      capacity: data.capacity || 2,
+      pricePerNight: data.pricePerNight || 6500,
+      currency: 'INR',
+      status: data.status || 'AVAILABLE',
+      amenities: data.amenities || ['King Bed', 'AC', 'Free WiFi', 'City View'],
+      updatedAt: new Date().toISOString(),
+    };
+    this.hotelRooms.set(id, room);
+    this.recordAuditLog('CREATE_HOTEL_ROOM', 'HOTEL_SYSTEM', actorEmail, 'HOTEL_ADMIN', 'ROOM', id, `Created room ${room.roomNumber} (${room.roomType}) for hotel ${room.hotelName}.`);
+    return room;
+  }
+
+  public updateHotelRoomStatus(roomId: string, status: 'AVAILABLE' | 'RESERVED' | 'OCCUPIED' | 'MAINTENANCE', actorEmail: string = 'hotel1@tourguide.com'): HotelRoomRecord {
+    const room = this.hotelRooms.get(roomId);
+    if (!room) throw new Error('Hotel room not found.');
+    room.status = status;
+    room.updatedAt = new Date().toISOString();
+    this.hotelRooms.set(roomId, room);
+    this.recordAuditLog('UPDATE_ROOM_STATUS', 'HOTEL_SYSTEM', actorEmail, 'HOTEL_ADMIN', 'ROOM', roomId, `Updated room ${room.roomNumber} status to ${status}.`);
+    return room;
+  }
+
+  public getGuestVerifications(hotelId?: string): GuestVerificationRecord[] {
+    const recs = Array.from(this.guestVerifications.values());
+    if (!hotelId) return recs;
+    return recs.filter(v => v.hotelId === hotelId);
+  }
+
+  public verifyGuestMobile(mobile: string, token: string, actorEmail: string = 'hotel1@tourguide.com'): { valid: boolean; verification?: GuestVerificationRecord; message: string } {
+    const cleanMobile = mobile.trim();
+    const cleanToken = token.trim();
+
+    for (const record of this.guestVerifications.values()) {
+      if ((record.mobileNumber === cleanMobile || record.bookingId === cleanToken || record.verificationTokenHash.includes(cleanToken)) && record.verificationStatus !== 'EXPIRED') {
+        record.verificationStatus = 'VERIFIED';
+        record.verifiedAt = new Date().toISOString();
+        this.guestVerifications.set(record.id, record);
+        this.recordAuditLog('VERIFY_GUEST_MOBILE', 'HOTEL_SYSTEM', actorEmail, 'HOTEL_ADMIN', 'GUEST_VERIFICATION', record.id, `Verified guest mobile ${record.mobileNumber} for booking ${record.bookingId}.`);
+        return { valid: true, verification: record, message: `Mobile ${record.mobileNumber} successfully verified for guest ${record.guestName}.` };
+      }
+    }
+    return { valid: false, message: 'Matching guest booking token or mobile number not found.' };
+  }
+
+  // --- TRAVEL AGENCY DASHBOARD METHODS & TENANT ISOLATION ---
+  public getTripsForAgency(agencyId?: string): AgencyTripRecord[] {
+    const trips = Array.from(this.agencyTrips.values());
+    if (!agencyId) return trips;
+    return trips.filter(t => t.agencyId === agencyId || t.agencyName === agencyId);
+  }
+
+  public createAgencyTrip(data: Partial<AgencyTripRecord>, actorEmail: string = 'agency1@tourguide.com'): AgencyTripRecord {
+    if (!data.tripName || !data.destination || !data.startingPoint || !data.startDate) {
+      throw new Error('Trip Name, Destination, Starting Point, and Start Date are required.');
+    }
+    const id = `TRIP-${Date.now()}`;
+    const trip: AgencyTripRecord = {
+      id,
+      agencyId: data.agencyId || 'agency-royal-fleet',
+      agencyName: data.agencyName || 'Royal Fleet Travels',
+      tripName: data.tripName,
+      destination: data.destination,
+      startingPoint: data.startingPoint,
+      startDate: data.startDate,
+      endDate: data.endDate || data.startDate,
+      numberOfTravelers: data.numberOfTravelers || 4,
+      vehicleId: data.vehicleId || 'car-innova-crysta',
+      vehicleName: data.vehicleName || 'Toyota Innova Crysta (SUV)',
+      driverName: data.driverName || 'Ramesh Kumar',
+      driverMobile: data.driverMobile || '+91 98765 12340',
+      routeStops: data.routeStops || [
+        { stopName: `${data.startingPoint} City Exit`, location: `${data.startingPoint} ORR Exit`, stopType: 'BREAK', duration: '20 mins' },
+        { stopName: 'Subbayya Gari Hotel / Highway Pitstop', location: 'NH Highway', stopType: 'TIFFIN', duration: '45 mins', notes: 'Breakfast & Tiffin Break' },
+        { stopName: `${data.destination} Entry Gate`, location: data.destination, stopType: 'ATTRACTION', duration: '30 mins' },
+      ],
+      hotelStopover: data.hotelStopover || {
+        hotelName: 'The Leela Palace',
+        checkIn: data.startDate,
+        checkOut: data.endDate || data.startDate,
+        roomsCount: 2,
+        guestsCount: data.numberOfTravelers || 4,
+        roomType: 'Deluxe Suite',
+        price: 17000,
+        status: 'CONFIRMED',
+      },
+      foodStops: data.foodStops || [
+        { placeName: 'Subbayya Gari Hotel / Highway Food Court', location: 'NH Highway', mealType: 'Breakfast', numberOfPeople: data.numberOfTravelers || 4, estimatedCost: 960, notes: 'Authentic South Indian Tiffin & Filter Coffee' },
+      ],
+      totalCost: data.totalCost || 25980,
+      status: 'CONFIRMED',
+      notes: data.notes || 'Executive Tour Package with Driver & Vehicle',
+      createdAt: new Date().toISOString(),
+    };
+    this.agencyTrips.set(id, trip);
+    this.recordAuditLog('CREATE_AGENCY_TRIP', 'AGENCY_SYSTEM', actorEmail, 'TRAVEL_ADMIN', 'TRIP', id, `Created trip ${trip.tripName} from ${trip.startingPoint} to ${trip.destination}.`);
+    return trip;
   }
 }
 
