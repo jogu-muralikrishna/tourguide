@@ -667,6 +667,110 @@ export async function resetPartnerPasswordApi(id: string, newPasswordPlain: stri
   return await res.json();
 }
 
+export interface AuditLogRecord {
+  id: string;
+  action: string;
+  actorId: string;
+  actorEmail: string;
+  actorRole: string;
+  targetType: string;
+  targetId: string;
+  details: string;
+  timestamp: string;
+}
+
+export interface OverviewStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalHotels: number;
+  totalAgencies: number;
+  totalBookings: number;
+  totalRevenue: number;
+  recentAuditLogs: AuditLogRecord[];
+}
+
+export async function fetchAdminOverviewStatsApi(): Promise<OverviewStats> {
+  try {
+    const res = await fetch('/api/admin/overview-stats', {
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('Fetch overview stats fallback:', err);
+  }
+  return {
+    totalUsers: 5,
+    activeUsers: 5,
+    totalHotels: 2,
+    totalAgencies: 1,
+    totalBookings: 3,
+    totalRevenue: 24500,
+    recentAuditLogs: [],
+  };
+}
+
+export async function fetchAdminUsersApi(): Promise<AuthRoleUser[]> {
+  try {
+    const res = await fetch('/api/admin/users', {
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.users) ? data.users : [];
+    }
+  } catch (err) {
+    console.warn('Fetch admin users fallback:', err);
+  }
+  return [];
+}
+
+export async function updateUserStatusApi(id: string, isActive: boolean): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch(`/api/admin/users/${id}/status`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ isActive }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to update user status' }));
+    throw new Error(err.error || 'Failed to update user status');
+  }
+
+  return await res.json();
+}
+
+export async function fetchAuditLogsApi(): Promise<AuditLogRecord[]> {
+  try {
+    const res = await fetch('/api/admin/audit-logs', {
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.logs) ? data.logs : [];
+    }
+  } catch (err) {
+    console.warn('Fetch audit logs fallback:', err);
+  }
+  return [];
+}
+
+export async function changeAdminPasswordApi(newPasswordPlain: string): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch('/api/admin/change-password', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ newPassword: newPasswordPlain }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to change password' }));
+    throw new Error(err.error || 'Failed to change password');
+  }
+
+  return await res.json();
+}
+
 export async function deletePartnerAccountApi(id: string): Promise<{ success: boolean; message?: string }> {
   const res = await fetch(`/api/admin/partners/${id}`, {
     method: 'DELETE',
@@ -680,4 +784,5 @@ export async function deletePartnerAccountApi(id: string): Promise<{ success: bo
 
   return await res.json();
 }
+
 

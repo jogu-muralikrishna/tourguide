@@ -32,6 +32,18 @@ export interface AuthUser {
   createdAt: string;
 }
 
+export interface AuditLogRecord {
+  id: string;
+  action: string;
+  actorId: string;
+  actorEmail: string;
+  actorRole: string;
+  targetType: string;
+  targetId: string;
+  details: string;
+  timestamp: string;
+}
+
 class Database {
   private users: Map<string, AuthUser> = new Map();
   private bookings: Map<string, Booking> = new Map();
@@ -39,6 +51,7 @@ class Database {
   private vehicles: Map<string, Vehicle> = new Map();
   private pitstops: Map<string, Pitstop> = new Map();
   private adminRequests: Map<string, AdminRequest> = new Map();
+  private auditLogs: AuditLogRecord[] = [];
 
   constructor() {
     this.seedDatabase();
@@ -155,9 +168,41 @@ class Database {
       createdAt: '2026-02-20T11:00:00Z',
     };
     this.adminRequests.set(sampleRequest.id, sampleRequest);
+
+    // Initial Audit Logs
+    this.recordAuditLog('SYSTEM_INIT', 'SYSTEM', 'system@tourguide.com', 'SYSTEM', 'PLATFORM', 'TG-01', 'Platform database and security roles initialized.');
   }
 
-  // --- Auth Methods ---
+  // --- Audit Log Methods ---
+  public recordAuditLog(
+    action: string,
+    actorId: string,
+    actorEmail: string,
+    actorRole: string,
+    targetType: string,
+    targetId: string,
+    details: string
+  ): AuditLogRecord {
+    const record: AuditLogRecord = {
+      id: `AUD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      action,
+      actorId,
+      actorEmail,
+      actorRole,
+      targetType,
+      targetId,
+      details,
+      timestamp: new Date().toISOString(),
+    };
+    this.auditLogs.unshift(record);
+    return record;
+  }
+
+  public getAuditLogs(): AuditLogRecord[] {
+    return this.auditLogs;
+  }
+
+  // --- Auth & User Methods ---
   public findUserByEmail(email: string): AuthUser | undefined {
     return this.users.get(email.toLowerCase().trim());
   }
@@ -167,6 +212,10 @@ class Database {
       if (user.id === id || user.userId === id) return user;
     }
     return undefined;
+  }
+
+  public listAllUsers(): Array<Omit<AuthUser, 'passwordHash'>> {
+    return Array.from(this.users.values()).map(({ passwordHash, ...rest }) => rest);
   }
 
   public registerUser(
@@ -203,6 +252,7 @@ class Database {
       createdAt: new Date().toISOString(),
     };
     this.users.set(newUser.email, newUser);
+    this.recordAuditLog('USER_REGISTER', uid, cleanEmail, role, 'USER', uid, `New user ${name} registered.`);
     return newUser;
   }
 
@@ -258,22 +308,40 @@ class Database {
     };
 
     this.users.set(partnerUser.email, partnerUser);
+    this.recordAuditLog(
+      data.role === 'HOTEL_ADMIN' ? 'CREATE_HOTEL_ACCOUNT' : 'CREATE_AGENCY_ACCOUNT',
+      'ADMIN_SYSTEM',
+      data.createdBy || 'admin@tourguide.com',
+      'MAIN_ADMIN',
+      data.role === 'HOTEL_ADMIN' ? 'HOTEL' : 'TRAVEL_AGENCY',
+      uid,
+      `Created ${data.role} account for ${data.name} (${cleanEmail}).`
+    );
     return partnerUser;
   }
 
   // Set Partner Account Active/Disabled Status
-  public setPartnerStatus(userId: string, isActive: boolean): AuthUser {
+  public setPartnerStatus(userId: string, isActive: boolean, actorEmail: string = 'admin@tourguide.com'): AuthUser {
     const user = this.findUserById(userId);
     if (!user) {
       throw new Error('Account not found.');
     }
     user.isActive = isActive;
     this.users.set(user.email, user);
+    this.recordAuditLog(
+      'ACCOUNT_STATUS_UPDATED',
+      'ADMIN_SYSTEM',
+      actorEmail,
+      'MAIN_ADMIN',
+      user.role,
+      user.id,
+      `Changed account status of ${user.email} to ${isActive ? 'ACTIVE' : 'DISABLED'}.`
+    );
     return user;
   }
 
   // Reset Partner Password
-  public resetPartnerPassword(userId: string, newPasswordPlain: string): boolean {
+  public resetPartnerPassword(userId: string, newPasswordPlain: string, actorEmail: string = 'admin@tourguide.com'): boolean {
     const user = this.findUserById(userId);
     if (!user) {
       throw new Error('Account not found.');
@@ -283,11 +351,31 @@ class Database {
     }
     user.passwordHash = bcrypt.hashSync(newPasswordPlain, 10);
     this.users.set(user.email, user);
+    this.recordAuditLog(
+      'PASSWORD_RESET',
+      'ADMIN_SYSTEM',
+      actorEmail,
+      'MAIN_ADMIN',
+      user.role,
+      user.id,
+      `Reset password for ${user.email}.`
+    );
+    return true;
+  }
+
+  // Admin Change Password
+  public changeUserPassword(userId: string, newPasswordPlain: string): boolean {
+    const user = this.findUserById(userId);
+    if (!user) throw new Error('Account not found.');
+    if (newPasswordPlain.length < 8) throw new Error('Password must be at least 8 characters long.');
+    user.passwordHash = bcrypt.hashSync(newPasswordPlain, 10);
+    this.users.set(user.email, user);
+    this.recordAuditLog('ADMIN_PASSWORD_CHANGED', user.id, user.email, user.role, 'USER', user.id, `Password changed for ${user.email}.`);
     return true;
   }
 
   // Delete Partner Account
-  public deletePartnerAccount(userId: string): boolean {
+  public deletePartnerAccount(userId: string, actorEmail: string = 'admin@tourguide.com'): boolean {
     const user = this.findUserById(userId);
     if (!user) {
       throw new Error('Account not found.');
@@ -296,6 +384,15 @@ class Database {
       throw new Error('Cannot delete the primary System Administrator account.');
     }
     this.users.delete(user.email);
+    this.recordAuditLog(
+      'ACCOUNT_DELETED',
+      'ADMIN_SYSTEM',
+      actorEmail,
+      'MAIN_ADMIN',
+      user.role,
+      user.id,
+      `Deleted account for ${user.email}.`
+    );
     return true;
   }
 
@@ -304,7 +401,9 @@ class Database {
   }
 
   public listPublicAdmins(): Array<Omit<AuthUser, 'passwordHash'>> {
-    return Array.from(this.users.values()).map(({ passwordHash, ...rest }) => rest);
+    return Array.from(this.users.values())
+      .filter(u => u.role !== 'MAIN_ADMIN') // PRIVACY: Hide main admin identity from public role choices
+      .map(({ passwordHash, ...rest }) => rest);
   }
 
   public listPartnerAccounts(roleFilter?: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN'): Array<Omit<AuthUser, 'passwordHash'>> {
@@ -344,7 +443,7 @@ class Database {
     if (!user || user.role === 'MAIN_ADMIN') return booking;
 
     if (user.role === 'HOTEL_ADMIN') {
-      if (booking.hotel && booking.hotel.id === user.hotelId) return booking;
+      if (booking.hotel && (booking.hotel.id === user.hotelId || booking.hotel.name === user.hotelName)) return booking;
       return undefined;
     }
 
@@ -372,6 +471,7 @@ class Database {
     } as Booking;
 
     this.bookings.set(newBooking.id, newBooking);
+    this.recordAuditLog('BOOKING_CREATED', payload.user?.userId || 'USER', payload.user?.email || 'guest@tourguide.com', 'USER', 'BOOKING', bookingId, `Created booking ${bookingId} for route ${payload.from} to ${payload.to}.`);
     return newBooking;
   }
 
@@ -380,11 +480,16 @@ class Database {
     if (!booking) return false;
     booking.status = status;
     this.bookings.set(id, booking);
+    this.recordAuditLog('BOOKING_STATUS_UPDATED', 'ADMIN_SYSTEM', 'admin@tourguide.com', 'MAIN_ADMIN', 'BOOKING', id, `Updated booking ${id} status to ${status}.`);
     return true;
   }
 
   public deleteBooking(id: string): boolean {
-    return this.bookings.delete(id);
+    const ok = this.bookings.delete(id);
+    if (ok) {
+      this.recordAuditLog('BOOKING_DELETED', 'ADMIN_SYSTEM', 'admin@tourguide.com', 'MAIN_ADMIN', 'BOOKING', id, `Deleted booking ${id}.`);
+    }
+    return ok;
   }
 
   // Admin Request Handlers

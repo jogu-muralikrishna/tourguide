@@ -342,6 +342,92 @@ async function startServer() {
     }
   });
 
+  // --- ADMIN SYSTEM MANAGEMENT (OVERVIEW, USERS, AUDIT LOGS, CHANGE PASSWORD) ---
+
+  // Admin Dashboard Overview Metrics
+  app.get('/api/admin/overview-stats', requireAdmin, (_req: Request, res: Response) => {
+    const allUsers = db.listAllUsers();
+    const allBookings = db.getBookingsForUser(null);
+    const hotels = db.listPartnerAccounts('HOTEL_ADMIN');
+    const agencies = db.listPartnerAccounts('TRAVEL_ADMIN');
+    const auditLogs = db.getAuditLogs().slice(0, 15);
+
+    const totalUsers = allUsers.length;
+    const activeUsers = allUsers.filter((u) => u.isActive !== false).length;
+    const totalHotels = hotels.length || db.getHotels().length;
+    const totalAgencies = agencies.length || 1;
+    const totalBookings = allBookings.length;
+    const totalRevenue = allBookings
+      .filter((b) => b.status === 'Confirmed')
+      .reduce((sum, b) => sum + (b.pricing?.total || b.finalTotal || 0), 0);
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      totalHotels,
+      totalAgencies,
+      totalBookings,
+      totalRevenue,
+      recentAuditLogs: auditLogs,
+    });
+  });
+
+  // List All Platform Users (Admin Only)
+  app.get('/api/admin/users', requireAdmin, (_req: Request, res: Response) => {
+    const users = db.listAllUsers();
+    res.json({ users });
+  });
+
+  // Toggle Customer User Status (Admin Only)
+  app.put('/api/admin/users/:id/status', requireAdmin, (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== 'boolean') {
+      res.status(400).json({ error: 'Status (isActive boolean) is required.' });
+      return;
+    }
+
+    try {
+      const updated = db.setPartnerStatus(id, isActive);
+      const { passwordHash, ...safeUser } = updated;
+      res.json({
+        success: true,
+        message: `User status updated to ${isActive ? 'Active' : 'Disabled'}.`,
+        user: safeUser,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to update user status.' });
+    }
+  });
+
+  // Get Audit Logs (Admin Only)
+  app.get('/api/admin/audit-logs', requireAdmin, (_req: Request, res: Response) => {
+    const logs = db.getAuditLogs();
+    res.json({ logs });
+  });
+
+  // Admin Change Own Password (Admin Only)
+  app.post('/api/admin/change-password', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8) {
+      res.status(400).json({ error: 'New password must be at least 8 characters long.' });
+      return;
+    }
+
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authenticated.' });
+      return;
+    }
+
+    try {
+      db.changeUserPassword(req.user.id, newPassword);
+      res.json({ success: true, message: 'Admin password changed successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to change password.' });
+    }
+  });
+
   // --- REAL-TIME ROUTING & TELEMETRY ---
 
   app.get('/api/route/calculate', async (req: Request, res: Response) => {

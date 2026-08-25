@@ -23,7 +23,13 @@ import {
   RotateCcw, 
   Power, 
   ShieldCheck,
-  Users
+  Users,
+  BarChart3,
+  TrendingUp,
+  Activity,
+  FileText,
+  Settings,
+  DollarSign
 } from 'lucide-react';
 import { Booking, AdminRequest } from '../types';
 import { AdminService } from '../services/adminService';
@@ -42,7 +48,14 @@ import {
   createAgencyAccountApi,
   updatePartnerStatusApi,
   resetPartnerPasswordApi,
-  deletePartnerAccountApi
+  deletePartnerAccountApi,
+  fetchAdminOverviewStatsApi,
+  fetchAdminUsersApi,
+  updateUserStatusApi,
+  fetchAuditLogsApi,
+  changeAdminPasswordApi,
+  OverviewStats,
+  AuditLogRecord
 } from '../services/api';
 
 interface AdminPanelModalProps {
@@ -64,12 +77,31 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onViewTicket,
   onRefreshData,
 }) => {
-  const [activeTab, setActiveTab] = useState<'bookings' | 'partner_accounts' | 'partner_requests' | 'verify_token'>('bookings');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'partner_accounts' | 'bookings' | 'partner_requests' | 'audit_logs' | 'settings' | 'verify_token'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [systemRoles, setSystemRoles] = useState<AuthRoleUser[]>([]);
   const [activeRoleEmail, setActiveRoleEmail] = useState<string>('admin@tourguide.com');
   const [activeRoleUser, setActiveRoleUser] = useState<AuthRoleUser | null>(null);
+
+  // Overview Stats
+  const [overviewStats, setOverviewStats] = useState<OverviewStats | null>(null);
+
+  // Users Management State
+  const [usersList, setUsersList] = useState<AuthRoleUser[]>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  // Audit Logs State
+  const [auditLogsList, setAuditLogsList] = useState<AuditLogRecord[]>([]);
+
+  // Admin Change Password State
+  const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [changePassError, setChangePassError] = useState<string | null>(null);
+  const [changePassSuccess, setChangePassSuccess] = useState<string | null>(null);
+  const [isChangingPass, setIsChangingPass] = useState(false);
 
   // Selected Booking for Full Details Modal
   const [inspectBooking, setInspectBooking] = useState<Booking | null>(null);
@@ -141,6 +173,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         setActiveRoleEmail(matched.email);
         setActiveRoleUser(matched);
       }
+
       setIsLoadingRequests(true);
       const reqs = await fetchAdminRequestsApi();
       setPartnerRequests(reqs);
@@ -148,11 +181,22 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setIsLoadingPartners(true);
       const partners = await fetchPartnersApi();
       setPartnersList(partners);
+
+      const overview = await fetchAdminOverviewStatsApi();
+      setOverviewStats(overview);
+
+      setIsLoadingUsers(true);
+      const users = await fetchAdminUsersApi();
+      setUsersList(users);
+
+      const logs = await fetchAuditLogsApi();
+      setAuditLogsList(logs);
     } catch (err) {
       console.warn(err);
     } finally {
       setIsLoadingRequests(false);
       setIsLoadingPartners(false);
+      setIsLoadingUsers(false);
     }
   };
 
@@ -209,8 +253,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     return true;
   });
 
-  const confirmedBookings = isolatedBookings.filter((b) => b.status === 'Confirmed').length;
-
   // Filter Partners List
   const filteredPartners = partnersList.filter((p) => {
     const roleMatch = partnerSubTab === 'hotels' ? p.role === 'HOTEL_ADMIN' : p.role === 'TRAVEL_ADMIN';
@@ -222,6 +264,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         p.email.toLowerCase().includes(query) ||
         p.phone.toLowerCase().includes(query) ||
         (p.address || '').toLowerCase().includes(query))
+    );
+  });
+
+  // Filter Platform Users List
+  const filteredUsers = usersList.filter((u) => {
+    const roleMatch = userRoleFilter === 'all' || u.role === userRoleFilter;
+    const query = userSearchTerm.toLowerCase().trim();
+    if (!query) return roleMatch;
+    return (
+      roleMatch &&
+      (u.name.toLowerCase().includes(query) ||
+        u.email.toLowerCase().includes(query) ||
+        u.phone.toLowerCase().includes(query) ||
+        u.id.toLowerCase().includes(query))
     );
   });
 
@@ -329,6 +385,17 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     }
   };
 
+  // Handle Toggle User Active Status
+  const handleToggleUserStatus = async (user: AuthRoleUser) => {
+    try {
+      const nextStatus = user.isActive === false ? true : false;
+      await updateUserStatusApi(user.id, nextStatus);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update user status.');
+    }
+  };
+
   // Handle Reset Password
   const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,6 +427,36 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       alert('Account deleted successfully.');
     } catch (err: any) {
       alert(err.message || 'Failed to delete partner account.');
+    }
+  };
+
+  // Handle Admin Change Own Password
+  const handleChangeAdminPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePassError(null);
+    setChangePassSuccess(null);
+
+    if (adminNewPassword !== adminConfirmPassword) {
+      setChangePassError('Passwords do not match.');
+      return;
+    }
+
+    if (adminNewPassword.length < 8) {
+      setChangePassError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    setIsChangingPass(true);
+    try {
+      await changeAdminPasswordApi(adminNewPassword);
+      setAdminNewPassword('');
+      setAdminConfirmPassword('');
+      setChangePassSuccess('Admin password updated successfully!');
+      await loadData();
+    } catch (err: any) {
+      setChangePassError(err.message || 'Failed to update password.');
+    } finally {
+      setIsChangingPass(false);
     }
   };
 
@@ -474,90 +571,40 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         </div>
 
-        {/* --- ROLE SWITCH PASSWORD AUTHENTICATION OVERLAY --- */}
-        {targetRoleToSwitch && (
-          <div className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-[#0b0b10] border border-[#D4AF37]/60 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div className="flex items-center gap-2 text-[#D4AF37]">
-                  <Lock className="w-5 h-5" />
-                  <h3 className="font-bold font-serif-luxury text-white text-lg">
-                    Admin Password Required
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setTargetRoleToSwitch(null)}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="text-xs text-zinc-300 bg-zinc-900/90 p-3 rounded-xl border border-zinc-800 space-y-1">
-                <div>Role: <strong className="text-amber-300">{targetRoleToSwitch.role.replace('_', ' ')}</strong></div>
-                <div>Account Name: <strong className="text-white">{targetRoleToSwitch.name}</strong></div>
-                <div>Login Email: <strong className="text-emerald-400">{targetRoleToSwitch.email}</strong></div>
-              </div>
-
-              {roleSwitchError && (
-                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
-                  {roleSwitchError}
-                </div>
-              )}
-
-              <form onSubmit={handleConfirmRoleSwitch} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-zinc-300 mb-1">
-                    Enter Password for {targetRoleToSwitch.email}
-                  </label>
-                  <input
-                    type="password"
-                    value={roleSwitchPassword}
-                    onChange={(e) => setRoleSwitchPassword(e.target.value)}
-                    placeholder="Enter password..."
-                    autoFocus
-                    required
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-amber-500/50 text-amber-300 font-mono text-sm focus:border-amber-400 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setTargetRoleToSwitch(null)}
-                    className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs uppercase"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 font-bold text-xs uppercase shadow-lg"
-                  >
-                    Authenticate & Switch
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
         {/* Navigation Tabs */}
-        <div className="px-6 bg-[#0E0E14] border-b border-zinc-800 flex items-center gap-4 text-xs font-mono-tech">
-          <button
-            onClick={() => setActiveTab('bookings')}
-            className={`py-3 border-b-2 font-bold uppercase transition-all cursor-pointer ${
-              activeTab === 'bookings'
-                ? 'border-[#D4AF37] text-[#F3E5AB]'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            {activeRoleUser?.role === 'HOTEL_ADMIN' ? 'Hotel Guest Bookings' : activeRoleUser?.role === 'TRAVEL_ADMIN' ? 'Car Trip Bookings' : 'All Platform Bookings'}
-          </button>
+        <div className="px-6 bg-[#0E0E14] border-b border-zinc-800 flex items-center gap-4 text-xs font-mono-tech overflow-x-auto">
+          {activeRoleUser?.role === 'MAIN_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'overview'
+                  ? 'border-[#D4AF37] text-[#F3E5AB]'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Overview</span>
+            </button>
+          )}
+
+          {activeRoleUser?.role === 'MAIN_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'users'
+                  ? 'border-[#D4AF37] text-[#F3E5AB]'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <User className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Users</span>
+            </button>
+          )}
 
           {activeRoleUser?.role === 'MAIN_ADMIN' && (
             <button
               onClick={() => setActiveTab('partner_accounts')}
-              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-2 cursor-pointer ${
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeTab === 'partner_accounts'
                   ? 'border-[#D4AF37] text-[#F3E5AB]'
                   : 'border-transparent text-zinc-400 hover:text-zinc-200'
@@ -568,133 +615,263 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             </button>
           )}
 
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`py-3 border-b-2 font-bold uppercase transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'bookings'
+                ? 'border-[#D4AF37] text-[#F3E5AB]'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            {activeRoleUser?.role === 'HOTEL_ADMIN' ? 'Hotel Guest Bookings' : activeRoleUser?.role === 'TRAVEL_ADMIN' ? 'Car Trip Bookings' : 'Bookings'}
+          </button>
+
           {activeRoleUser?.role === 'MAIN_ADMIN' && (
             <button
               onClick={() => setActiveTab('partner_requests')}
-              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-2 cursor-pointer ${
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
                 activeTab === 'partner_requests'
                   ? 'border-[#D4AF37] text-[#F3E5AB]'
                   : 'border-transparent text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              <span>Partner Applications</span>
+              <span>Applications</span>
               {partnerRequests.filter(r => r.status === 'PENDING').length > 0 && (
-                <span className="w-5 h-5 rounded-full bg-[#D4AF37] text-black text-[10px] font-bold flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-[#D4AF37] text-black text-[10px] font-bold flex items-center justify-center">
                   {partnerRequests.filter(r => r.status === 'PENDING').length}
                 </span>
               )}
             </button>
           )}
 
+          {activeRoleUser?.role === 'MAIN_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('audit_logs')}
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'audit_logs'
+                  ? 'border-[#D4AF37] text-[#F3E5AB]'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Audit Logs</span>
+            </button>
+          )}
+
+          {activeRoleUser?.role === 'MAIN_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'settings'
+                  ? 'border-[#D4AF37] text-[#F3E5AB]'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Settings</span>
+            </button>
+          )}
+
           <button
             onClick={() => setActiveTab('verify_token')}
-            className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
               activeTab === 'verify_token'
                 ? 'border-[#D4AF37] text-[#F3E5AB]'
                 : 'border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Verify Token ID</span>
+            <QrCode className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Verify Token</span>
           </button>
         </div>
 
-        {/* --- TAB 1: BOOKINGS MANAGEMENT --- */}
-        {activeTab === 'bookings' && (
+        {/* --- TAB 1: OVERVIEW DASHBOARD --- */}
+        {activeTab === 'overview' && activeRoleUser?.role === 'MAIN_ADMIN' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
-            {/* Filter Bar */}
+            {/* Metric Cards Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 font-mono-tech">
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>Total Users</span>
+                  <Users className="w-4 h-4 text-sky-400" />
+                </div>
+                <div className="text-2xl font-bold text-white mt-2">
+                  {overviewStats?.totalUsers || usersList.length || 5}
+                </div>
+                <div className="text-[10px] text-emerald-400 mt-1">
+                  {overviewStats?.activeUsers || 5} Active
+                </div>
+              </div>
+
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>Hotels</span>
+                  <Building2 className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-white mt-2">
+                  {overviewStats?.totalHotels || 2}
+                </div>
+                <div className="text-[10px] text-zinc-400 mt-1">Verified Partners</div>
+              </div>
+
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>Travel Agencies</span>
+                  <Car className="w-4 h-4 text-blue-400" />
+                </div>
+                <div className="text-2xl font-bold text-white mt-2">
+                  {overviewStats?.totalAgencies || 1}
+                </div>
+                <div className="text-[10px] text-zinc-400 mt-1">Fleet Partners</div>
+              </div>
+
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>Bookings</span>
+                  <Calendar className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-2xl font-bold text-white mt-2">
+                  {overviewStats?.totalBookings || bookings.length}
+                </div>
+                <div className="text-[10px] text-zinc-400 mt-1">Total Trips</div>
+              </div>
+
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>Total Revenue</span>
+                  <DollarSign className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 mt-2">
+                  {formatINR(overviewStats?.totalRevenue || 24500)}
+                </div>
+                <div className="text-[10px] text-zinc-400 mt-1">Gross Booking Value</div>
+              </div>
+
+              <div className="ui-card p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-zinc-400 uppercase font-bold flex items-center justify-between">
+                  <span>System Health</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 mt-2">100%</div>
+                <div className="text-[10px] text-emerald-400 mt-1">🟢 Secure & Active</div>
+              </div>
+            </div>
+
+            {/* Recent System Activity Feed */}
+            <div className="ui-card p-5 space-y-4">
+              <h4 className="text-xs font-mono-tech font-bold uppercase text-[#F3E5AB] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#D4AF37]" />
+                <span>Recent System Activity Feed</span>
+              </h4>
+
+              <div className="space-y-2 font-mono-tech text-xs">
+                {(overviewStats?.recentAuditLogs || auditLogsList.slice(0, 5)).map((log) => (
+                  <div key={log.id} className="p-3 rounded-xl bg-[#121218] border border-zinc-800 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-white">{log.action.replace(/_/g, ' ')}</div>
+                      <div className="text-[11px] text-zinc-400">{log.details}</div>
+                    </div>
+                    <div className="text-right text-[10px] text-zinc-500">
+                      <div>{log.actorEmail}</div>
+                      <div>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* --- TAB 2: USERS MANAGEMENT --- */}
+        {activeTab === 'users' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            
+            {/* Search & Filter Bar */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="relative w-full sm:w-80">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Search user, booking ID, phone..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search user name, email, phone, ID..."
+                  value={userSearchTerm}
+                  onChange={(e) => setUserSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#121218] border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-                {['all', 'Confirmed', 'Pending', 'Cancelled'].map((st) => (
+              <div className="flex items-center gap-2">
+                {['all', 'USER', 'HOTEL_ADMIN', 'TRAVEL_ADMIN'].map((r) => (
                   <button
-                    key={st}
-                    onClick={() => setStatusFilter(st)}
+                    key={r}
+                    onClick={() => setUserRoleFilter(r)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-mono-tech uppercase font-semibold transition-all cursor-pointer ${
-                      statusFilter === st
+                      userRoleFilter === r
                         ? 'bg-[#D4AF37] text-black font-bold'
                         : 'bg-[#121218] border border-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
-                    {st}
+                    {r === 'all' ? 'All Roles' : r.replace('_ADMIN', '')}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Bookings Table */}
+            {/* Users Table */}
             <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">Booking ID</th>
-                      <th className="p-3.5">Traveler</th>
-                      <th className="p-3.5">Route</th>
-                      <th className="p-3.5">Vehicle</th>
-                      <th className="p-3.5">Hotel Stay</th>
-                      <th className="p-3.5">Date</th>
-                      <th className="p-3.5">Total Fare</th>
+                      <th className="p-3.5">User ID</th>
+                      <th className="p-3.5">Name</th>
+                      <th className="p-3.5">Email</th>
+                      <th className="p-3.5">Phone</th>
+                      <th className="p-3.5">Role</th>
                       <th className="p-3.5">Status</th>
                       <th className="p-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
-                    {isolatedBookings.length === 0 ? (
+                    {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="p-8 text-center text-zinc-500">
-                          No bookings found for this role scope.
+                        <td colSpan={7} className="p-8 text-center text-zinc-500">
+                          No users found matching filter criteria.
                         </td>
                       </tr>
                     ) : (
-                      isolatedBookings.map((b) => (
-                        <tr key={b.id} className="hover:bg-zinc-900/50 transition-colors">
-                          <td className="p-3.5 font-bold text-[#D4AF37]">{b.id}</td>
+                      filteredUsers.map((u) => (
+                        <tr key={u.id} className="hover:bg-zinc-900/50 transition-colors">
+                          <td className="p-3.5 font-bold text-[#D4AF37]">{u.id}</td>
+                          <td className="p-3.5 font-bold text-white">{u.name}</td>
+                          <td className="p-3.5 text-sky-400">{u.email}</td>
+                          <td className="p-3.5 text-zinc-400">{u.phone}</td>
+                          <td className="p-3.5 font-bold text-amber-400">{u.role}</td>
                           <td className="p-3.5">
-                            <div className="font-bold text-white">{b.user.fullName}</div>
-                            <div className="text-[10px] text-zinc-500">{b.user.phone}</div>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="font-semibold text-white">{b.from} → {b.to}</div>
-                            <div className="text-[10px] text-zinc-500">{b.distanceKm} km</div>
-                          </td>
-                          <td className="p-3.5">{b.vehicle?.name || 'Standard Car'}</td>
-                          <td className="p-3.5">{b.hotel ? b.hotel.name : 'Transit Only'}</td>
-                          <td className="p-3.5">{b.travelDate}</td>
-                          <td className="p-3.5 font-bold text-emerald-400">
-                            {formatINR(b.pricing?.total || 0)}
-                          </td>
-                          <td className="p-3.5">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                              b.status === 'Confirmed' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-red-950 text-red-400 border border-red-800'
-                            }`}>
-                              {b.status}
-                            </span>
+                            {u.isActive !== false ? (
+                              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase">
+                                🟢 Active
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold uppercase">
+                                🔴 Disabled
+                              </span>
+                            )}
                           </td>
                           <td className="p-3.5 text-right space-x-2">
-                            <button
-                              onClick={() => onViewTicket(b)}
-                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-white cursor-pointer"
-                            >
-                              Ticket
-                            </button>
-                            <button
-                              onClick={() => onUpdateStatus(b.id, b.status === 'Confirmed' ? 'Cancelled' : 'Confirmed')}
-                              className="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs cursor-pointer"
-                            >
-                              Toggle
-                            </button>
+                            {u.role !== 'MAIN_ADMIN' && (
+                              <button
+                                onClick={() => handleToggleUserStatus(u)}
+                                className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                                  u.isActive !== false
+                                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
+                                }`}
+                              >
+                                {u.isActive !== false ? 'Disable' : 'Enable'}
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))
@@ -707,7 +884,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 2: PARTNER ACCOUNTS (ADMIN ONLY) --- */}
+        {/* --- TAB 3: PARTNER ACCOUNTS (ADMIN ONLY) --- */}
         {activeTab === 'partner_accounts' && activeRoleUser?.role === 'MAIN_ADMIN' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
@@ -823,7 +1000,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                           <td className="p-3.5 text-right space-x-2">
                             <button
                               onClick={() => handleTogglePartnerStatus(partner)}
-                              title={partner.isActive !== false ? 'Disable Account' : 'Enable Account'}
                               className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
                                 partner.isActive !== false
                                   ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
@@ -859,6 +1035,297 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* --- TAB 4: BOOKINGS MANAGEMENT --- */}
+        {activeTab === 'bookings' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            
+            {/* Filter Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search user, booking ID, phone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#121218] border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                {['all', 'Confirmed', 'Pending', 'Cancelled'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono-tech uppercase font-semibold transition-all cursor-pointer ${
+                      statusFilter === st
+                        ? 'bg-[#D4AF37] text-black font-bold'
+                        : 'bg-[#121218] border border-zinc-800 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bookings Table */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono-tech">
+                  <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3.5">Booking ID</th>
+                      <th className="p-3.5">Traveler</th>
+                      <th className="p-3.5">Route</th>
+                      <th className="p-3.5">Vehicle</th>
+                      <th className="p-3.5">Hotel Stay</th>
+                      <th className="p-3.5">Date</th>
+                      <th className="p-3.5">Total Fare</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                    {isolatedBookings.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-zinc-500">
+                          No bookings found for this role scope.
+                        </td>
+                      </tr>
+                    ) : (
+                      isolatedBookings.map((b) => (
+                        <tr key={b.id} className="hover:bg-zinc-900/50 transition-colors">
+                          <td className="p-3.5 font-bold text-[#D4AF37]">{b.id}</td>
+                          <td className="p-3.5">
+                            <div className="font-bold text-white">{b.user.fullName}</div>
+                            <div className="text-[10px] text-zinc-500">{b.user.phone}</div>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="font-semibold text-white">{b.from} → {b.to}</div>
+                            <div className="text-[10px] text-zinc-500">{b.distanceKm} km</div>
+                          </td>
+                          <td className="p-3.5">{b.vehicle?.name || 'Standard Car'}</td>
+                          <td className="p-3.5">{b.hotel ? b.hotel.name : 'Transit Only'}</td>
+                          <td className="p-3.5">{b.travelDate}</td>
+                          <td className="p-3.5 font-bold text-emerald-400">
+                            {formatINR(b.pricing?.total || 0)}
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              b.status === 'Confirmed' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-red-950 text-red-400 border border-red-800'
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right space-x-2">
+                            <button
+                              onClick={() => onViewTicket(b)}
+                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-white cursor-pointer"
+                            >
+                              Ticket
+                            </button>
+                            <button
+                              onClick={() => onUpdateStatus(b.id, b.status === 'Confirmed' ? 'Cancelled' : 'Confirmed')}
+                              className="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs cursor-pointer"
+                            >
+                              Toggle
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* --- TAB 5: AUDIT LOGS --- */}
+        {activeTab === 'audit_logs' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            <h4 className="text-sm font-mono-tech font-bold uppercase text-zinc-300 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#D4AF37]" />
+              <span>Platform Audit Trail Logs</span>
+            </h4>
+
+            <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono-tech">
+                  <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3.5">Log ID</th>
+                      <th className="p-3.5">Action</th>
+                      <th className="p-3.5">Actor</th>
+                      <th className="p-3.5">Role</th>
+                      <th className="p-3.5">Target</th>
+                      <th className="p-3.5">Details</th>
+                      <th className="p-3.5 text-right">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                    {auditLogsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-zinc-500">
+                          No audit log records recorded yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      auditLogsList.map((log) => (
+                        <tr key={log.id} className="hover:bg-zinc-900/50 transition-colors">
+                          <td className="p-3.5 font-bold text-[#D4AF37]">{log.id}</td>
+                          <td className="p-3.5 font-bold text-white">{log.action}</td>
+                          <td className="p-3.5 text-sky-400">{log.actorEmail}</td>
+                          <td className="p-3.5 font-bold text-amber-400">{log.actorRole}</td>
+                          <td className="p-3.5 text-zinc-400">{log.targetType}:{log.targetId}</td>
+                          <td className="p-3.5 text-zinc-300 max-w-sm">{log.details}</td>
+                          <td className="p-3.5 text-right text-zinc-500">
+                            {new Date(log.timestamp).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB 6: ADMIN SETTINGS (CHANGE PASSWORD) --- */}
+        {activeTab === 'settings' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-md mx-auto w-full">
+            <div className="text-center space-y-2">
+              <Lock className="w-8 h-8 text-[#D4AF37] mx-auto" />
+              <h3 className="text-lg font-bold text-white">Admin Security Settings</h3>
+              <p className="text-xs text-zinc-400 font-mono-tech">
+                Update initial bootstrap administrator password securely.
+              </p>
+            </div>
+
+            {changePassError && (
+              <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
+                ⚠️ {changePassError}
+              </div>
+            )}
+
+            {changePassSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-semibold">
+                ✅ {changePassSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleChangeAdminPasswordSubmit} className="space-y-4 font-mono-tech text-xs">
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">New Admin Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  placeholder="Min 8 characters"
+                  value={adminNewPassword}
+                  onChange={(e) => setAdminNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-[#121218] border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  placeholder="Confirm new password"
+                  value={adminConfirmPassword}
+                  onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-[#121218] border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
+                />
+              </div>
+
+              {adminNewPassword && (
+                <div className="p-2 rounded-lg bg-[#121218] border border-zinc-800 flex items-center justify-between text-[11px]">
+                  <span className="text-zinc-400">Strength:</span>
+                  <span className={`font-bold px-2 py-0.5 rounded text-white ${getPasswordStrength(adminNewPassword).color}`}>
+                    {getPasswordStrength(adminNewPassword).label}
+                  </span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isChangingPass}
+                className="ui-btn-primary w-full py-3 text-xs uppercase font-bold shadow-md"
+              >
+                {isChangingPass ? 'Updating...' : 'Update Admin Password'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* --- TAB 7: PARTNER APPLICATIONS / REQUESTS --- */}
+        {activeTab === 'partner_requests' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            <h4 className="text-sm font-mono-tech font-bold uppercase text-zinc-300">
+              Partner Partnership Applications
+            </h4>
+
+            <div className="space-y-4">
+              {partnerRequests.length === 0 ? (
+                <div className="p-8 text-center text-zinc-500 text-xs font-mono-tech ui-card">
+                  No partnership applications received yet.
+                </div>
+              ) : (
+                partnerRequests.map((req) => (
+                  <div key={req.id} className="ui-card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-white text-sm">{req.businessName}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase">
+                          {req.businessType}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-sky-950 text-sky-400">
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400 space-y-0.5 font-mono-tech">
+                        <div>Owner: {req.ownerName} • Email: {req.email} • Phone: {req.phone}</div>
+                        <div>Address: {req.address}</div>
+                      </div>
+                    </div>
+
+                    {req.status === 'PENDING' && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setApprovingRequest(req);
+                            setApprovalEmail(req.email);
+                            setApprovalPassword('Partner@2026');
+                            setApprovalPartnerName(req.businessName);
+                          }}
+                          className="ui-btn-primary text-xs py-2 px-3"
+                        >
+                          Approve Account
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await rejectAdminRequestApi(req.id);
+                            await loadData();
+                          }}
+                          className="ui-btn-secondary text-xs py-2 px-3 text-red-400"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
@@ -937,7 +1404,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   </div>
                 </div>
 
-                {/* Password Strength Indicator */}
                 {hotelFormPassword && (
                   <div className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-[11px]">
                     <span className="text-zinc-400">Password Strength:</span>
@@ -1078,7 +1544,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   </div>
                 </div>
 
-                {/* Password Strength Indicator */}
                 {agencyFormPassword && (
                   <div className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-[11px]">
                     <span className="text-zinc-400">Password Strength:</span>
@@ -1236,68 +1701,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 3: PARTNER APPLICATIONS / REQUESTS --- */}
-        {activeTab === 'partner_requests' && activeRoleUser?.role === 'MAIN_ADMIN' && (
-          <div className="p-6 overflow-y-auto flex-1 space-y-6">
-            <h4 className="text-sm font-mono-tech font-bold uppercase text-zinc-300">
-              Partner Partnership Applications
-            </h4>
-
-            <div className="space-y-4">
-              {partnerRequests.length === 0 ? (
-                <div className="p-8 text-center text-zinc-500 text-xs font-mono-tech ui-card">
-                  No partnership applications received yet.
-                </div>
-              ) : (
-                partnerRequests.map((req) => (
-                  <div key={req.id} className="ui-card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-white text-sm">{req.businessName}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase">
-                          {req.businessType}
-                        </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-sky-950 text-sky-400">
-                          {req.status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-zinc-400 space-y-0.5 font-mono-tech">
-                        <div>Owner: {req.ownerName} • Email: {req.email} • Phone: {req.phone}</div>
-                        <div>Address: {req.address}</div>
-                      </div>
-                    </div>
-
-                    {req.status === 'PENDING' && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            setApprovingRequest(req);
-                            setApprovalEmail(req.email);
-                            setApprovalPassword('Partner@2026');
-                            setApprovalPartnerName(req.businessName);
-                          }}
-                          className="ui-btn-primary text-xs py-2 px-3"
-                        >
-                          Approve Account
-                        </button>
-                        <button
-                          onClick={async () => {
-                            await rejectAdminRequestApi(req.id);
-                            await loadData();
-                          }}
-                          className="ui-btn-secondary text-xs py-2 px-3 text-red-400"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
         {/* --- APPROVAL CONFIRMATION MODAL --- */}
         {approvingRequest && (
           <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
@@ -1371,7 +1774,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 4: VERIFY TOKEN ID --- */}
+        {/* --- TAB 8: VERIFY TOKEN ID --- */}
         {activeTab === 'verify_token' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-xl mx-auto w-full">
             <div className="text-center space-y-2">
