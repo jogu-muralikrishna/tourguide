@@ -1,5 +1,5 @@
 import React from 'react';
-import { Utensils, Star, Phone, CheckCircle2, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Utensils, Star, Phone, CheckCircle2, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Pitstop, FoodItem, SelectedFoodItem } from '../types';
 import { formatINR } from '../utils/pricing';
 
@@ -47,9 +47,26 @@ export const Step4Food: React.FC<Step4FoodProps> = ({
   }, 0);
 
   return (
-    <section id="step-4-food" className="py-8 sm:py-12 scroll-mt-20">
+    <section id="step-4-food" className="py-6 sm:py-10 scroll-mt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
+        {/* Top Back Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            type="button"
+            onClick={onGoBack}
+            className="ui-btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Step 3 (Hotel)</span>
+          </button>
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider">
+            <Utensils className="w-3.5 h-3.5" />
+            <span>Step 4 of 7</span>
+          </div>
+        </div>
+
         {/* Section Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">

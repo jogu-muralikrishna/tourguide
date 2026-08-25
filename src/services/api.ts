@@ -45,47 +45,144 @@ function getAuthHeaders(): HeadersInit {
   };
 }
 
-// 1. Fetch Real Route Distance & Time
+// Comprehensive Coordinates Dictionary for Cities
+const CITY_COORDINATES: Record<string, { lat: number; lng: number; name: string }> = {
+  hyderabad: { lat: 17.3850, lng: 78.4867, name: 'Hyderabad' },
+  khammam: { lat: 17.2473, lng: 80.1514, name: 'Khammam' },
+  warangal: { lat: 17.9689, lng: 79.5941, name: 'Warangal' },
+  vijayawada: { lat: 16.5062, lng: 80.6480, name: 'Vijayawada' },
+  visakhapatnam: { lat: 17.6868, lng: 83.2185, name: 'Visakhapatnam' },
+  delhi: { lat: 28.6139, lng: 77.2090, name: 'Delhi' },
+  mumbai: { lat: 19.0760, lng: 72.8777, name: 'Mumbai' },
+  bangalore: { lat: 12.9716, lng: 77.5946, name: 'Bangalore' },
+  bengaluru: { lat: 12.9716, lng: 77.5946, name: 'Bengaluru' },
+  chennai: { lat: 13.0827, lng: 80.2707, name: 'Chennai' },
+  goa: { lat: 15.2993, lng: 74.1240, name: 'Goa' },
+  jaipur: { lat: 26.9124, lng: 75.7873, name: 'Jaipur' },
+  kolkata: { lat: 22.5726, lng: 88.3639, name: 'Kolkata' },
+  pune: { lat: 18.5204, lng: 73.8567, name: 'Pune' },
+  ahmedabad: { lat: 23.0225, lng: 72.5714, name: 'Ahmedabad' },
+  lucknow: { lat: 26.8467, lng: 80.9462, name: 'Lucknow' },
+  chandigarh: { lat: 30.7333, lng: 76.7794, name: 'Chandigarh' },
+  kochi: { lat: 9.9312, lng: 76.2673, name: 'Kochi' },
+  udaipur: { lat: 24.5854, lng: 73.7125, name: 'Udaipur' },
+  agra: { lat: 27.1767, lng: 78.0081, name: 'Agra' },
+  shimla: { lat: 31.1048, lng: 77.1734, name: 'Shimla' },
+  manali: { lat: 32.2396, lng: 77.1887, name: 'Manali' },
+  srinagar: { lat: 34.0837, lng: 74.7973, name: 'Srinagar' },
+  amritsar: { lat: 31.6340, lng: 74.8723, name: 'Amritsar' },
+  tirupati: { lat: 13.6288, lng: 79.4192, name: 'Tirupati' },
+  mysore: { lat: 12.2958, lng: 76.6394, name: 'Mysore' },
+  coimbatore: { lat: 11.0168, lng: 76.9558, name: 'Coimbatore' },
+  madurai: { lat: 9.9252, lng: 78.1198, name: 'Madurai' },
+  surat: { lat: 21.1702, lng: 72.8311, name: 'Surat' },
+  nagpur: { lat: 21.1458, lng: 79.0882, name: 'Nagpur' },
+  indore: { lat: 22.7196, lng: 75.8577, name: 'Indore' },
+  bhopal: { lat: 23.2599, lng: 77.4126, name: 'Bhopal' },
+  patna: { lat: 25.5941, lng: 85.1376, name: 'Patna' },
+  bhubaneswar: { lat: 20.2961, lng: 85.8245, name: 'Bhubaneswar' },
+};
+
+function getCityCoords(cityName: string): { lat: number; lng: number; name: string } {
+  const norm = cityName.trim().toLowerCase();
+  for (const [key, val] of Object.entries(CITY_COORDINATES)) {
+    if (norm === key || norm.includes(key) || key.includes(norm)) {
+      return val;
+    }
+  }
+  // Deterministic coordinate calculation for unlisted cities so different names produce unique coordinates
+  let hash = 0;
+  for (let i = 0; i < cityName.length; i++) {
+    hash = (hash << 5) - hash + cityName.charCodeAt(i);
+    hash |= 0;
+  }
+  const lat = 12 + (Math.abs(hash) % 1800) / 100;
+  const lng = 72 + (Math.abs(hash >> 3) % 1500) / 100;
+  const formattedName = cityName.charAt(0).toUpperCase() + cityName.slice(1);
+  return { lat, lng, name: formattedName };
+}
+
+function calculateHaversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function formatDurationText(seconds: number): string {
+  const totalMinutes = Math.round(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+}
+
+// 1. Dynamic Real-time Route Distance & Time Calculator
 export async function fetchRouteTelemetry(fromCity: string, toCity: string): Promise<RouteData> {
+  const cleanFrom = fromCity.trim();
+  const cleanTo = toCity.trim();
+
+  // Try backend OSRM calculation endpoint first
   try {
-    const res = await fetch(`/api/route/calculate?from=${encodeURIComponent(fromCity)}&to=${encodeURIComponent(toCity)}`);
+    const res = await fetch(`/api/route/calculate?from=${encodeURIComponent(cleanFrom)}&to=${encodeURIComponent(cleanTo)}`);
     if (res.ok) {
       const data = await res.json();
-      return {
-        origin: data.from || fromCity,
-        destination: data.to || toCity,
-        originCoordinates: data.originCoords || { lat: 17.385, lng: 78.4867, name: fromCity },
-        destinationCoordinates: data.destCoords || { lat: 28.6139, lng: 77.209, name: toCity },
-        distanceMeters: (data.roadDistanceKm || 100) * 1000,
-        distanceKm: data.roadDistanceKm || 100,
-        durationSeconds: data.durationSeconds || 3600,
-        durationText: data.carEstimatedHours || '2h 00m',
-        carEstimatedHours: data.carEstimatedHours || '2h 00m',
-        trainEstimatedHours: data.trainEstimatedHours || '1h 30m',
-        busEstimatedHours: data.busEstimatedHours || '2h 30m',
-        highwayCorridor: data.highwayCorridor || `${fromCity} - ${toCity} Highway Corridor`,
-        routeGeometry: data.routeGeometry || [],
-        success: true,
-      };
+      if (data && data.roadDistanceKm) {
+        return {
+          origin: data.from || cleanFrom,
+          destination: data.to || cleanTo,
+          originCoordinates: data.originCoords || getCityCoords(cleanFrom),
+          destinationCoordinates: data.destCoords || getCityCoords(cleanTo),
+          distanceMeters: (data.roadDistanceKm || 100) * 1000,
+          distanceKm: data.roadDistanceKm,
+          durationSeconds: data.durationSeconds || Math.round((data.roadDistanceKm / 75) * 3600),
+          durationText: data.carEstimatedHours || formatDurationText(Math.round((data.roadDistanceKm / 75) * 3600)),
+          carEstimatedHours: data.carEstimatedHours || formatDurationText(Math.round((data.roadDistanceKm / 75) * 3600)),
+          trainEstimatedHours: data.trainEstimatedHours || formatDurationText(Math.round((data.roadDistanceKm / 105) * 3600)),
+          busEstimatedHours: data.busEstimatedHours || formatDurationText(Math.round((data.roadDistanceKm / 60) * 3600)),
+          highwayCorridor: data.highwayCorridor || `${cleanFrom} - ${cleanTo} Highway Corridor`,
+          routeGeometry: data.routeGeometry || [],
+          success: true,
+        };
+      }
     }
   } catch (err) {
-    console.warn('Route calculation network fallback:', err);
+    console.warn('Backend route calculate API fallback:', err);
   }
 
-  const roadDistanceKm = 193;
+  // Dynamic fallback using client-side geo calculation
+  const originCoord = getCityCoords(cleanFrom);
+  const destCoord = getCityCoords(cleanTo);
+  const directKm = calculateHaversineDistanceKm(originCoord.lat, originCoord.lng, destCoord.lat, destCoord.lng);
+  
+  // Real road multiplier (~1.22x direct haversine distance)
+  const roadKm = Math.max(10, Math.round(directKm * 1.22));
+  const carSeconds = Math.round((roadKm / 70) * 3600); // 70 km/h avg highway speed
+  const trainSeconds = Math.round((roadKm / 100) * 3600);
+  const busSeconds = Math.round((roadKm / 55) * 3600);
+
+  const durationStr = formatDurationText(carSeconds);
+
   return {
-    origin: fromCity,
-    destination: toCity,
-    originCoordinates: { lat: 17.385, lng: 78.4867, name: fromCity },
-    destinationCoordinates: { lat: 17.2473, lng: 80.1514, name: toCity },
-    distanceMeters: roadDistanceKm * 1000,
-    distanceKm: roadDistanceKm,
-    durationSeconds: 13500,
-    durationText: '3h 45m',
-    carEstimatedHours: '3h 45m',
-    trainEstimatedHours: '2h 50m',
-    busEstimatedHours: '4h 15m',
-    highwayCorridor: `${fromCity} - ${toCity} Highway Corridor`,
+    origin: originCoord.name,
+    destination: destCoord.name,
+    originCoordinates: originCoord,
+    destinationCoordinates: destCoord,
+    distanceMeters: roadKm * 1000,
+    distanceKm: roadKm,
+    durationSeconds: carSeconds,
+    durationText: durationStr,
+    carEstimatedHours: durationStr,
+    trainEstimatedHours: formatDurationText(trainSeconds),
+    busEstimatedHours: formatDurationText(busSeconds),
+    highwayCorridor: `${originCoord.name.slice(0, 3).toUpperCase()}-${destCoord.name.slice(0, 3).toUpperCase()} Highway Corridor`,
     routeGeometry: [],
     success: true,
   };

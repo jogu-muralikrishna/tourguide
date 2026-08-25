@@ -578,6 +578,7 @@ export default function App() {
                 syncRouteServices(r.from, r.to);
               }}
               onContinue={handleStep1Continue}
+              onGoBack={() => setIsJourneyActive(false)}
             />
           </div>
         )}

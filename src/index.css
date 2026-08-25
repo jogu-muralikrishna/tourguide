@@ -187,13 +187,13 @@
   }
 }
 
-/* Leaflet Map Dark/Light Adjustments */
-.dark .leaflet-tile {
-  filter: brightness(0.7) invert(1) contrast(1.2) hue-rotate(200deg) saturate(0.4);
+/* Leaflet Map Styling - Authentic Clean White Google Maps Style */
+.leaflet-tile {
+  filter: none !important;
 }
 
-.dark .leaflet-container {
-  background: #0b0f17 !important;
+.leaflet-container {
+  background: #f8fafc !important;
 }
 
 /* Print Styles */

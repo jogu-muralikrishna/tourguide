@@ -153,6 +153,23 @@ export const Step5Map: React.FC<Step5MapProps> = ({
 
   return (
     <div className="space-y-6 py-6 max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Top Back Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          type="button"
+          onClick={onGoBack}
+          className="ui-btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Step 4 (Food Stops)</span>
+        </button>
+
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider">
+          <Compass className="w-3.5 h-3.5" />
+          <span>Step 5 of 7</span>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-2">
