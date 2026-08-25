@@ -313,13 +313,13 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       return;
     }
 
-    if (hotelFormPassword.length < 8) {
-      setHotelFormError('Password must be at least 8 characters long.');
+    if (hotelFormPassword.length < 4) {
+      setHotelFormError('Password must be at least 4 characters long.');
       return;
     }
 
     try {
-      await createHotelAccountApi({
+      const res = await createHotelAccountApi({
         hotelName: hotelFormName,
         email: hotelFormEmail,
         password: hotelFormPassword,
@@ -327,6 +327,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         address: hotelFormAddress,
         status: hotelFormStatus,
       });
+
+      if (res.partner) {
+        setPartnersList((prev) => [res.partner, ...prev.filter((p) => p.email !== res.partner.email)]);
+      }
 
       setIsCreateHotelModalOpen(false);
       setHotelFormName('');
@@ -352,13 +356,13 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       return;
     }
 
-    if (agencyFormPassword.length < 8) {
-      setAgencyFormError('Password must be at least 8 characters long.');
+    if (agencyFormPassword.length < 4) {
+      setAgencyFormError('Password must be at least 4 characters long.');
       return;
     }
 
     try {
-      await createAgencyAccountApi({
+      const res = await createAgencyAccountApi({
         agencyName: agencyFormName,
         email: agencyFormEmail,
         password: agencyFormPassword,
@@ -366,6 +370,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         address: agencyFormAddress,
         status: agencyFormStatus,
       });
+
+      if (res.partner) {
+        setPartnersList((prev) => [res.partner, ...prev.filter((p) => p.email !== res.partner.email)]);
+      }
 
       setIsCreateAgencyModalOpen(false);
       setAgencyFormName('');
@@ -391,8 +399,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       return;
     }
 
-    if (subAdminPassword.length < 8) {
-      setSubAdminError('Password must be at least 8 characters long.');
+    if (subAdminPassword.length < 4) {
+      setSubAdminError('Password must be at least 4 characters long.');
       return;
     }
 
@@ -402,7 +410,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     }
 
     try {
-      await createSubAdminAccountApi({
+      const res = await createSubAdminAccountApi({
         name: subAdminName,
         email: subAdminEmail,
         password: subAdminPassword,
@@ -412,6 +420,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         address: subAdminAddress,
         status: subAdminStatus,
       });
+
+      if (res.user) {
+        setPartnersList((prev) => [res.user, ...prev.filter((p) => p.email !== res.user.email)]);
+      }
 
       setIsCreateSubAdminModalOpen(false);
       setSubAdminName('');
@@ -726,10 +738,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <Users className="w-4 h-4 text-sky-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-2">
-                  {overviewStats?.totalUsers || usersList.length || 5}
+                  {usersList.length}
                 </div>
                 <div className="text-[10px] text-emerald-400 mt-1">
-                  {overviewStats?.activeUsers || 5} Active
+                  {usersList.filter((u) => u.isActive !== false).length} Active
                 </div>
               </div>
 
@@ -739,7 +751,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <Building2 className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-2">
-                  {overviewStats?.totalHotels || 2}
+                  {partnersList.filter((p) => p.role === 'HOTEL_ADMIN').length}
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-1">Verified Hotel Partners</div>
               </div>
@@ -750,7 +762,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <Car className="w-4 h-4 text-blue-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-2">
-                  {overviewStats?.totalAgencies || 1}
+                  {partnersList.filter((p) => p.role === 'TRAVEL_ADMIN').length}
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-1">Fleet Partners</div>
               </div>
@@ -761,7 +773,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <Calendar className="w-4 h-4 text-amber-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-2">
-                  {overviewStats?.totalBookings || bookings.length}
+                  {bookings.length}
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-1">Total Trips</div>
               </div>
@@ -772,7 +784,11 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <DollarSign className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="text-2xl font-bold text-emerald-400 mt-2">
-                  {formatINR(overviewStats?.totalRevenue || 24500)}
+                  {formatINR(
+                    bookings
+                      .filter((b) => b.status === 'Confirmed')
+                      .reduce((sum, b) => sum + (b.pricing?.total || b.finalTotal || 0), 0)
+                  )}
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-1">Gross Booking Value</div>
               </div>
