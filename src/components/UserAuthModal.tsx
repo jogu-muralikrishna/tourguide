@@ -204,29 +204,6 @@ export const UserAuthModal: React.FC<UserAuthModalProps> = ({
                     {isSignUp ? 'Already registered? Sign In' : 'New VIP traveler? Register here'}
                   </button>
                 </div>
-
-                {/* Quick 1-Click Demo Profiles */}
-                <div className="pt-4 border-t border-zinc-800 space-y-2">
-                  <span className="block text-[10px] font-mono-tactical text-zinc-500 uppercase tracking-wider">
-                    Quick 1-Click Test Credentials:
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleQuickDemoUser('alexander.sterling@monaco-voyages.com')}
-                      className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono-tactical text-zinc-300 hover:text-amber-300 text-left cursor-pointer"
-                    >
-                      ★ Alexander Sterling (VIP)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickDemoUser('admin@tourguide.ai')}
-                      className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono-tactical text-zinc-300 hover:text-amber-300 text-left cursor-pointer"
-                    >
-                      ⚡ Chief Dispatcher (Admin)
-                    </button>
-                  </div>
-                </div>
               </form>
             )}
           </div>

@@ -201,6 +201,17 @@ export default function App() {
         email: cachedUser.email || prev.email,
         specialRequests: cachedUser.specialRequests || prev.specialRequests,
       }));
+
+      if (cachedUser.email?.toLowerCase().trim() === 'admin@tourguide.com') {
+        setCurrentUser({
+          id: 'TGAI-USER-ADM0001',
+          name: cachedUser.fullName || 'Main Administrator',
+          email: 'admin@tourguide.com',
+          phone: cachedUser.phone || '+91 99000 00001',
+          role: 'MAIN_ADMIN',
+        });
+        setActiveModal('admin');
+      }
     }
 
     syncRouteServices(initialFrom, initialTo);
