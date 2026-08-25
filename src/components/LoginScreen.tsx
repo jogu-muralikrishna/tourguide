@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Phone, ArrowRight, ShieldCheck, Sparkles, Building2, Sun, Moon, Laptop, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Building2, Sun, Moon, Laptop } from 'lucide-react';
 import { loginApi, registerApi, AuthRoleUser } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -68,13 +68,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
     }
   };
 
-  const fillDemoAccount = (demoEmail: string, pass: string) => {
-    setEmail(demoEmail);
-    setPassword(pass);
-    setIsRegisterMode(false);
-    setErrorMsg(null);
-  };
-
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-hidden transition-colors">
       
@@ -98,8 +91,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             <button
               onClick={() => setTheme('light')}
               title="Light Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'light' ? 'bg-[var(--bg-surface)] text-amber-500 shadow-xs' : 'text-[var(--text-muted)]'
+              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                theme === 'light' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Sun className="w-4 h-4" />
@@ -107,56 +100,60 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             <button
               onClick={() => setTheme('dark')}
               title="Dark Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'dark' ? 'bg-[var(--bg-surface)] text-sky-400 shadow-xs' : 'text-[var(--text-muted)]'
+              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                theme === 'dark' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Moon className="w-4 h-4" />
             </button>
             <button
               onClick={() => setTheme('system')}
-              title="System Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'system' ? 'bg-[var(--bg-surface)] text-indigo-500 shadow-xs' : 'text-[var(--text-muted)]'
+              title="System Theme"
+              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                theme === 'system' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Laptop className="w-4 h-4" />
             </button>
           </div>
 
+          {/* Partner Registration Modal Opener */}
           <button
-            type="button"
             onClick={onRequestAdmin}
-            className="ui-btn-secondary py-1.5 px-3 text-xs"
+            id="partner-request-header-btn"
+            className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Admin Access</span>
+            <span className="hidden sm:inline">Partner Registration</span>
+            <span className="sm:hidden">Partner</span>
           </button>
         </div>
       </header>
 
-      {/* Main Authentication Card */}
-      <main className="max-w-md w-full mx-auto my-auto z-10 py-4">
-        <div className="ui-card p-6 sm:p-8 shadow-2xl relative border-[var(--border-color)]">
+      {/* Main Content */}
+      <main className="max-w-md mx-auto w-full my-auto py-8 z-10">
+        
+        {/* Card Container */}
+        <div className="ui-card p-6 sm:p-8 shadow-xl">
           
-          {/* Title Section */}
+          {/* Welcome Banner */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-2.5">
-              <Sparkles className="w-3.5 h-3.5 text-sky-500" />
-              <span>AI Travel Copilot</span>
+            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Smart AI Travel Platform</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-1 tracking-tight">
-              {isRegisterMode ? 'Create an Account' : 'Welcome Back'}
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              {isRegisterMode ? 'Create Your Account' : 'Sign In to Your Hub'}
             </h2>
-            <p className="text-[var(--text-muted)] text-xs sm:text-sm font-normal">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               {isRegisterMode
-                ? 'Join TourGuide AI to plan custom itineraries and trips.'
-                : 'Sign in to access your saved trips and travel assistant.'}
+                ? 'Register to plan and book custom highway journeys'
+                : 'Access your trips, bookings, and custom itineraries'}
             </p>
           </div>
 
-          {/* Mode Switch Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] mb-6 text-xs">
+          {/* Mode Switcher Tabs */}
+          <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg-surface-elevated)] rounded-xl border border-[var(--border-color)] mb-6 text-xs font-semibold">
             <button
               type="button"
               onClick={() => {
@@ -202,38 +199,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5 uppercase tracking-wider">
                   Email Address
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. aarav.sharma@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. aarav.sharma@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5 uppercase tracking-wider">
                   Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <button
@@ -258,77 +245,57 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
                   Full Name
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Aarav Sharma"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Aarav Sharma"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
                   Email Address
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. traveler@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. traveler@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
                   Phone Number
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
                   Create Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[var(--text-muted)]">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="At least 6 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="ui-input w-full pl-10 text-sm font-medium"
-                  />
-                </div>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                />
               </div>
 
               <button
@@ -347,52 +314,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
               </button>
             </form>
           )}
-
-          {/* Quick Demo Credentials Helper */}
-          <div className="mt-5 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] space-y-2">
-            <div className="text-[10px] uppercase font-bold text-sky-500 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Quick Demo Sign-In Credentials</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('admin@tourguide.com', 'admin#123')}
-                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-sky-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
-              >
-                <div className="font-bold text-amber-500">Admin</div>
-                <div className="text-[10px] text-[var(--text-muted)] truncate">admin@tourguide.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('hotel1@tourguide.com', 'hotel@123')}
-                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-emerald-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
-              >
-                <div className="font-bold text-emerald-500">Hotel Partner</div>
-                <div className="text-[10px] text-[var(--text-muted)] truncate">hotel1@tourguide.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('agency1@tourguide.com', 'travel@123')}
-                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-blue-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
-              >
-                <div className="font-bold text-blue-500">Travel Agency</div>
-                <div className="text-[10px] text-[var(--text-muted)] truncate">agency1@tourguide.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('aarav.sharma@example.com', 'Travel@2026')}
-                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-sky-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
-              >
-                <div className="font-bold text-sky-500">Customer</div>
-                <div className="text-[10px] text-[var(--text-muted)] truncate">aarav.sharma@example.com</div>
-              </button>
-            </div>
-          </div>
 
           {/* Security badge */}
           <div className="mt-5 pt-3 border-t border-[var(--border-color)] flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-muted)]">

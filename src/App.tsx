@@ -276,6 +276,12 @@ export default function App() {
       travelersCount: userProfile.travelersCount,
     });
     setIsJourneyActive(false);
+
+    // Auto-open Admin Dashboard if logging in as Admin or Partner
+    if (user.role === 'MAIN_ADMIN' || user.role === 'HOTEL_ADMIN' || user.role === 'TRAVEL_ADMIN' || user.email === 'admin@tourguide.com') {
+      refreshBookings();
+      setActiveModal('admin');
+    }
   };
 
   const handleLogout = () => {
