@@ -50,6 +50,70 @@ function getAuthHeaders(): HeadersInit {
 
 // ... helper functions ...
 
+const DEFAULT_PARTNERS: AuthRoleUser[] = [
+  {
+    id: 'TGAI-USER-HTL0001',
+    userId: 'TGAI-USER-HTL0001',
+    name: 'Hotel Manager - The Leela Palace',
+    email: 'hotel1@tourguide.com',
+    phone: '+91 11 3933 1234',
+    role: 'HOTEL_ADMIN',
+    hotelId: 'hotel-leela-palace',
+    hotelName: 'The Leela Palace',
+    isActive: true,
+  },
+  {
+    id: 'TGAI-USER-TRV0001',
+    userId: 'TGAI-USER-TRV0001',
+    name: 'Fleet Manager - Royal Fleet Travels',
+    email: 'agency1@tourguide.com',
+    phone: '+91 22 2833 5678',
+    role: 'TRAVEL_ADMIN',
+    agencyId: 'agency-royal-fleet',
+    agencyName: 'Royal Fleet Travels',
+    isActive: true,
+  },
+];
+
+const DEFAULT_USERS: AuthRoleUser[] = [
+  {
+    id: 'TGAI-USER-ADM0001',
+    userId: 'TGAI-USER-ADM0001',
+    name: 'Main Administrator',
+    email: 'admin@tourguide.com',
+    phone: '+91 99000 00001',
+    role: 'MAIN_ADMIN',
+    isActive: true,
+  },
+  {
+    id: 'TGAI-USER-CUST001',
+    userId: 'TGAI-USER-CUST001',
+    name: 'Aarav Sharma',
+    email: 'aarav.sharma@example.com',
+    phone: '+91 98765 43210',
+    role: 'USER',
+    isActive: true,
+  },
+  ...DEFAULT_PARTNERS,
+];
+
+let localPartnersList: AuthRoleUser[] = [...DEFAULT_PARTNERS];
+let localUsersList: AuthRoleUser[] = [...DEFAULT_USERS];
+
+export function addLocalPartner(partner: AuthRoleUser) {
+  localPartnersList = [partner, ...localPartnersList.filter(p => p.email !== partner.email)];
+  localUsersList = [partner, ...localUsersList.filter(u => u.email !== partner.email)];
+}
+
+export function addLocalUser(user: AuthRoleUser) {
+  localUsersList = [user, ...localUsersList.filter(u => u.email !== user.email)];
+}
+
+export function removeLocalPartner(id: string) {
+  localPartnersList = localPartnersList.filter(p => p.id !== id && p.userId !== id);
+  localUsersList = localUsersList.filter(u => u.id !== id && u.userId !== id);
+}
+
 export async function createHotelAccountApi(payload: {
   hotelName: string;
   email: string;
@@ -67,7 +131,9 @@ export async function createHotelAccountApi(payload: {
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (data.partner) addLocalPartner(data.partner);
+      return data;
     }
   } catch (err) {
     console.warn('createHotelAccountApi network fallback:', err);
@@ -88,6 +154,7 @@ export async function createHotelAccountApi(payload: {
     createdBy: 'admin@tourguide.com',
   };
 
+  addLocalPartner(partner);
   return { success: true, partner, message: 'Hotel account created successfully.' };
 }
 
@@ -108,7 +175,9 @@ export async function createAgencyAccountApi(payload: {
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (data.partner) addLocalPartner(data.partner);
+      return data;
     }
   } catch (err) {
     console.warn('createAgencyAccountApi network fallback:', err);
@@ -129,6 +198,7 @@ export async function createAgencyAccountApi(payload: {
     createdBy: 'admin@tourguide.com',
   };
 
+  addLocalPartner(partner);
   return { success: true, partner, message: 'Travel Agency account created successfully.' };
 }
 
@@ -151,7 +221,9 @@ export async function createSubAdminAccountApi(payload: {
     });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (data.user) addLocalPartner(data.user);
+      return data;
     }
   } catch (err) {
     console.warn('createSubAdminAccountApi network fallback:', err);
@@ -174,6 +246,7 @@ export async function createSubAdminAccountApi(payload: {
     createdBy: 'admin@tourguide.com',
   };
 
+  addLocalPartner(user);
   return { success: true, user, message: 'Sub-Admin account created successfully.' };
 }
 
@@ -725,12 +798,19 @@ export async function fetchPartnersApi(roleFilter?: 'HOTEL_ADMIN' | 'TRAVEL_ADMI
     });
     if (res.ok) {
       const data = await res.json();
-      return Array.isArray(data.partners) ? data.partners : [];
+      const serverPartners = Array.isArray(data.partners) ? data.partners : [];
+      const mergedMap = new Map<string, AuthRoleUser>();
+      for (const p of [...localPartnersList, ...serverPartners]) {
+        if (!roleFilter || p.role === roleFilter) {
+          mergedMap.set(p.email, p);
+        }
+      }
+      return Array.from(mergedMap.values());
     }
   } catch (err) {
     console.warn('Fetch partners API fallback:', err);
   }
-  return [];
+  return roleFilter ? localPartnersList.filter(p => p.role === roleFilter) : localPartnersList;
 }
 
 export async function updatePartnerStatusApi(id: string, isActive: boolean): Promise<{ success: boolean; message?: string }> {
@@ -814,12 +894,17 @@ export async function fetchAdminUsersApi(): Promise<AuthRoleUser[]> {
     });
     if (res.ok) {
       const data = await res.json();
-      return Array.isArray(data.users) ? data.users : [];
+      const serverUsers = Array.isArray(data.users) ? data.users : [];
+      const mergedMap = new Map<string, AuthRoleUser>();
+      for (const u of [...localUsersList, ...serverUsers]) {
+        mergedMap.set(u.email, u);
+      }
+      return Array.from(mergedMap.values());
     }
   } catch (err) {
     console.warn('Fetch admin users fallback:', err);
   }
-  return [];
+  return localUsersList;
 }
 
 export async function updateUserStatusApi(id: string, isActive: boolean): Promise<{ success: boolean; message?: string }> {
