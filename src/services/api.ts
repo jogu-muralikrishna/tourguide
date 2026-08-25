@@ -623,6 +623,8 @@ export async function fetchSystemRolesApi(): Promise<AuthRoleUser[]> {
   ];
 }
 
+let localAdminRequests: AdminRequest[] = [];
+
 // 14. Fetch Admin Requests API
 export async function fetchAdminRequestsApi(): Promise<AdminRequest[]> {
   try {
@@ -631,16 +633,22 @@ export async function fetchAdminRequestsApi(): Promise<AdminRequest[]> {
     });
     if (res.ok) {
       const data = await res.json();
-      return Array.isArray(data.requests) ? data.requests : [];
+      const serverReqs = Array.isArray(data.requests) ? data.requests : [];
+      const mergedMap = new Map<string, AdminRequest>();
+      for (const r of [...localAdminRequests, ...serverReqs]) {
+        mergedMap.set(r.id, r);
+      }
+      return Array.from(mergedMap.values());
     }
   } catch (err) {
     console.warn('Fetch admin requests fallback:', err);
   }
-  return [];
+  return localAdminRequests;
 }
 
 // 15. Submit Admin Partner Request API
 export async function submitAdminRequestApi(requestData: Partial<AdminRequest>): Promise<{ success: boolean; request: AdminRequest }> {
+  let createdReq: AdminRequest | null = null;
   try {
     const res = await fetch('/api/admin/requests', {
       method: 'POST',
@@ -648,25 +656,30 @@ export async function submitAdminRequestApi(requestData: Partial<AdminRequest>):
       body: JSON.stringify(requestData),
     });
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      if (data.request) createdReq = data.request;
     }
   } catch (err) {
     console.warn('Submit admin request API fallback:', err);
   }
 
-  const req: AdminRequest = {
-    id: `req-${Date.now()}`,
-    businessName: requestData.businessName || 'Partner Business',
-    ownerName: requestData.ownerName || 'Partner Owner',
-    phone: requestData.phone || '',
-    email: requestData.email || '',
-    address: requestData.address || '',
-    businessType: requestData.businessType || 'HOTEL_ADMIN',
-    notes: requestData.notes || '',
-    status: 'PENDING',
-    createdAt: new Date().toISOString(),
-  };
-  return { success: true, request: req };
+  if (!createdReq) {
+    createdReq = {
+      id: `req-${Date.now()}`,
+      businessName: requestData.businessName || 'Partner Business',
+      ownerName: requestData.ownerName || 'Partner Owner',
+      phone: requestData.phone || '',
+      email: requestData.email || '',
+      address: requestData.address || '',
+      businessType: requestData.businessType || 'HOTEL_ADMIN',
+      notes: requestData.notes || '',
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  localAdminRequests = [createdReq, ...localAdminRequests.filter(r => r.id !== createdReq!.id)];
+  return { success: true, request: createdReq };
 }
 
 // 16. Approve Admin Request API

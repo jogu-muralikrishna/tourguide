@@ -508,10 +508,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   // Handle Delete Partner Account
   const handleDeletePartnerSubmit = async () => {
     if (!deletePartnerConfirm) return;
+    const targetId = deletePartnerConfirm.id;
     try {
-      await deletePartnerAccountApi(deletePartnerConfirm.id);
+      await deletePartnerAccountApi(targetId);
+      setPartnersList((prev) => prev.filter((p) => p.id !== targetId && p.userId !== targetId));
+      setUsersList((prev) => prev.filter((u) => u.id !== targetId && u.userId !== targetId));
+      setSystemRoles((prev) => prev.filter((r) => r.id !== targetId && r.userId !== targetId));
       setDeletePartnerConfirm(null);
       await loadData();
+      if (onRefreshData) onRefreshData();
       alert('Account deleted successfully.');
     } catch (err: any) {
       alert(err.message || 'Failed to delete partner account.');
@@ -542,12 +547,22 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
     setIsSubmittingApproval(true);
     try {
-      await approveAdminRequestApi(approvingRequest.id, {
+      const res = await approveAdminRequestApi(approvingRequest.id, {
         customEmail: approvalEmail.trim(),
         customPassword: approvalPassword.trim(),
         assignedHotelName: approvalPartnerName.trim(),
         assignedAgencyName: approvalPartnerName.trim(),
       });
+
+      if (res.user) {
+        setPartnersList((prev) => [res.user, ...prev.filter((p) => p.email !== res.user.email)]);
+        setUsersList((prev) => [res.user, ...prev.filter((u) => u.email !== res.user.email)]);
+        setSystemRoles((prev) => [res.user, ...prev.filter((r) => r.email !== res.user.email)]);
+      }
+
+      setPartnerRequests((prev) =>
+        prev.map((r) => (r.id === approvingRequest.id ? { ...r, status: 'APPROVED' } : r))
+      );
 
       setApprovingRequest(null);
       await loadData();
@@ -662,6 +677,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             >
               <User className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Users Management</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F3E5AB] text-[10px] font-bold">
+                {usersList.length}
+              </span>
             </button>
           )}
 
@@ -676,6 +694,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             >
               <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Partner Accounts</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#F3E5AB] text-[10px] font-bold">
+                {partnersList.length}
+              </span>
             </button>
           )}
 
