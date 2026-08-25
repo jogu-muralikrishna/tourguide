@@ -397,8 +397,8 @@ async function startServer() {
 
     const totalUsers = allUsers.length;
     const activeUsers = allUsers.filter((u) => u.isActive !== false).length;
-    const totalHotels = hotels.length || db.getHotels().length;
-    const totalAgencies = agencies.length || 1;
+    const totalHotels = hotels.length;
+    const totalAgencies = agencies.length;
     const totalBookings = allBookings.length;
     const totalRevenue = allBookings
       .filter((b) => b.status === 'Confirmed')

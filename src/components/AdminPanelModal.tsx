@@ -330,6 +330,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
       if (res.partner) {
         setPartnersList((prev) => [res.partner, ...prev.filter((p) => p.email !== res.partner.email)]);
+        setUsersList((prev) => [res.partner, ...prev.filter((u) => u.email !== res.partner.email)]);
+        setSystemRoles((prev) => [res.partner, ...prev.filter((r) => r.email !== res.partner.email)]);
       }
 
       setIsCreateHotelModalOpen(false);
@@ -340,6 +342,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setHotelFormPhone('');
       setHotelFormAddress('');
       await loadData();
+      if (onRefreshData) onRefreshData();
       alert(`Hotel Account Created & Saved Successfully!\nHotel: ${hotelFormName}\nLogin Email: ${hotelFormEmail}`);
     } catch (err: any) {
       setHotelFormError(err.message || 'Failed to create Hotel account.');
@@ -373,6 +376,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
       if (res.partner) {
         setPartnersList((prev) => [res.partner, ...prev.filter((p) => p.email !== res.partner.email)]);
+        setUsersList((prev) => [res.partner, ...prev.filter((u) => u.email !== res.partner.email)]);
+        setSystemRoles((prev) => [res.partner, ...prev.filter((r) => r.email !== res.partner.email)]);
       }
 
       setIsCreateAgencyModalOpen(false);
@@ -383,6 +388,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setAgencyFormPhone('');
       setAgencyFormAddress('');
       await loadData();
+      if (onRefreshData) onRefreshData();
       alert(`Travel Agency Account Created & Saved Successfully!\nAgency: ${agencyFormName}\nLogin Email: ${agencyFormEmail}`);
     } catch (err: any) {
       setAgencyFormError(err.message || 'Failed to create Travel Agency account.');
@@ -423,6 +429,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
       if (res.user) {
         setPartnersList((prev) => [res.user, ...prev.filter((p) => p.email !== res.user.email)]);
+        setUsersList((prev) => [res.user, ...prev.filter((u) => u.email !== res.user.email)]);
+        setSystemRoles((prev) => [res.user, ...prev.filter((r) => r.email !== res.user.email)]);
       }
 
       setIsCreateSubAdminModalOpen(false);
@@ -434,6 +442,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setSubAdminAssignedName('');
       setSubAdminAddress('');
       await loadData();
+      if (onRefreshData) onRefreshData();
       alert(`Sub-Admin Account Created Successfully!\nSub-Admin: ${subAdminName}\nRole: ${subAdminType === 'HOTEL_SUBADMIN' ? 'Hotel Manager Sub-Admin' : 'Travel Agency Fleet Sub-Admin'}\nAssigned To: ${subAdminAssignedName}\nEmail: ${subAdminEmail}`);
     } catch (err: any) {
       setSubAdminError(err.message || 'Failed to create Sub-Admin account.');
