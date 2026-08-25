@@ -455,6 +455,17 @@ async function startServer() {
     }
   });
 
+  // Delete Booking (Admin / Partner)
+  app.delete('/api/bookings/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      db.deleteBooking(id);
+      res.json({ success: true, message: 'Booking deleted successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to delete booking.' });
+    }
+  });
+
   // Get Audit Logs (Admin Only)
   app.get('/api/admin/audit-logs', requireAdmin, (_req: Request, res: Response) => {
     const logs = db.getAuditLogs();

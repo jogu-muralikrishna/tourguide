@@ -61,7 +61,7 @@ class Database {
     const saltRounds = 10;
     // Secure bcrypt password hashes
     const defaultUserHash = bcrypt.hashSync('Travel@2026', saltRounds);
-    const mainAdminHash = bcrypt.hashSync('admin#123', saltRounds);
+    const mainAdminHash = bcrypt.hashSync('admin!#123', saltRounds);
     const hotelAdminHash = bcrypt.hashSync('hotel@123', saltRounds);
     const travelAdminHash = bcrypt.hashSync('travel@123', saltRounds);
 
@@ -70,6 +70,19 @@ class Database {
         id: 'TGAI-USER-ADM0001',
         userId: 'TGAI-USER-ADM0001',
         name: 'Main Administrator',
+        email: 'admin@mk.com',
+        phone: '+91 99000 00001',
+        passwordHash: mainAdminHash,
+        role: 'MAIN_ADMIN',
+        isActive: true,
+        address: 'TourGuide AI HQ, Cyber City, Gurgaon',
+        createdBy: 'SYSTEM',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        id: 'TGAI-USER-ADM0002',
+        userId: 'TGAI-USER-ADM0002',
+        name: 'Main Administrator Alias',
         email: 'admin@tourguide.com',
         phone: '+91 99000 00001',
         passwordHash: mainAdminHash,
@@ -446,6 +459,7 @@ class Database {
     );
     return true;
   }
+
 
   public verifyPassword(plain: string, hash: string): boolean {
     return bcrypt.compareSync(plain, hash);
