@@ -7,7 +7,7 @@ interface Step3HotelProps {
   hotels: Hotel[];
   selectedHotel: Hotel | null;
   hotelNights: number;
-  wantsHotel: boolean | null; // null = unchosen, true = yes, false = no
+  wantsHotel: boolean | null;
   destinationCity: string;
   onChooseWantsHotel: (choice: boolean) => void;
   onSelectHotel: (hotel: Hotel | null) => void;
@@ -31,27 +31,27 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
   const isComplete = wantsHotel === false || (wantsHotel === true && selectedHotel !== null);
 
   return (
-    <section id="step-3-hotel" className="py-12 scroll-mt-20">
+    <section id="step-3-hotel" className="py-8 sm:py-12 scroll-mt-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Section Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] font-mono-tech text-xs uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
             <Building2 className="w-3.5 h-3.5" />
             <span>Step 3 of 7</span>
           </div>
-          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-bold text-white mb-2">
-            Step 3: <span className="gold-gradient-text">Hotel Stay</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-3 tracking-tight">
+            Hotel Accommodation
           </h2>
-          <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto">
-            Do you want to stay at a hotel in <span className="text-white font-semibold">{destinationCity || 'your destination'}</span>?
+          <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto">
+            Do you want to stay at a hotel in <strong className="text-[var(--text-primary)]">{destinationCity || 'your destination'}</strong>?
           </p>
         </div>
 
-        {/* Big YES / NO Decision Card */}
-        <div className="glass-panel rounded-2xl p-6 sm:p-8 mb-8 border border-[#D4AF37]/30 text-center max-w-2xl mx-auto shadow-[0_0_30px_rgba(0,0,0,0.7)]">
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-4 font-serif-luxury">
-            Do you want to book a hotel in {destinationCity}?
+        {/* YES / NO Choice Card */}
+        <div className="ui-card p-6 sm:p-8 mb-8 text-center max-w-xl mx-auto">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">
+            Book accommodation in {destinationCity}?
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
@@ -64,15 +64,15 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                   onSelectHotel(hotels[0]);
                 }
               }}
-              className={`p-4 sm:p-5 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
                 wantsHotel === true
-                  ? 'bg-[#D4AF37]/20 border-[#D4AF37] shadow-[0_0_25px_rgba(212,175,55,0.4)] text-white scale-[1.02]'
-                  : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-600'
+                  ? 'bg-sky-500/10 border-sky-500 text-sky-600 dark:text-sky-400 font-bold shadow-xs'
+                  : 'bg-[var(--bg-surface-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-sky-500/30'
               }`}
             >
               <div className="text-2xl">🏨</div>
-              <div className="text-base font-bold font-serif-luxury">YES, Book Hotel</div>
-              <div className="text-xs text-zinc-400 font-mono-tech">Select destination hotel</div>
+              <div className="text-sm font-bold">YES, Book Hotel</div>
+              <div className="text-[11px] text-[var(--text-muted)]">Browse destination hotels</div>
             </button>
 
             <button
@@ -82,27 +82,27 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                 onChooseWantsHotel(false);
                 onSelectHotel(null);
               }}
-              className={`p-4 sm:p-5 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
                 wantsHotel === false
-                  ? 'bg-[#D4AF37]/20 border-[#D4AF37] shadow-[0_0_25px_rgba(212,175,55,0.4)] text-white scale-[1.02]'
-                  : 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-600'
+                  ? 'bg-sky-500/10 border-sky-500 text-sky-600 dark:text-sky-400 font-bold shadow-xs'
+                  : 'bg-[var(--bg-surface-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-sky-500/30'
               }`}
             >
               <div className="text-2xl">🚗</div>
-              <div className="text-base font-bold font-serif-luxury">NO Hotel Needed</div>
-              <div className="text-xs text-zinc-400 font-mono-tech">Transit & ride only (₹0)</div>
+              <div className="text-sm font-bold">NO Hotel Needed</div>
+              <div className="text-[11px] text-[var(--text-muted)]">Day trip / transit only (₹0)</div>
             </button>
           </div>
         </div>
 
-        {/* If YES: Show Hotel Catalog & Nights Selection */}
+        {/* Hotel Catalog */}
         {wantsHotel === true && (
           <div className="space-y-6 animate-fade-in mb-8">
             {/* Nights Selector */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-[#0F0F14] border border-zinc-800">
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)]">
               <div className="flex items-center gap-2">
-                <Bed className="w-5 h-5 text-[#D4AF37]" />
-                <span className="text-sm font-semibold text-white font-serif-luxury">
+                <Bed className="w-5 h-5 text-sky-500" />
+                <span className="text-sm font-semibold text-[var(--text-primary)]">
                   Number of Nights:
                 </span>
               </div>
@@ -112,10 +112,10 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                     key={n}
                     type="button"
                     onClick={() => onChangeNights(n)}
-                    className={`w-10 h-10 rounded-xl font-mono-tech text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       hotelNights === n
-                        ? 'bg-[#D4AF37] text-black shadow-[0_0_12px_rgba(212,175,55,0.6)]'
-                        : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-600 hover:text-white'
+                        ? 'bg-sky-500 text-white shadow-xs'
+                        : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-sky-500/50'
                     }`}
                   >
                     {n}N
@@ -135,29 +135,26 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                     key={hotel.id}
                     id={`hotel-card-${hotel.id}`}
                     onClick={() => onSelectHotel(hotel)}
-                    className={`group relative rounded-2xl overflow-hidden bg-[#0D0D12] border transition-all duration-300 flex flex-col justify-between cursor-pointer ${
-                      isSelected
-                        ? 'border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.35)] scale-[1.02]'
-                        : 'border-zinc-800 hover:border-[#D4AF37]/50'
+                    className={`ui-card group relative overflow-hidden transition-all flex flex-col justify-between cursor-pointer ${
+                      isSelected ? 'ui-card-selected' : 'ui-card-hover'
                     }`}
                   >
                     {/* Hotel Image & Rating */}
-                    <div className="relative h-44 w-full overflow-hidden bg-zinc-900">
+                    <div className="relative h-44 w-full overflow-hidden bg-[var(--bg-surface-elevated)]">
                       <img
                         src={hotel.image}
                         alt={hotel.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D12] via-transparent to-black/40" />
 
-                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/80 text-amber-400 text-xs font-mono-tech border border-zinc-700">
+                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 text-amber-400 text-xs font-semibold backdrop-blur-xs">
                         <Star className="w-3.5 h-3.5 fill-amber-400" />
                         <span>{hotel.rating}</span>
                       </div>
 
                       {isSelected && (
-                        <div className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#D4AF37] text-black flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.8)] animate-fade-in">
-                          <Check className="w-5 h-5 stroke-[2.5]" />
+                        <div className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md">
+                          <Check className="w-4 h-4 stroke-[2.5]" />
                         </div>
                       )}
                     </div>
@@ -165,12 +162,12 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                     {/* Hotel Info */}
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        <h3 className="text-lg font-bold font-serif-luxury text-white mb-1 group-hover:text-[#F3E5AB] transition-colors">
+                        <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
                           {hotel.name}
                         </h3>
 
-                        <div className="flex items-center gap-1 text-xs text-zinc-400 mb-3">
-                          <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <div className="flex items-center gap-1 text-xs text-[var(--text-muted)] mb-3">
+                          <MapPin className="w-3.5 h-3.5 text-sky-500" />
                           <span>{hotel.location}</span>
                         </div>
 
@@ -179,28 +176,22 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                           {hotel.amenities.slice(0, 3).map((amenity, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-300 font-mono-tech"
+                              className="px-2 py-0.5 rounded-md bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] text-[10px] text-[var(--text-secondary)] font-medium"
                             >
                               {amenity}
                             </span>
                           ))}
                         </div>
-
-                        {/* Contact */}
-                        <div className="mb-4 text-xs font-mono-tech text-zinc-400 flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                          <span>{hotel.contact ? `Call: ${hotel.contact}` : 'Phone number not available'}</span>
-                        </div>
                       </div>
 
                       {/* Pricing Bottom */}
-                      <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                      <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
                         <div>
-                          <div className="text-[10px] uppercase font-mono-tech text-zinc-400">
+                          <div className="text-[10px] uppercase font-semibold text-[var(--text-muted)]">
                             {formatINR(hotel.pricePerNight)} / night
                           </div>
-                          <div className="text-lg font-bold font-serif-luxury text-[#D4AF37]">
-                            {formatINR(totalStayCost)} <span className="text-xs text-zinc-400 font-mono-tech font-normal">({hotelNights}N)</span>
+                          <div className="text-lg font-bold text-sky-600 dark:text-sky-400">
+                            {formatINR(totalStayCost)} <span className="text-xs text-[var(--text-muted)] font-normal">({hotelNights}N)</span>
                           </div>
                         </div>
 
@@ -210,10 +201,10 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
                             e.stopPropagation();
                             onSelectHotel(hotel);
                           }}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-mono-tech uppercase font-bold tracking-wider transition-all cursor-pointer ${
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                             isSelected
-                              ? 'gold-gradient-bg text-black shadow-[0_0_12px_rgba(212,175,55,0.4)]'
-                              : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white'
+                              ? 'bg-sky-500 text-white font-bold'
+                              : 'ui-btn-secondary'
                           }`}
                         >
                           {isSelected ? 'Selected' : 'Select'}
@@ -228,37 +219,37 @@ export const Step3Hotel: React.FC<Step3HotelProps> = ({
           </div>
         )}
 
-        {/* Step Completion & Action Bar */}
-        <div className="glass-panel p-5 rounded-2xl border border-[#D4AF37]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Action Bar */}
+        <div className="ui-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <button
             type="button"
             onClick={onGoBack}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-mono-tech uppercase tracking-wider cursor-pointer"
+            className="ui-btn-secondary w-full sm:w-auto"
           >
-            ← Back to Step 2: Car
+            ← Back to Step 2
           </button>
 
           {isComplete ? (
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
-              <div className="hidden md:flex items-center gap-2 text-emerald-400 text-xs font-mono-tech font-semibold">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <div className="hidden md:flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>
-                  Step 3 completed: {wantsHotel ? `${selectedHotel?.name} (${hotelNights}N)` : 'No hotel (Transit)'}
+                  {wantsHotel ? `Selected: ${selectedHotel?.name}` : 'No hotel selected'}
                 </span>
               </div>
               <button
                 type="button"
                 id="step-3-next-btn"
                 onClick={onContinue}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-mono-tech uppercase tracking-widest text-xs font-bold flex items-center justify-center gap-2 gold-gradient-bg text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:scale-[1.02] cursor-pointer"
+                className="ui-btn-primary w-full sm:w-auto"
               >
                 <span>Next Step</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <span className="text-xs font-mono-tech text-amber-400">
-              Please choose YES or NO for hotel booking above
+            <span className="text-xs text-amber-500 font-medium">
+              Please choose YES or NO for hotel booking
             </span>
           )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Phone, ArrowRight, ShieldCheck, Sparkles, Building2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, ShieldCheck, Sparkles, Building2, Sun, Moon, Laptop } from 'lucide-react';
 import { loginApi, registerApi, AuthRoleUser } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: AuthRoleUser, token: string) => void;
@@ -8,6 +9,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequestAdmin }) => {
+  const { theme, setTheme } = useTheme();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -30,7 +32,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
       const res = await loginApi(email.trim(), password);
       onLoginSuccess(res.user, res.token);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed. Please check your email and password.');
+      setErrorMsg(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +41,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !password) {
-      setErrorMsg('Please fill in all details (Full Name, Email, Phone, and Password).');
+      setErrorMsg('Please fill in all details.');
       return;
     }
 
@@ -60,74 +62,101 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
       });
       onLoginSuccess(res.user, res.token);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Account creation failed. Please try again.');
+      setErrorMsg(err.message || 'Account creation failed.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white flex flex-col justify-between py-8 px-4 sm:px-6 relative overflow-hidden">
-      {/* Background glow ambiance */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#D4AF37]/8 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Top Brand Bar */}
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col justify-between py-8 px-4 sm:px-6 relative overflow-hidden transition-colors">
+      
+      {/* Top Header */}
       <div className="max-w-5xl mx-auto w-full flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F3E5AB] to-[#8C6D1F] p-[1px] shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-            <div className="w-full h-full bg-[#09090C] rounded-[11px] flex items-center justify-center">
-              <span className="font-serif-luxury font-bold text-[#D4AF37] text-lg">TG</span>
-            </div>
+          <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
+            TG
           </div>
           <div>
-            <h1 className="font-serif-luxury text-xl font-bold tracking-wider gold-gradient-text">TOURGUIDE AI</h1>
-            <span className="text-[10px] uppercase font-mono-tech tracking-widest text-zinc-500">Real-Time Travel System</span>
+            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">TourGuide AI</h1>
+            <span className="text-[10px] uppercase font-semibold text-[var(--text-muted)] tracking-wider">Smart Travel Platform</span>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onRequestAdmin}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-xs font-mono-tech text-zinc-400 hover:text-[#D4AF37] transition-colors"
-        >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Request Admin Access</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-[var(--bg-surface-elevated)] p-0.5 rounded-xl border border-[var(--border-color)]">
+            <button
+              onClick={() => setTheme('light')}
+              title="Light Mode"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                theme === 'light' ? 'bg-[var(--bg-surface)] text-amber-500 shadow-xs' : 'text-[var(--text-muted)]'
+              }`}
+            >
+              <Sun className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setTheme('dark')}
+              title="Dark Mode"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                theme === 'dark' ? 'bg-[var(--bg-surface)] text-sky-400 shadow-xs' : 'text-[var(--text-muted)]'
+              }`}
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setTheme('system')}
+              title="System Mode"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                theme === 'system' ? 'bg-[var(--bg-surface)] text-indigo-500 shadow-xs' : 'text-[var(--text-muted)]'
+              }`}
+            >
+              <Laptop className="w-4 h-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onRequestAdmin}
+            className="ui-btn-secondary py-1.5 px-3 text-xs"
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Admin Partner</span>
+          </button>
+        </div>
       </div>
 
-      {/* Center Auth Card */}
+      {/* Auth Card */}
       <div className="max-w-md w-full mx-auto my-auto z-10">
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-[#D4AF37]/30 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-xl relative">
+        <div className="ui-card p-6 sm:p-8 shadow-2xl relative">
           
-          {/* Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] font-mono-tech text-xs uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Smart Highway & Travel Platform</span>
+              <span>Smart Travel Platform</span>
             </div>
-            <h2 className="font-serif-luxury text-2xl sm:text-3xl font-bold text-white mb-1.5">
-              Welcome to <span className="gold-gradient-text">TOURGUIDE AI</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-1">
+              Welcome to <span className="text-sky-600 dark:text-sky-400">TourGuide AI</span>
             </h2>
-            <p className="text-zinc-400 text-xs sm:text-sm">
-              {isRegisterMode ? 'Create your travel account in simple steps' : 'Please log in to start your journey'}
+            <p className="text-[var(--text-muted)] text-xs sm:text-sm">
+              {isRegisterMode ? 'Create your travel account' : 'Sign in to start your journey'}
             </p>
           </div>
 
-          {/* Mode Switch Tabs */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#09090D] border border-zinc-800 mb-6">
+          {/* Mode Switch */}
+          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] mb-6 text-xs">
             <button
               type="button"
               onClick={() => {
                 setIsRegisterMode(false);
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-lg font-mono-tech text-xs uppercase tracking-wider font-semibold transition-all cursor-pointer ${
+              className={`py-2 rounded-lg uppercase tracking-wider font-semibold transition-all cursor-pointer ${
                 !isRegisterMode
-                  ? 'bg-[#D4AF37] text-black shadow-[0_0_12px_rgba(212,175,55,0.4)]'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-sky-500 text-white shadow-xs'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
-              Log In
+              Sign In
             </button>
             <button
               type="button"
@@ -135,33 +164,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 setIsRegisterMode(true);
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-lg font-mono-tech text-xs uppercase tracking-wider font-semibold transition-all cursor-pointer ${
+              className={`py-2 rounded-lg uppercase tracking-wider font-semibold transition-all cursor-pointer ${
                 isRegisterMode
-                  ? 'bg-[#D4AF37] text-black shadow-[0_0_12px_rgba(212,175,55,0.4)]'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-sky-500 text-white shadow-xs'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               Create Account
             </button>
           </div>
 
-          {/* Error Notice */}
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-xl bg-red-950/70 border border-red-800/80 text-red-300 text-xs font-mono-tech flex items-center gap-2">
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
               <span>⚠️</span>
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* LOGIN FORM */}
           {!isRegisterMode ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1.5 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
@@ -170,26 +197,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1.5 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
                     type="password"
                     required
-                    placeholder="Enter your password"
+                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
@@ -197,27 +224,26 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2 py-3.5 rounded-xl gold-gradient-bg text-black font-bold font-mono-tech text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] transition-all cursor-pointer disabled:opacity-50"
+                className="ui-btn-primary w-full py-3 text-xs uppercase tracking-wider font-bold"
               >
                 {isLoading ? (
-                  <span>Logging in...</span>
+                  <span>Signing in...</span>
                 ) : (
                   <>
-                    <span>Log In</span>
+                    <span>Sign In</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
             </form>
           ) : (
-            /* CREATE ACCOUNT FORM */
             <form onSubmit={handleRegister} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wider">
                   Full Name
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <User className="w-4 h-4" />
                   </div>
                   <input
@@ -226,17 +252,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                     placeholder="e.g. Aarav Sharma"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wider">
                   Email Address
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
@@ -245,17 +271,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                     placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wider">
                   Phone Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Phone className="w-4 h-4" />
                   </div>
                   <input
@@ -264,27 +290,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                     placeholder="+91 98765 43210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-zinc-300 mb-1 font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wider">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input
                     type="password"
                     required
                     minLength={6}
-                    placeholder="Create a strong password"
+                    placeholder="Create a password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0B0B0F] border border-zinc-800 text-white placeholder-zinc-600 text-sm font-mono-tech focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]/30 transition-all"
+                    className="ui-input w-full pl-9 text-xs"
                   />
                 </div>
               </div>
@@ -292,7 +318,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-3 py-3.5 rounded-xl gold-gradient-bg text-black font-bold font-mono-tech text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] transition-all cursor-pointer disabled:opacity-50"
+                className="ui-btn-primary w-full py-3 text-xs uppercase tracking-wider font-bold"
               >
                 {isLoading ? (
                   <span>Creating Account...</span>
@@ -306,18 +332,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             </form>
           )}
 
-          {/* Security badge */}
-          <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-center gap-1.5 text-[11px] font-mono-tech text-zinc-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Secure bcrypt password encryption & isolated user tokens</span>
+          <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-muted)]">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Secure password encryption</span>
           </div>
 
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-center text-[11px] font-mono-tech text-zinc-400 z-10">
-        © 2026 TOURGUIDE AI — Real-Time Highway & Travel System
+      <div className="text-center text-[11px] text-[var(--text-muted)] z-10">
+        © 2026 TourGuide AI — Smart Travel Platform
       </div>
     </div>
   );

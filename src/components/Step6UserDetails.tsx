@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, Users, ArrowRight, CheckCircle2, User, Phone, Mail, FileText } from 'lucide-react';
+import { Calendar, User, Phone, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface Step6UserDetailsProps {
@@ -33,36 +33,35 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
   };
 
   return (
-    <section id="step-6-details" className="py-12 scroll-mt-20">
+    <section id="step-6-details" className="py-8 sm:py-12 scroll-mt-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Section Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] font-mono-tech text-xs uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
             <Calendar className="w-3.5 h-3.5" />
             <span>Step 6 of 7</span>
           </div>
-          <h2 className="font-serif-luxury text-3xl sm:text-4xl font-bold text-white mb-2">
-            Step 6: <span className="gold-gradient-text">Schedule & Passenger Details</span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-3 tracking-tight">
+            Traveler Details & Schedule
           </h2>
-          <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto">
-            Confirm your journey departure date, pickup time, number of people traveling, and primary traveler contact details.
+          <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto">
+            Confirm departure date, pickup time, group size, and primary traveler contact info.
           </p>
         </div>
 
-        {/* Schedule & Travelers Form Card */}
-        <div className="glass-panel rounded-2xl p-6 sm:p-8 border border-[#D4AF37]/25 max-w-2xl mx-auto shadow-[0_0_40px_rgba(0,0,0,0.8)] mb-8">
-          
+        {/* Form Card */}
+        <div className="ui-card p-6 sm:p-8 max-w-2xl mx-auto mb-8">
           <div className="space-y-5">
             
-            {/* Primary Passenger Contact */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-zinc-800">
+            {/* Passenger Contact */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-[var(--border-color)]">
               <div>
-                <label className="block text-xs font-mono-tech text-[#D4AF37] mb-1.5 uppercase font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Full Name *
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <User className="w-4 h-4" />
                   </div>
                   <input
@@ -71,17 +70,17 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                     placeholder="e.g. Aarav Sharma"
                     value={userProfile.fullName}
                     onChange={(e) => onUpdateProfile({ fullName: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="ui-input w-full pl-9"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-[#D4AF37] mb-1.5 uppercase font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Phone Number *
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                     <Phone className="w-4 h-4" />
                   </div>
                   <input
@@ -90,19 +89,19 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                     placeholder="+91 98765 43210"
                     value={userProfile.phone}
                     onChange={(e) => onUpdateProfile({ phone: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
+                    className="ui-input w-full pl-9"
                   />
                 </div>
               </div>
             </div>
 
             {/* Email Address */}
-            <div className="pb-4 border-b border-zinc-800">
-              <label className="block text-xs font-mono-tech text-[#D4AF37] mb-1.5 uppercase font-semibold">
+            <div className="pb-4 border-b border-[var(--border-color)]">
+              <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -110,51 +109,47 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                   placeholder="e.g. traveler@example.com"
                   value={userProfile.email || ''}
                   onChange={(e) => onUpdateProfile({ email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
+                  className="ui-input w-full pl-9"
                 />
               </div>
             </div>
 
-            {/* Start Date & Start Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-zinc-800">
+            {/* Date & Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-[var(--border-color)]">
               <div>
-                <label className="block text-xs font-mono-tech text-[#D4AF37] mb-1.5 uppercase font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Journey Date *
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    min={today}
-                    value={userProfile.startDate}
-                    onChange={(e) => onUpdateProfile({ startDate: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
+                <input
+                  type="date"
+                  min={today}
+                  value={userProfile.startDate}
+                  onChange={(e) => onUpdateProfile({ startDate: e.target.value })}
+                  className="ui-input w-full"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-mono-tech text-[#D4AF37] mb-1.5 uppercase font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
                   Pickup Time *
                 </label>
-                <div className="relative">
-                  <input
-                    type="time"
-                    value={userProfile.startTime}
-                    onChange={(e) => onUpdateProfile({ startTime: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={userProfile.startTime}
+                  onChange={(e) => onUpdateProfile({ startTime: e.target.value })}
+                  className="ui-input w-full"
+                />
               </div>
             </div>
 
             {/* Number of People */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-mono-tech text-[#D4AF37] uppercase font-semibold">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                   Number of People *
                 </label>
-                <span className="text-xs font-mono-tech text-zinc-400">
-                  Currently: <strong className="text-white">{peopleCount === 1 ? '1 Person' : `${peopleCount} People`}</strong>
+                <span className="text-xs text-[var(--text-muted)]">
+                  Selected: <strong className="text-[var(--text-primary)]">{peopleCount === 1 ? '1 Person' : `${peopleCount} People`}</strong>
                 </span>
               </div>
 
@@ -164,10 +159,10 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                     key={num}
                     type="button"
                     onClick={() => handlePeopleChange(num)}
-                    className={`py-2.5 px-2 rounded-xl font-mono-tech text-xs font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
+                    className={`py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
                       peopleCount === num
-                        ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.6)] font-bold'
-                        : 'bg-zinc-900 text-zinc-300 border border-zinc-800 hover:border-zinc-600 hover:text-white'
+                        ? 'bg-sky-500 text-white shadow-xs'
+                        : 'bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-sky-500/30'
                     }`}
                   >
                     <span>{num}</span>
@@ -177,58 +172,54 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-zinc-500 font-mono-tech mt-2">
-                All food item calculations, reservations, and boarding tokens automatically scale according to this number.
-              </p>
             </div>
 
             {/* Special Requests */}
             <div>
-              <label className="block text-xs font-mono-tech text-zinc-300 mb-1.5 font-semibold">
-                Special Requests / Landmark Pickup Notes (Optional)
+              <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1.5 uppercase tracking-wider">
+                Special Requests / Pickup Notes (Optional)
               </label>
               <textarea
                 rows={3}
                 value={userProfile.specialRequests || ''}
                 onChange={(e) => onUpdateProfile({ specialRequests: e.target.value })}
-                placeholder="e.g. Airport terminal 3 gate 4 pickup, extra luggage space, child seat..."
-                className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-[#D4AF37] resize-none"
+                placeholder="e.g. Airport terminal 3 pickup, child seat..."
+                className="ui-input w-full resize-none"
               />
             </div>
 
           </div>
-
         </div>
 
-        {/* Step Completion & Action Bar */}
-        <div className="glass-panel p-5 rounded-2xl border border-[#D4AF37]/30 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl mx-auto">
+        {/* Action Bar */}
+        <div className="ui-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl mx-auto">
           <button
             type="button"
             onClick={onGoBack}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-mono-tech uppercase tracking-wider cursor-pointer"
+            className="ui-btn-secondary w-full sm:w-auto"
           >
-            ← Back to Step 5: Route Map
+            ← Back to Step 5
           </button>
 
           {isValid ? (
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
-              <div className="hidden sm:flex items-center gap-2 text-emerald-400 text-xs font-mono-tech font-semibold">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <div className="hidden sm:flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Step 6 completed</span>
+                <span>Details Confirmed</span>
               </div>
               <button
                 type="button"
                 id="step-6-next-btn"
                 onClick={onContinue}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-mono-tech uppercase tracking-widest text-xs font-bold flex items-center justify-center gap-2 gold-gradient-bg text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:scale-[1.02] cursor-pointer"
+                className="ui-btn-primary w-full sm:w-auto"
               >
                 <span>Review & Confirm</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <span className="text-xs font-mono-tech text-amber-400">
-              Please enter your Name, Phone, and Journey Schedule
+            <span className="text-xs text-amber-500 font-medium">
+              Please enter your Name, Phone, and Schedule
             </span>
           )}
         </div>

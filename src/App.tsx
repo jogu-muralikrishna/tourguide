@@ -22,6 +22,7 @@ import { AdminPanelModal } from './components/AdminPanelModal';
 import { WeatherModal } from './components/WeatherModal';
 import { RequestAdminModal } from './components/RequestAdminModal';
 import { Chatbot } from './components/Chatbot';
+import { BottomNavigation } from './components/BottomNavigation';
 
 import { Vehicle, Hotel, Pitstop, SelectedFoodItem, UserProfile, Booking, RouteSuggestion, WeatherData, RouteData } from './types';
 import { calculatePricing } from './utils/pricing';
@@ -404,10 +405,23 @@ export default function App() {
     setIsJourneyActive(true);
   };
 
+  const handleSelectNavTab = (tab: 'home' | 'explore' | 'planner' | 'trips' | 'profile') => {
+    if (tab === 'home' || tab === 'explore' || tab === 'planner') {
+      setIsJourneyActive(true);
+      setCurrentStep(1);
+    } else if (tab === 'trips') {
+      setMyTripsTab('all');
+      refreshBookings();
+      setActiveModal('myTrips');
+    } else if (tab === 'profile') {
+      setIsJourneyActive(false);
+    }
+  };
+
   // 1. If not logged in -> Show LOGIN / CREATE ACCOUNT SCREEN
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#050508] text-[#FAFAFA] font-sans selection:bg-[#D4AF37]/30 selection:text-[#F3E5AB]">
+      <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] font-sans transition-colors">
         <LoginScreen
           onLoginSuccess={handleLoginSuccess}
           onRequestAdmin={() => setActiveModal('requestAdmin')}
@@ -425,7 +439,7 @@ export default function App() {
   // 2. If logged in and journey NOT active -> Show USER PROFILE SCREEN
   if (!isJourneyActive) {
     return (
-      <div className="min-h-screen bg-[#050508] text-[#FAFAFA] font-sans selection:bg-[#D4AF37]/30 selection:text-[#F3E5AB]">
+      <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] font-sans pb-16 sm:pb-0 transition-colors">
         <UserProfileScreen
           currentUser={currentUser}
           bookings={allBookings}
@@ -445,6 +459,13 @@ export default function App() {
             setActiveTicketBooking(b);
             setActiveModal('ticket');
           }}
+        />
+
+        {/* Bottom Navigation for Mobile */}
+        <BottomNavigation
+          currentTab="profile"
+          onSelectTab={handleSelectNavTab}
+          confirmedCount={allBookings.filter((b) => b.status === 'Confirmed').length}
         />
 
         {/* Location Permission Prompt Modal */}
@@ -508,7 +529,7 @@ export default function App() {
 
   // 3. JOURNEY ACTIVE -> Show 7 Locked Step-by-Step Travel Flow
   return (
-    <div className="min-h-screen bg-[#050505] text-[#FAFAFA] font-sans selection:bg-[#D4AF37]/30 selection:text-[#F3E5AB] pt-20">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] font-sans pt-20 pb-20 sm:pb-0 transition-colors">
       
       {/* Top Navbar */}
       <Navbar
@@ -529,9 +550,10 @@ export default function App() {
           setActiveModal('admin');
         }}
         onGoToProfile={() => setIsJourneyActive(false)}
+        onSelectNavTab={handleSelectNavTab}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         
         {/* Moving Small Car Progress Bar (7 Steps) */}
         <ProgressBar
@@ -713,26 +735,33 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-[#D4AF37]/15 bg-[#07070A] text-center text-xs font-mono-tech text-zinc-500 no-print mt-12">
+      <footer className="py-8 border-t border-[var(--border-color)] bg-[var(--bg-surface)] text-center text-xs font-mono-tech text-[var(--text-muted)] no-print mt-12">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-serif-luxury font-bold text-white tracking-wider">TOURGUIDE AI</span>
-            <span>• Real-Time Highway Travel & Booking System</span>
+            <span className="font-bold text-[var(--text-primary)]">TourGuide AI</span>
+            <span>• Smart Travel Platform</span>
           </div>
-          <div className="flex items-center gap-4 text-zinc-400">
-            <button onClick={() => setIsJourneyActive(false)} className="hover:text-[#D4AF37] transition-colors cursor-pointer">
-              User Profile
+          <div className="flex items-center gap-4 text-[var(--text-secondary)]">
+            <button onClick={() => setIsJourneyActive(false)} className="hover:text-sky-500 transition-colors cursor-pointer">
+              Profile
             </button>
-            <button onClick={() => setActiveModal('myTrips')} className="hover:text-[#D4AF37] transition-colors cursor-pointer">
+            <button onClick={() => setActiveModal('myTrips')} className="hover:text-sky-500 transition-colors cursor-pointer">
               My Trips
             </button>
-            <button onClick={() => setActiveModal('requestAdmin')} className="hover:text-[#D4AF37] transition-colors cursor-pointer">
+            <button onClick={() => setActiveModal('requestAdmin')} className="hover:text-sky-500 transition-colors cursor-pointer">
               Partner with Us
             </button>
           </div>
-          <div>© 2026 TOURGUIDE AI. Real Car Travel & Hotel Bookings.</div>
+          <div>© 2026 TourGuide AI. All rights reserved.</div>
         </div>
       </footer>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation
+        currentTab={currentStep === 1 ? 'home' : 'planner'}
+        onSelectTab={handleSelectNavTab}
+        confirmedCount={allBookings.filter((b) => b.status === 'Confirmed').length}
+      />
 
       {/* Floating AI Chatbot */}
       <Chatbot
@@ -770,7 +799,7 @@ export default function App() {
         onClose={() => setActiveModal(null)}
       />
 
-      {/* Final Booking Boarding Pass Ticket Modal */}
+      {/* Final Ticket Modal */}
       <FinalTicketModal
         booking={activeTicketBooking}
         isOpen={activeModal === 'ticket'}
@@ -783,7 +812,7 @@ export default function App() {
         onBookAnother={handleResetForNewTrip}
       />
 
-      {/* My Trips & Bookings Modal */}
+      {/* My Trips Modal */}
       <MyTripsModal
         isOpen={activeModal === 'myTrips'}
         bookings={allBookings}
@@ -814,3 +843,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -28,40 +28,34 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   maxUnlockedStep,
   onNavigateToStep,
 }) => {
-  // Percentage for the moving car position
   const progressPercent = Math.min(100, Math.max(0, ((currentStep - 1) / (JOURNEY_STEPS.length - 1)) * 100));
 
   return (
-    <div id="journey-progress-container" className="w-full max-w-5xl mx-auto px-4 py-4 no-print">
-      <div className="bg-[#09090D] border border-[#D4AF37]/25 rounded-2xl p-4 sm:p-5 shadow-[0_0_30px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden">
+    <div id="journey-progress-container" className="w-full max-w-5xl mx-auto px-4 py-3 no-print">
+      <div className="ui-card p-3 sm:p-4 relative overflow-hidden backdrop-blur-md">
         
-        {/* Step Track Container with Moving Small Car */}
-        <div className="relative mb-4 mt-2 px-3 sm:px-6">
-          {/* Background Track */}
-          <div className="w-full h-2 bg-zinc-800/80 rounded-full relative">
-            {/* Active Gold Progress Bar */}
+        {/* Step Track */}
+        <div className="relative mb-3 mt-1 px-3 sm:px-6">
+          <div className="w-full h-2 bg-[var(--bg-surface-hover)] rounded-full relative overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-[#8C6D1F] via-[#D4AF37] to-[#F3E5AB] rounded-full transition-all duration-500 ease-out shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+              className="h-full bg-sky-500 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
-          {/* Smooth Moving Small Car Icon */}
           <div 
             id="moving-progress-car"
             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-out z-20 pointer-events-none"
             style={{ left: `calc(${progressPercent}% + 12px)` }}
           >
-            <div className="flex flex-col items-center">
-              <div className="w-9 h-9 rounded-full bg-[#18160E] border-2 border-[#D4AF37] shadow-[0_0_18px_rgba(212,175,55,0.9)] flex items-center justify-center text-base transform hover:scale-110 transition-transform">
-                🚗
-              </div>
+            <div className="w-8 h-8 rounded-full bg-sky-500 border-2 border-white dark:border-slate-900 shadow-md flex items-center justify-center text-xs text-white">
+              🚗
             </div>
           </div>
         </div>
 
-        {/* 7 Step Badges Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 pt-2">
+        {/* 7 Step Badges */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-1.5 pt-1">
           {JOURNEY_STEPS.map((step) => {
             const isCompleted = currentStep > step.num;
             const isCurrent = currentStep === step.num;
@@ -77,54 +71,49 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     onNavigateToStep(step.num);
                   }
                 }}
-                className={`flex flex-col items-center text-center p-2 rounded-xl transition-all duration-200 ${
+                className={`flex flex-col items-center text-center p-1.5 rounded-xl transition-all duration-150 ${
                   isCurrent
-                    ? 'bg-[#D4AF37]/20 border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)] scale-102'
+                    ? 'bg-sky-500/10 border border-sky-500/50 shadow-xs'
                     : isCompleted
-                    ? 'bg-zinc-900/60 border border-zinc-700/60 hover:border-[#D4AF37]/50 cursor-pointer'
+                    ? 'bg-[var(--bg-surface-hover)] border border-[var(--border-color)] hover:border-sky-500/30 cursor-pointer'
                     : isUnlocked
-                    ? 'bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 cursor-pointer'
-                    : 'bg-zinc-950/40 border border-zinc-900 opacity-40 cursor-not-allowed'
+                    ? 'bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] hover:border-[var(--border-hover)] cursor-pointer'
+                    : 'opacity-40 border border-transparent cursor-not-allowed'
                 }`}
               >
-                {/* Step Circle */}
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-mono-tech font-bold mb-1 transition-colors ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-1 transition-colors ${
                     isCurrent
-                      ? 'bg-[#D4AF37] text-black shadow-[0_0_8px_rgba(212,175,55,0.7)]'
+                      ? 'bg-sky-500 text-white'
                       : isCompleted
-                      ? 'bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/50'
+                      ? 'bg-sky-500/20 text-sky-600 dark:text-sky-400'
                       : isUnlocked
-                      ? 'bg-zinc-800 text-zinc-300 border border-zinc-700'
-                      : 'bg-zinc-900 text-zinc-600 border border-zinc-800'
+                      ? 'bg-[var(--bg-surface-hover)] text-[var(--text-secondary)] border border-[var(--border-color)]'
+                      : 'bg-[var(--bg-surface-elevated)] text-[var(--text-muted)]'
                   }`}
                 >
                   {isCompleted ? (
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <Check className="w-3 h-3 stroke-[2.5]" />
                   ) : !isUnlocked ? (
-                    <Lock className="w-3 h-3 text-zinc-600" />
+                    <Lock className="w-2.5 h-2.5" />
                   ) : (
                     step.num
                   )}
                 </div>
 
-                {/* Step Label */}
                 <span
-                  className={`text-xs font-semibold font-serif-luxury truncate w-full ${
+                  className={`text-xs font-semibold truncate w-full ${
                     isCurrent
-                      ? 'text-[#F3E5AB]'
+                      ? 'text-sky-600 dark:text-sky-400'
                       : isCompleted
-                      ? 'text-zinc-200'
-                      : isUnlocked
-                      ? 'text-zinc-400'
-                      : 'text-zinc-600'
+                      ? 'text-[var(--text-primary)]'
+                      : 'text-[var(--text-muted)]'
                   }`}
                 >
                   {step.label}
                 </span>
 
-                {/* Short Subtitle */}
-                <span className="text-[9px] text-zinc-400 font-mono-tech hidden sm:block truncate w-full">
+                <span className="text-[9px] text-[var(--text-muted)] hidden sm:block truncate w-full">
                   {step.shortDesc}
                 </span>
               </button>
