@@ -28,7 +28,6 @@ import {
   TrendingUp,
   Activity,
   FileText,
-  Settings,
   DollarSign
 } from 'lucide-react';
 import { Booking, AdminRequest } from '../types';
@@ -52,8 +51,8 @@ import {
   fetchAdminOverviewStatsApi,
   fetchAdminUsersApi,
   updateUserStatusApi,
+  deleteUserAccountApi,
   fetchAuditLogsApi,
-  changeAdminPasswordApi,
   OverviewStats,
   AuditLogRecord
 } from '../services/api';
@@ -77,7 +76,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onViewTicket,
   onRefreshData,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'partner_accounts' | 'bookings' | 'partner_requests' | 'audit_logs' | 'settings' | 'verify_token'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'partner_accounts' | 'bookings' | 'partner_requests' | 'audit_logs' | 'verify_token'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [systemRoles, setSystemRoles] = useState<AuthRoleUser[]>([]);
@@ -92,16 +91,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('all');
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [deleteUserConfirm, setDeleteUserConfirm] = useState<AuthRoleUser | null>(null);
 
   // Audit Logs State
   const [auditLogsList, setAuditLogsList] = useState<AuditLogRecord[]>([]);
-
-  // Admin Change Password State
-  const [adminNewPassword, setAdminNewPassword] = useState('');
-  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
-  const [changePassError, setChangePassError] = useState<string | null>(null);
-  const [changePassSuccess, setChangePassSuccess] = useState<string | null>(null);
-  const [isChangingPass, setIsChangingPass] = useState(false);
 
   // Selected Booking for Full Details Modal
   const [inspectBooking, setInspectBooking] = useState<Booking | null>(null);
@@ -329,7 +322,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setHotelFormPhone('');
       setHotelFormAddress('');
       await loadData();
-      alert(`Hotel Account Created Successfully!\nHotel: ${hotelFormName}\nLogin Email: ${hotelFormEmail}`);
+      alert(`Hotel Account Created & Saved Successfully!\nHotel: ${hotelFormName}\nLogin Email: ${hotelFormEmail}`);
     } catch (err: any) {
       setHotelFormError(err.message || 'Failed to create Hotel account.');
     }
@@ -368,7 +361,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setAgencyFormPhone('');
       setAgencyFormAddress('');
       await loadData();
-      alert(`Travel Agency Account Created Successfully!\nAgency: ${agencyFormName}\nLogin Email: ${agencyFormEmail}`);
+      alert(`Travel Agency Account Created & Saved Successfully!\nAgency: ${agencyFormName}\nLogin Email: ${agencyFormEmail}`);
     } catch (err: any) {
       setAgencyFormError(err.message || 'Failed to create Travel Agency account.');
     }
@@ -393,6 +386,19 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       await loadData();
     } catch (err: any) {
       alert(err.message || 'Failed to update user status.');
+    }
+  };
+
+  // Handle Delete Customer User Account
+  const handleDeleteUserSubmit = async () => {
+    if (!deleteUserConfirm) return;
+    try {
+      await deleteUserAccountApi(deleteUserConfirm.id);
+      setDeleteUserConfirm(null);
+      await loadData();
+      alert(`User account deleted successfully: ${deleteUserConfirm.name}`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete user account.');
     }
   };
 
@@ -427,36 +433,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       alert('Account deleted successfully.');
     } catch (err: any) {
       alert(err.message || 'Failed to delete partner account.');
-    }
-  };
-
-  // Handle Admin Change Own Password
-  const handleChangeAdminPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setChangePassError(null);
-    setChangePassSuccess(null);
-
-    if (adminNewPassword !== adminConfirmPassword) {
-      setChangePassError('Passwords do not match.');
-      return;
-    }
-
-    if (adminNewPassword.length < 8) {
-      setChangePassError('Password must be at least 8 characters long.');
-      return;
-    }
-
-    setIsChangingPass(true);
-    try {
-      await changeAdminPasswordApi(adminNewPassword);
-      setAdminNewPassword('');
-      setAdminConfirmPassword('');
-      setChangePassSuccess('Admin password updated successfully!');
-      await loadData();
-    } catch (err: any) {
-      setChangePassError(err.message || 'Failed to update password.');
-    } finally {
-      setIsChangingPass(false);
     }
   };
 
@@ -523,7 +499,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </span>
               </div>
               <div className="text-xs text-zinc-400 font-mono-tech">
-                {activeRoleUser?.role === 'MAIN_ADMIN' && 'Main System Admin • Complete Platform Access'}
+                {activeRoleUser?.role === 'MAIN_ADMIN' && 'Main System Admin • Central Master Repository (All Data)'}
                 {activeRoleUser?.role === 'HOTEL_ADMIN' && `Hotel Dashboard • ${activeRoleUser.hotelName}`}
                 {activeRoleUser?.role === 'TRAVEL_ADMIN' && `Travel Agency Dashboard • ${activeRoleUser.agencyName}`}
               </div>
@@ -597,7 +573,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               }`}
             >
               <User className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Users</span>
+              <span>Users Management</span>
             </button>
           )}
 
@@ -623,7 +599,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 : 'border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            {activeRoleUser?.role === 'HOTEL_ADMIN' ? 'Hotel Guest Bookings' : activeRoleUser?.role === 'TRAVEL_ADMIN' ? 'Car Trip Bookings' : 'Bookings'}
+            {activeRoleUser?.role === 'HOTEL_ADMIN' ? 'Hotel Guest Stays' : activeRoleUser?.role === 'TRAVEL_ADMIN' ? 'Fleet Vehicle Trips' : 'Master Central Bookings'}
           </button>
 
           {activeRoleUser?.role === 'MAIN_ADMIN' && (
@@ -658,20 +634,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             </button>
           )}
 
-          {activeRoleUser?.role === 'MAIN_ADMIN' && (
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-                activeTab === 'settings'
-                  ? 'border-[#D4AF37] text-[#F3E5AB]'
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <Settings className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Settings</span>
-            </button>
-          )}
-
           <button
             onClick={() => setActiveTab('verify_token')}
             className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
@@ -681,7 +643,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
             }`}
           >
             <QrCode className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Verify Token</span>
+            <span>Verify Voucher Token</span>
           </button>
         </div>
 
@@ -712,7 +674,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <div className="text-2xl font-bold text-white mt-2">
                   {overviewStats?.totalHotels || 2}
                 </div>
-                <div className="text-[10px] text-zinc-400 mt-1">Verified Partners</div>
+                <div className="text-[10px] text-zinc-400 mt-1">Verified Hotel Partners</div>
               </div>
 
               <div className="ui-card p-4 flex flex-col justify-between">
@@ -754,7 +716,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="text-2xl font-bold text-emerald-400 mt-2">100%</div>
-                <div className="text-[10px] text-emerald-400 mt-1">🟢 Secure & Active</div>
+                <div className="text-[10px] text-emerald-400 mt-1">🟢 Central Repository</div>
               </div>
             </div>
 
@@ -784,7 +746,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 2: USERS MANAGEMENT --- */}
+        {/* --- TAB 2: USERS MANAGEMENT (WITH DELETE USER OPTION) --- */}
         {activeTab === 'users' && activeRoleUser?.role === 'MAIN_ADMIN' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
@@ -824,7 +786,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">User ID</th>
+                      <th className="p-3.5">User Token / ID</th>
                       <th className="p-3.5">Name</th>
                       <th className="p-3.5">Email</th>
                       <th className="p-3.5">Phone</th>
@@ -843,9 +805,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     ) : (
                       filteredUsers.map((u) => (
                         <tr key={u.id} className="hover:bg-zinc-900/50 transition-colors">
-                          <td className="p-3.5 font-bold text-[#D4AF37]">{u.id}</td>
+                          <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{u.id}</td>
                           <td className="p-3.5 font-bold text-white">{u.name}</td>
-                          <td className="p-3.5 text-sky-400">{u.email}</td>
+                          <td className="p-3.5 text-sky-400 font-mono">{u.email}</td>
                           <td className="p-3.5 text-zinc-400">{u.phone}</td>
                           <td className="p-3.5 font-bold text-amber-400">{u.role}</td>
                           <td className="p-3.5">
@@ -861,16 +823,25 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                           </td>
                           <td className="p-3.5 text-right space-x-2">
                             {u.role !== 'MAIN_ADMIN' && (
-                              <button
-                                onClick={() => handleToggleUserStatus(u)}
-                                className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
-                                  u.isActive !== false
-                                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
-                                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                                }`}
-                              >
-                                {u.isActive !== false ? 'Disable' : 'Enable'}
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleToggleUserStatus(u)}
+                                  className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                                    u.isActive !== false
+                                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
+                                  }`}
+                                >
+                                  {u.isActive !== false ? 'Disable' : 'Enable'}
+                                </button>
+
+                                <button
+                                  onClick={() => setDeleteUserConfirm(u)}
+                                  className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold cursor-pointer transition-all"
+                                >
+                                  Delete User
+                                </button>
+                              </>
                             )}
                           </td>
                         </tr>
@@ -884,7 +855,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 3: PARTNER ACCOUNTS (ADMIN ONLY) --- */}
+        {/* --- TAB 3: PARTNER ACCOUNTS (HOTELS & TRAVEL AGENCIES) --- */}
         {activeTab === 'partner_accounts' && activeRoleUser?.role === 'MAIN_ADMIN' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
@@ -922,7 +893,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                       setIsCreateHotelModalOpen(true);
                       setHotelFormError(null);
                     }}
-                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5"
+                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>+ Create Hotel Account</span>
@@ -933,7 +904,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                       setIsCreateAgencyModalOpen(true);
                       setAgencyFormError(null);
                     }}
-                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5"
+                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>+ Create Travel Agency Account</span>
@@ -960,7 +931,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">Organization / Name</th>
+                      <th className="p-3.5">Organization Name</th>
                       <th className="p-3.5">Login Email</th>
                       <th className="p-3.5">Phone</th>
                       <th className="p-3.5">Address</th>
@@ -1038,7 +1009,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 4: BOOKINGS MANAGEMENT --- */}
+        {/* --- TAB 4: CENTRAL REPOSITORY BOOKINGS MANAGEMENT (HOTEL STAYS + FLEET VEHICLE TRIPS) --- */}
         {activeTab === 'bookings' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
@@ -1048,7 +1019,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Search user, booking ID, phone..."
+                  placeholder="Search user name, token ID, phone, route..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#121218] border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
@@ -1072,18 +1043,18 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               </div>
             </div>
 
-            {/* Bookings Table */}
+            {/* Bookings Central Repository Table */}
             <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">Booking ID</th>
-                      <th className="p-3.5">Traveler</th>
-                      <th className="p-3.5">Route</th>
-                      <th className="p-3.5">Vehicle</th>
-                      <th className="p-3.5">Hotel Stay</th>
-                      <th className="p-3.5">Date</th>
+                      <th className="p-3.5">Voucher Token ID</th>
+                      <th className="p-3.5">Traveler Details</th>
+                      <th className="p-3.5">Route & Distance</th>
+                      <th className="p-3.5">Vehicle Fleet</th>
+                      <th className="p-3.5">Hotel Stay & Stay Days</th>
+                      <th className="p-3.5">Travel Date</th>
                       <th className="p-3.5">Total Fare</th>
                       <th className="p-3.5">Status</th>
                       <th className="p-3.5 text-right">Actions</th>
@@ -1093,23 +1064,36 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     {isolatedBookings.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="p-8 text-center text-zinc-500">
-                          No bookings found for this role scope.
+                          No booking records found in central repository.
                         </td>
                       </tr>
                     ) : (
                       isolatedBookings.map((b) => (
                         <tr key={b.id} className="hover:bg-zinc-900/50 transition-colors">
-                          <td className="p-3.5 font-bold text-[#D4AF37]">{b.id}</td>
+                          <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{b.id}</td>
                           <td className="p-3.5">
                             <div className="font-bold text-white">{b.user.fullName}</div>
+                            <div className="text-[10px] text-sky-400 font-mono">{b.user.email}</div>
                             <div className="text-[10px] text-zinc-500">{b.user.phone}</div>
                           </td>
                           <td className="p-3.5">
                             <div className="font-semibold text-white">{b.from} → {b.to}</div>
-                            <div className="text-[10px] text-zinc-500">{b.distanceKm} km</div>
+                            <div className="text-[10px] text-amber-400 font-mono">{b.distanceKm} km trip</div>
                           </td>
-                          <td className="p-3.5">{b.vehicle?.name || 'Standard Car'}</td>
-                          <td className="p-3.5">{b.hotel ? b.hotel.name : 'Transit Only'}</td>
+                          <td className="p-3.5">
+                            <div className="font-semibold text-white">{b.vehicle?.name || 'Standard Sedan'}</div>
+                            <div className="text-[10px] text-zinc-400">{b.vehicle?.carType || b.vehicle?.category || 'Executive Fleet'}</div>
+                          </td>
+                          <td className="p-3.5">
+                            {b.hotel ? (
+                              <div>
+                                <div className="font-semibold text-emerald-400">{b.hotel.name}</div>
+                                <div className="text-[10px] text-zinc-300">Stay: <strong>{b.hotelNights || 1} Night(s) / Days</strong></div>
+                              </div>
+                            ) : (
+                              <div className="text-zinc-500 italic">Transit Only (No Hotel)</div>
+                            )}
+                          </td>
                           <td className="p-3.5">{b.travelDate}</td>
                           <td className="p-3.5 font-bold text-emerald-400">
                             {formatINR(b.pricing?.total || 0)}
@@ -1126,7 +1110,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                               onClick={() => onViewTicket(b)}
                               className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-white cursor-pointer"
                             >
-                              Ticket
+                              Voucher
                             </button>
                             <button
                               onClick={() => onUpdateStatus(b.id, b.status === 'Confirmed' ? 'Cancelled' : 'Confirmed')}
@@ -1178,9 +1162,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     ) : (
                       auditLogsList.map((log) => (
                         <tr key={log.id} className="hover:bg-zinc-900/50 transition-colors">
-                          <td className="p-3.5 font-bold text-[#D4AF37]">{log.id}</td>
+                          <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{log.id}</td>
                           <td className="p-3.5 font-bold text-white">{log.action}</td>
-                          <td className="p-3.5 text-sky-400">{log.actorEmail}</td>
+                          <td className="p-3.5 text-sky-400 font-mono">{log.actorEmail}</td>
                           <td className="p-3.5 font-bold text-amber-400">{log.actorRole}</td>
                           <td className="p-3.5 text-zinc-400">{log.targetType}:{log.targetId}</td>
                           <td className="p-3.5 text-zinc-300 max-w-sm">{log.details}</td>
@@ -1197,77 +1181,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 6: ADMIN SETTINGS (CHANGE PASSWORD) --- */}
-        {activeTab === 'settings' && activeRoleUser?.role === 'MAIN_ADMIN' && (
-          <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-md mx-auto w-full">
-            <div className="text-center space-y-2">
-              <Lock className="w-8 h-8 text-[#D4AF37] mx-auto" />
-              <h3 className="text-lg font-bold text-white">Admin Security Settings</h3>
-              <p className="text-xs text-zinc-400 font-mono-tech">
-                Update initial bootstrap administrator password securely.
-              </p>
-            </div>
-
-            {changePassError && (
-              <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
-                ⚠️ {changePassError}
-              </div>
-            )}
-
-            {changePassSuccess && (
-              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs font-semibold">
-                ✅ {changePassSuccess}
-              </div>
-            )}
-
-            <form onSubmit={handleChangeAdminPasswordSubmit} className="space-y-4 font-mono-tech text-xs">
-              <div>
-                <label className="block text-zinc-300 font-semibold mb-1">New Admin Password</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  placeholder="Min 8 characters"
-                  value={adminNewPassword}
-                  onChange={(e) => setAdminNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#121218] border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 font-semibold mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  placeholder="Confirm new password"
-                  value={adminConfirmPassword}
-                  onChange={(e) => setAdminConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#121218] border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                />
-              </div>
-
-              {adminNewPassword && (
-                <div className="p-2 rounded-lg bg-[#121218] border border-zinc-800 flex items-center justify-between text-[11px]">
-                  <span className="text-zinc-400">Strength:</span>
-                  <span className={`font-bold px-2 py-0.5 rounded text-white ${getPasswordStrength(adminNewPassword).color}`}>
-                    {getPasswordStrength(adminNewPassword).label}
-                  </span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isChangingPass}
-                className="ui-btn-primary w-full py-3 text-xs uppercase font-bold shadow-md"
-              >
-                {isChangingPass ? 'Updating...' : 'Update Admin Password'}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* --- TAB 7: PARTNER APPLICATIONS / REQUESTS --- */}
+        {/* --- TAB 6: PARTNER APPLICATIONS / REQUESTS --- */}
         {activeTab === 'partner_requests' && activeRoleUser?.role === 'MAIN_ADMIN' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             <h4 className="text-sm font-mono-tech font-bold uppercase text-zinc-300">
@@ -1307,7 +1221,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                             setApprovalPassword('Partner@2026');
                             setApprovalPartnerName(req.businessName);
                           }}
-                          className="ui-btn-primary text-xs py-2 px-3"
+                          className="ui-btn-primary text-xs py-2 px-3 cursor-pointer"
                         >
                           Approve Account
                         </button>
@@ -1316,7 +1230,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                             await rejectAdminRequestApi(req.id);
                             await loadData();
                           }}
-                          className="ui-btn-secondary text-xs py-2 px-3 text-red-400"
+                          className="ui-btn-secondary text-xs py-2 px-3 text-red-400 cursor-pointer"
                         >
                           Reject
                         </button>
@@ -1336,7 +1250,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2 text-sky-400 font-bold text-lg">
                   <Building2 className="w-5 h-5" />
-                  <span>Create Hotel Account</span>
+                  <span>Create Hotel Account (Saved in Central Admin)</span>
                 </div>
                 <button
                   onClick={() => setIsCreateHotelModalOpen(false)}
@@ -1354,7 +1268,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
               <form onSubmit={handleCreateHotelAccount} className="space-y-3 text-xs font-mono-tech">
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Name</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Name <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     required
@@ -1366,7 +1280,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Login Email</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Login Email <span className="text-red-400">*</span></label>
                   <input
                     type="email"
                     required
@@ -1379,7 +1293,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Password</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Password <span className="text-red-400">*</span></label>
                     <input
                       type="password"
                       required
@@ -1391,7 +1305,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password <span className="text-red-400">*</span></label>
                     <input
                       type="password"
                       required
@@ -1415,7 +1329,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number <span className="text-red-400">*</span></label>
                     <input
                       type="tel"
                       required
@@ -1439,9 +1353,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Address</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Property Address <span className="text-red-400">*</span></label>
                   <input
                     type="text"
+                    required
                     placeholder="e.g. Diplomatic Enclave, Chanakyapuri, New Delhi"
                     value={hotelFormAddress}
                     onChange={(e) => setHotelFormAddress(e.target.value)}
@@ -1461,7 +1376,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     type="submit"
                     className="flex-1 py-3 rounded-xl bg-sky-500 text-white font-bold uppercase cursor-pointer shadow-md"
                   >
-                    Create Hotel Account
+                    Save Hotel Account
                   </button>
                 </div>
               </form>
@@ -1476,7 +1391,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2 text-sky-400 font-bold text-lg">
                   <Car className="w-5 h-5" />
-                  <span>Create Travel Agency Account</span>
+                  <span>Create Travel Agency Account (Saved in Central Admin)</span>
                 </div>
                 <button
                   onClick={() => setIsCreateAgencyModalOpen(false)}
@@ -1494,7 +1409,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
               <form onSubmit={handleCreateAgencyAccount} className="space-y-3 text-xs font-mono-tech">
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Agency Name</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Agency Name <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     required
@@ -1506,7 +1421,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Login Email</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Login Email <span className="text-red-400">*</span></label>
                   <input
                     type="email"
                     required
@@ -1519,7 +1434,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Password</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Password <span className="text-red-400">*</span></label>
                     <input
                       type="password"
                       required
@@ -1531,7 +1446,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password <span className="text-red-400">*</span></label>
                     <input
                       type="password"
                       required
@@ -1555,7 +1470,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number</label>
+                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number <span className="text-red-400">*</span></label>
                     <input
                       type="tel"
                       required
@@ -1579,9 +1494,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Agency Office Address</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Agency Office Address <span className="text-red-400">*</span></label>
                   <input
                     type="text"
+                    required
                     placeholder="e.g. Plot 12, Transport Hub, Begumpet, Hyderabad"
                     value={agencyFormAddress}
                     onChange={(e) => setAgencyFormAddress(e.target.value)}
@@ -1601,10 +1517,45 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     type="submit"
                     className="flex-1 py-3 rounded-xl bg-sky-500 text-white font-bold uppercase cursor-pointer shadow-md"
                   >
-                    Create Agency Account
+                    Save Agency Account
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- DELETE USER CONFIRMATION MODAL --- */}
+        {deleteUserConfirm && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-red-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center gap-3 text-red-400 font-bold text-lg">
+                <Trash2 className="w-6 h-6" />
+                <span>Confirm User Account Deletion</span>
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed font-mono-tech">
+                Are you sure you want to permanently delete the customer account for{' '}
+                <strong className="text-white">{deleteUserConfirm.name}</strong> ({deleteUserConfirm.email})?
+                This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3 pt-3 text-xs font-mono-tech">
+                <button
+                  type="button"
+                  onClick={() => setDeleteUserConfirm(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteUserSubmit}
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold uppercase cursor-pointer shadow-md"
+                >
+                  Delete User
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1666,7 +1617,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- DELETE CONFIRMATION MODAL --- */}
+        {/* --- DELETE PARTNER CONFIRMATION MODAL --- */}
         {deletePartnerConfirm && (
           <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-[#0b0b10] border border-red-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
@@ -1774,14 +1725,14 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- TAB 8: VERIFY TOKEN ID --- */}
+        {/* --- TAB 7: VERIFY VOUCHER TOKEN ID --- */}
         {activeTab === 'verify_token' && (
           <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-xl mx-auto w-full">
             <div className="text-center space-y-2">
               <QrCode className="w-8 h-8 text-sky-400 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Registration Token Verification</h3>
+              <h3 className="text-lg font-bold text-white">Registration Voucher Token Verification</h3>
               <p className="text-xs text-zinc-400 font-mono-tech">
-                Enter booking token ID to verify guest registration or trip voucher.
+                Enter booking registration token ID to verify guest stay or travel trip voucher.
               </p>
             </div>
 
@@ -1798,7 +1749,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <button
                 type="submit"
                 disabled={isVerifying}
-                className="ui-btn-primary w-full py-3 text-xs uppercase font-bold"
+                className="ui-btn-primary w-full py-3 text-xs uppercase font-bold cursor-pointer"
               >
                 {isVerifying ? 'Verifying...' : 'Verify Token ID'}
               </button>
@@ -1808,13 +1759,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <div className={`p-4 rounded-xl border text-xs font-mono-tech ${
                 verifyResult.valid ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' : 'bg-red-950/60 border-red-500/50 text-red-300'
               }`}>
-                <div className="font-bold mb-1">{verifyResult.valid ? 'VALID TOKEN' : 'INVALID TOKEN'}</div>
+                <div className="font-bold mb-1">{verifyResult.valid ? 'VALID VOUCHER TOKEN' : 'INVALID TOKEN'}</div>
                 <div>{verifyResult.message || verifyResult.error}</div>
                 {verifyResult.booking && (
                   <div className="mt-2 pt-2 border-t border-emerald-500/30 text-white space-y-1">
+                    <div>Token ID: <strong className="text-[#D4AF37] font-mono">{verifyResult.booking.id}</strong></div>
                     <div>Traveler: <strong>{verifyResult.booking.user.fullName}</strong></div>
-                    <div>Route: <strong>{verifyResult.booking.from} → {verifyResult.booking.to}</strong></div>
+                    <div>Route: <strong>{verifyResult.booking.from} → {verifyResult.booking.to}</strong> ({verifyResult.booking.distanceKm} km)</div>
                     <div>Vehicle: <strong>{verifyResult.booking.vehicle.name}</strong></div>
+                    <div>Hotel Stay: <strong>{verifyResult.booking.hotel ? `${verifyResult.booking.hotel.name} (${verifyResult.booking.hotelNights || 1} Nights)` : 'Transit Only'}</strong></div>
                   </div>
                 )}
               </div>

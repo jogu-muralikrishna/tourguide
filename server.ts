@@ -401,6 +401,17 @@ async function startServer() {
     }
   });
 
+  // Delete User Account (Admin Only)
+  app.delete('/api/admin/users/:id', requireAdmin, (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      db.deleteUserAccount(id);
+      res.json({ success: true, message: 'User account deleted successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to delete user account.' });
+    }
+  });
+
   // Get Audit Logs (Admin Only)
   app.get('/api/admin/audit-logs', requireAdmin, (_req: Request, res: Response) => {
     const logs = db.getAuditLogs();

@@ -785,4 +785,18 @@ export async function deletePartnerAccountApi(id: string): Promise<{ success: bo
   return await res.json();
 }
 
+export async function deleteUserAccountApi(id: string): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch(`/api/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to delete user account' }));
+    throw new Error(err.error || 'Failed to delete user account');
+  }
+
+  return await res.json();
+}
+
 

@@ -396,6 +396,28 @@ class Database {
     return true;
   }
 
+  // Delete Customer User Account
+  public deleteUserAccount(userId: string, actorEmail: string = 'admin@tourguide.com'): boolean {
+    const user = this.findUserById(userId);
+    if (!user) {
+      throw new Error('User account not found.');
+    }
+    if (user.role === 'MAIN_ADMIN') {
+      throw new Error('Cannot delete the primary System Administrator account.');
+    }
+    this.users.delete(user.email);
+    this.recordAuditLog(
+      'USER_DELETED',
+      'ADMIN_SYSTEM',
+      actorEmail,
+      'MAIN_ADMIN',
+      user.role,
+      user.id,
+      `Deleted user account for ${user.name} (${user.email}).`
+    );
+    return true;
+  }
+
   public verifyPassword(plain: string, hash: string): boolean {
     return bcrypt.compareSync(plain, hash);
   }
