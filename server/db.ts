@@ -320,6 +320,37 @@ class Database {
     return partnerUser;
   }
 
+  // Create Sub-Admin Account for Hotel or Travel Agency
+  public createSubAdminAccount(data: {
+    name: string;
+    email: string;
+    phone: string;
+    passwordPlain: string;
+    subAdminType: 'HOTEL_SUBADMIN' | 'TRAVEL_SUBADMIN';
+    assignedName: string;
+    address?: string;
+    isActive?: boolean;
+    createdBy?: string;
+  }): AuthUser {
+    const role: UserRole = data.subAdminType === 'HOTEL_SUBADMIN' ? 'HOTEL_ADMIN' : 'TRAVEL_ADMIN';
+    const orgId = data.subAdminType === 'HOTEL_SUBADMIN' ? `hotel-${Date.now()}` : `agency-${Date.now()}`;
+
+    return this.createPartnerAccount({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      passwordPlain: data.passwordPlain,
+      role,
+      address: data.address,
+      isActive: data.isActive,
+      hotelId: data.subAdminType === 'HOTEL_SUBADMIN' ? orgId : undefined,
+      hotelName: data.subAdminType === 'HOTEL_SUBADMIN' ? data.assignedName : undefined,
+      agencyId: data.subAdminType === 'TRAVEL_SUBADMIN' ? orgId : undefined,
+      agencyName: data.subAdminType === 'TRAVEL_SUBADMIN' ? data.assignedName : undefined,
+      createdBy: data.createdBy || 'admin@tourguide.com',
+    });
+  }
+
   // Set Partner Account Active/Disabled Status
   public setPartnerStatus(userId: string, isActive: boolean, actorEmail: string = 'admin@tourguide.com'): AuthUser {
     const user = this.findUserById(userId);

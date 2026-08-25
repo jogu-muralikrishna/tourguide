@@ -637,6 +637,31 @@ export async function createAgencyAccountApi(payload: {
   return await res.json();
 }
 
+export async function createSubAdminAccountApi(payload: {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  phone: string;
+  subAdminType: 'HOTEL_SUBADMIN' | 'TRAVEL_SUBADMIN';
+  assignedName: string;
+  address?: string;
+  status?: 'Active' | 'Disabled';
+}): Promise<{ success: boolean; user: AuthRoleUser; message?: string }> {
+  const res = await fetch('/api/admin/create-subadmin', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to create Sub-Admin account' }));
+    throw new Error(err.error || 'Failed to create Sub-Admin account');
+  }
+
+  return await res.json();
+}
+
 export async function updatePartnerStatusApi(id: string, isActive: boolean): Promise<{ success: boolean; message?: string }> {
   const res = await fetch(`/api/admin/partners/${id}/status`, {
     method: 'PUT',

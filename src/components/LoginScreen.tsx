@@ -127,6 +127,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             <span className="hidden sm:inline">Partner Registration</span>
             <span className="sm:hidden">Partner</span>
           </button>
+
+          {/* Back to App / Guest Option */}
+          <button
+            onClick={() => {
+              const guestUser: AuthRoleUser = {
+                id: 'GUEST-001',
+                name: 'Guest Traveler',
+                email: 'guest@tourguide.com',
+                phone: '+91 99999 99999',
+                role: 'USER',
+              };
+              onLoginSuccess(guestUser, 'guest@tourguide.com');
+            }}
+            className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <span>← Back to Previous Page</span>
+          </button>
         </div>
       </header>
 

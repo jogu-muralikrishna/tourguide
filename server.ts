@@ -290,6 +290,49 @@ async function startServer() {
     }
   });
 
+  // Create Sub-Admin Account for Hotel or Travel Agency (Admin Only)
+  app.post('/api/admin/create-subadmin', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+    const { name, email, password, confirmPassword, phone, subAdminType, assignedName, address, status = 'Active' } = req.body;
+
+    if (!name || !email || !password || !phone || !subAdminType || !assignedName) {
+      res.status(400).json({ error: 'Name, Email, Password, Phone, Sub-Admin Type, and Assigned Organization Name are required.' });
+      return;
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      res.status(400).json({ error: 'Passwords do not match.' });
+      return;
+    }
+
+    if (password.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      return;
+    }
+
+    try {
+      const subAdmin = db.createSubAdminAccount({
+        name,
+        email,
+        phone,
+        passwordPlain: password,
+        subAdminType,
+        assignedName,
+        address,
+        isActive: status === 'Active',
+        createdBy: req.user?.email || 'admin@tourguide.com',
+      });
+
+      const { passwordHash, ...safeUser } = subAdmin;
+      res.status(201).json({
+        success: true,
+        message: `${subAdminType === 'HOTEL_SUBADMIN' ? 'Hotel Manager Sub-Admin' : 'Travel Agency Fleet Sub-Admin'} created successfully.`,
+        user: safeUser,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to create Sub-Admin account.' });
+    }
+  });
+
   // Toggle Partner Account Active/Disabled Status
   app.put('/api/admin/partners/:id/status', requireAdmin, (req: Request, res: Response) => {
     const { id } = req.params;
