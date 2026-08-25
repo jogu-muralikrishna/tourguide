@@ -1212,56 +1212,146 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
-                    <tr>
-                      <th className="p-3.5">Voucher Token ID</th>
-                      <th className="p-3.5">Traveler Details</th>
-                      <th className="p-3.5">Route & Distance</th>
-                      <th className="p-3.5">Vehicle Fleet</th>
-                      <th className="p-3.5">Hotel Stay & Stay Days</th>
-                      <th className="p-3.5">Travel Date</th>
-                      <th className="p-3.5">Total Fare</th>
-                      <th className="p-3.5">Status</th>
-                      <th className="p-3.5 text-right">Actions</th>
-                    </tr>
+                    {activeRoleUser?.role === 'HOTEL_ADMIN' ? (
+                      <tr>
+                        <th className="p-3.5">Voucher Token ID</th>
+                        <th className="p-3.5">Guest Name & Verification Mobile</th>
+                        <th className="p-3.5">Hotel Property</th>
+                        <th className="p-3.5">Check-In Date</th>
+                        <th className="p-3.5">Stay Days & Nights</th>
+                        <th className="p-3.5">Room & Stay Charges</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Actions</th>
+                      </tr>
+                    ) : activeRoleUser?.role === 'TRAVEL_ADMIN' ? (
+                      <tr>
+                        <th className="p-3.5">Journey Token ID</th>
+                        <th className="p-3.5">Traveler & Mobile</th>
+                        <th className="p-3.5">Car Selected</th>
+                        <th className="p-3.5">Route & Distance</th>
+                        <th className="p-3.5">Hotel Stopover</th>
+                        <th className="p-3.5">Tiffin / Meal Stopover</th>
+                        <th className="p-3.5">Trip Fare</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Actions</th>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <th className="p-3.5">Token ID</th>
+                        <th className="p-3.5">Traveler & Mobile</th>
+                        <th className="p-3.5">Car Selected</th>
+                        <th className="p-3.5">Route & Distance</th>
+                        <th className="p-3.5">Hotel Stop & Stay Days</th>
+                        <th className="p-3.5">Tiffin / Meal Stopover</th>
+                        <th className="p-3.5">Total Fare</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Actions</th>
+                      </tr>
+                    )}
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
                     {isolatedBookings.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="p-8 text-center text-zinc-500">
-                          No booking records found in central repository.
+                          {activeRoleUser?.role === 'HOTEL_ADMIN' && 'No hotel stay bookings found.'}
+                          {activeRoleUser?.role === 'TRAVEL_ADMIN' && 'No fleet vehicle trip records found.'}
+                          {activeRoleUser?.role === 'MAIN_ADMIN' && 'No booking records found in central repository.'}
                         </td>
                       </tr>
                     ) : (
                       isolatedBookings.map((b) => (
                         <tr key={b.id} className="hover:bg-zinc-900/50 transition-colors">
                           <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{b.id}</td>
-                          <td className="p-3.5">
-                            <div className="font-bold text-white">{b.user.fullName}</div>
-                            <div className="text-[10px] text-sky-400 font-mono">{b.user.email}</div>
-                            <div className="text-[10px] text-zinc-500">{b.user.phone}</div>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="font-semibold text-white">{b.from} → {b.to}</div>
-                            <div className="text-[10px] text-amber-400 font-mono">{b.distanceKm} km trip</div>
-                          </td>
-                          <td className="p-3.5">
-                            <div className="font-semibold text-white">{b.vehicle?.name || 'Standard Sedan'}</div>
-                            <div className="text-[10px] text-zinc-400">{b.vehicle?.carType || b.vehicle?.category || 'Executive Fleet'}</div>
-                          </td>
-                          <td className="p-3.5">
-                            {b.hotel ? (
-                              <div>
-                                <div className="font-semibold text-emerald-400">{b.hotel.name}</div>
-                                <div className="text-[10px] text-zinc-300">Stay: <strong>{b.hotelNights || 1} Night(s) / Days</strong></div>
-                              </div>
-                            ) : (
-                              <div className="text-zinc-500 italic">Transit Only (No Hotel)</div>
-                            )}
-                          </td>
-                          <td className="p-3.5">{b.travelDate}</td>
-                          <td className="p-3.5 font-bold text-emerald-400">
-                            {formatINR(b.pricing?.total || 0)}
-                          </td>
+
+                          {activeRoleUser?.role === 'HOTEL_ADMIN' ? (
+                            <>
+                              <td className="p-3.5">
+                                <div className="font-bold text-white">{b.user.fullName}</div>
+                                <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                                  <span>📱 Verification Mobile:</span>
+                                  <strong>{b.user.phone}</strong>
+                                </div>
+                                <div className="text-[10px] text-zinc-500">{b.user.email}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-emerald-400">{b.hotel?.name || activeRoleUser.hotelName || 'The Leela Palace'}</div>
+                                <div className="text-[10px] text-zinc-400">{b.hotel?.location || 'Diplomatic Enclave'}</div>
+                              </td>
+                              <td className="p-3.5">{b.travelDate || b.checkInDate || '2026-03-15'}</td>
+                              <td className="p-3.5">
+                                <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-[10px] font-bold">
+                                  {b.hotelNights || 1} Night(s) / Days Stay
+                                </span>
+                              </td>
+                              <td className="p-3.5 font-bold text-emerald-400">
+                                {formatINR(b.pricing?.hotelCost || b.hotelTotal || (b.hotelPricePerNight || 5500) * (b.hotelNights || 1))}
+                              </td>
+                            </>
+                          ) : activeRoleUser?.role === 'TRAVEL_ADMIN' ? (
+                            <>
+                              <td className="p-3.5">
+                                <div className="font-bold text-white">{b.user.fullName}</div>
+                                <div className="text-[10px] text-sky-400 font-mono">📱 {b.user.phone}</div>
+                                <div className="text-[10px] text-zinc-500">{b.user.email}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-bold text-white flex items-center gap-1">
+                                  <span>🚗</span>
+                                  <span>{b.vehicle?.name || 'Toyota Innova Crysta'}</span>
+                                </div>
+                                <div className="text-[10px] text-blue-400">{b.vehicle?.carType || b.vehicle?.category || 'Executive SUV Fleet'}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-white">{b.from || 'Hyderabad'} → {b.to || 'Delhi'}</div>
+                                <div className="text-[10px] text-amber-400 font-mono">{b.distanceKm || 1480} km ({b.durationText || '18h 30m'})</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-emerald-400">🏨 {b.hotel?.name || 'Assigned Transit Hotel'}</div>
+                                <div className="text-[10px] text-zinc-400">Stay: {b.hotelNights || 1} Night(s)</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-amber-300">🍳 {b.pitstops?.[0]?.name || b.selectedFoodItems?.[0]?.restaurantName || 'Highway Food Court & Breakfast Pitstop'}</div>
+                                <div className="text-[10px] text-zinc-400">Tiffin / Meal Stopover</div>
+                              </td>
+                              <td className="p-3.5 font-bold text-emerald-400">
+                                {formatINR(b.pricing?.total || b.pricing?.vehicleCost || 8200)}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="p-3.5">
+                                <div className="font-bold text-white">{b.user.fullName}</div>
+                                <div className="text-[10px] text-sky-400 font-mono">📱 {b.user.phone}</div>
+                                <div className="text-[10px] text-zinc-500">{b.user.email}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-white">🚗 {b.vehicle?.name || 'Toyota Innova Crysta'}</div>
+                                <div className="text-[10px] text-zinc-400">{b.vehicle?.carType || 'SUV'}</div>
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-white">{b.from} → {b.to}</div>
+                                <div className="text-[10px] text-amber-400 font-mono">{b.distanceKm} km trip</div>
+                              </td>
+                              <td className="p-3.5">
+                                {b.hotel ? (
+                                  <div>
+                                    <div className="font-semibold text-emerald-400">🏨 {b.hotel.name}</div>
+                                    <div className="text-[10px] text-zinc-300">Stay: <strong>{b.hotelNights || 1} Night(s) / Days</strong></div>
+                                  </div>
+                                ) : (
+                                  <div className="text-zinc-500 italic">Transit Only</div>
+                                )}
+                              </td>
+                              <td className="p-3.5">
+                                <div className="font-semibold text-amber-300">🍳 {b.pitstops?.[0]?.name || b.selectedFoodItems?.[0]?.restaurantName || 'Highway Food Court Pitstop'}</div>
+                                <div className="text-[10px] text-zinc-400">Tiffin & Meal Stop</div>
+                              </td>
+                              <td className="p-3.5 font-bold text-emerald-400">
+                                {formatINR(b.pricing?.total || 0)}
+                              </td>
+                            </>
+                          )}
+
                           <td className="p-3.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                               b.status === 'Confirmed' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-red-950 text-red-400 border border-red-800'
