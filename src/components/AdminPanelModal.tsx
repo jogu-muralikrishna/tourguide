@@ -1,37 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldAlert, 
   X, 
-  TrendingUp, 
-  Users, 
-  User,
-  CheckCircle2, 
-  XCircle, 
-  Clock,
-  DollarSign, 
-  Download, 
-  Trash2, 
-  Ticket, 
   Search, 
-  Filter, 
-  Sparkles,
-  Lock,
-  Building2,
-  Car,
-  Key,
-  Shield,
+  ShieldAlert, 
+  User, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Building2, 
+  Car, 
+  Calendar, 
+  CheckCircle2, 
+  Clock, 
+  XCircle, 
+  Download, 
+  QrCode, 
+  Key, 
+  Lock, 
+  Plus, 
+  Eye, 
+  Trash2, 
+  RotateCcw, 
+  Power, 
   ShieldCheck,
-  RefreshCw,
-  QrCode,
-  Check,
-  AlertCircle,
-  Eye,
-  Utensils,
-  Calendar,
-  Phone,
-  Mail,
-  MapPin,
-  FileText
+  Users
 } from 'lucide-react';
 import { Booking, AdminRequest } from '../types';
 import { AdminService } from '../services/adminService';
@@ -44,7 +36,13 @@ import {
   verifyTokenApi, 
   fetchAdminRequestsApi, 
   approveAdminRequestApi, 
-  rejectAdminRequestApi 
+  rejectAdminRequestApi,
+  fetchPartnersApi,
+  createHotelAccountApi,
+  createAgencyAccountApi,
+  updatePartnerStatusApi,
+  resetPartnerPasswordApi,
+  deletePartnerAccountApi
 } from '../services/api';
 
 interface AdminPanelModalProps {
@@ -66,7 +64,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onViewTicket,
   onRefreshData,
 }) => {
-  const [activeTab, setActiveTab] = useState<'bookings' | 'partner_requests' | 'verify_token'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'partner_accounts' | 'partner_requests' | 'verify_token'>('bookings');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [systemRoles, setSystemRoles] = useState<AuthRoleUser[]>([]);
@@ -80,6 +78,42 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [partnerRequests, setPartnerRequests] = useState<AdminRequest[]>([]);
   const [isLoadingRequests, setIsLoadingRequests] = useState(false);
 
+  // Partner Accounts State
+  const [partnersList, setPartnersList] = useState<AuthRoleUser[]>([]);
+  const [partnerSubTab, setPartnerSubTab] = useState<'hotels' | 'agencies'>('hotels');
+  const [partnerSearchTerm, setPartnerSearchTerm] = useState('');
+  const [isLoadingPartners, setIsLoadingPartners] = useState(false);
+
+  // Create Hotel Account Modal State
+  const [isCreateHotelModalOpen, setIsCreateHotelModalOpen] = useState(false);
+  const [hotelFormName, setHotelFormName] = useState('');
+  const [hotelFormEmail, setHotelFormEmail] = useState('');
+  const [hotelFormPassword, setHotelFormPassword] = useState('');
+  const [hotelFormConfirmPassword, setHotelFormConfirmPassword] = useState('');
+  const [hotelFormPhone, setHotelFormPhone] = useState('');
+  const [hotelFormAddress, setHotelFormAddress] = useState('');
+  const [hotelFormStatus, setHotelFormStatus] = useState<'Active' | 'Disabled'>('Active');
+  const [hotelFormError, setHotelFormError] = useState<string | null>(null);
+
+  // Create Travel Agency Account Modal State
+  const [isCreateAgencyModalOpen, setIsCreateAgencyModalOpen] = useState(false);
+  const [agencyFormName, setAgencyFormName] = useState('');
+  const [agencyFormEmail, setAgencyFormEmail] = useState('');
+  const [agencyFormPassword, setAgencyFormPassword] = useState('');
+  const [agencyFormConfirmPassword, setAgencyFormConfirmPassword] = useState('');
+  const [agencyFormPhone, setAgencyFormPhone] = useState('');
+  const [agencyFormAddress, setAgencyFormAddress] = useState('');
+  const [agencyFormStatus, setAgencyFormStatus] = useState<'Active' | 'Disabled'>('Active');
+  const [agencyFormError, setAgencyFormError] = useState<string | null>(null);
+
+  // Reset Password Modal State
+  const [resetPartner, setResetPartner] = useState<AuthRoleUser | null>(null);
+  const [resetPasswordInput, setResetPasswordInput] = useState('');
+  const [resetPasswordError, setResetPasswordError] = useState<string | null>(null);
+
+  // Delete Confirmation Modal State
+  const [deletePartnerConfirm, setDeletePartnerConfirm] = useState<AuthRoleUser | null>(null);
+
   // Partner Approval Modal State
   const [approvingRequest, setApprovingRequest] = useState<AdminRequest | null>(null);
   const [approvalEmail, setApprovalEmail] = useState('');
@@ -91,6 +125,11 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [verifyTokenInput, setVerifyTokenInput] = useState('');
   const [verifyResult, setVerifyResult] = useState<{ valid: boolean; booking?: Booking; error?: string; message?: string } | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Password Authentication for Switching Dashboard Views
+  const [targetRoleToSwitch, setTargetRoleToSwitch] = useState<AuthRoleUser | null>(null);
+  const [roleSwitchPassword, setRoleSwitchPassword] = useState('');
+  const [roleSwitchError, setRoleSwitchError] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -105,10 +144,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setIsLoadingRequests(true);
       const reqs = await fetchAdminRequestsApi();
       setPartnerRequests(reqs);
+
+      setIsLoadingPartners(true);
+      const partners = await fetchPartnersApi();
+      setPartnersList(partners);
     } catch (err) {
       console.warn(err);
     } finally {
       setIsLoadingRequests(false);
+      setIsLoadingPartners(false);
     }
   };
 
@@ -120,50 +164,202 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Role Switcher Auth Gate State
-  const [targetRoleToSwitch, setTargetRoleToSwitch] = useState<AuthRoleUser | null>(null);
-  const [roleSwitchPassword, setRoleSwitchPassword] = useState('');
-  const [roleSwitchError, setRoleSwitchError] = useState<string | null>(null);
-
-  const handleRoleChangeInitiate = (email: string) => {
-    if (activeRoleEmail === email) return;
-    const user = systemRoles.find((r) => r.email === email) || null;
-    if (!user) return;
-    setTargetRoleToSwitch(user);
+  // Handle Initiating Role Switch
+  const handleRoleChangeInitiate = (targetEmail: string) => {
+    if (targetEmail === activeRoleEmail) return;
+    const targetUser = systemRoles.find((r) => r.email === targetEmail);
+    if (!targetUser) return;
+    setTargetRoleToSwitch(targetUser);
     setRoleSwitchPassword('');
     setRoleSwitchError(null);
   };
 
+  // Handle Authenticating Password & Switching Role Dashboard
   const handleConfirmRoleSwitch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!targetRoleToSwitch) return;
-
-    const enteredPass = roleSwitchPassword.trim();
-    let isMatch = false;
-
-    if (targetRoleToSwitch.role === 'MAIN_ADMIN' && (enteredPass === 'admin@123' || enteredPass === 'admin123')) {
-      isMatch = true;
-    } else if (targetRoleToSwitch.role === 'HOTEL_ADMIN' && (enteredPass === 'hotel@123' || enteredPass === 'hotel123')) {
-      isMatch = true;
-    } else if (targetRoleToSwitch.role === 'TRAVEL_ADMIN' && (enteredPass === 'travel@123' || enteredPass === 'travel123' || enteredPass === 'agency123')) {
-      isMatch = true;
-    } else {
-      const adminUsers = AdminService.getAdmins({ role: 'SUPER_ADMIN' } as any);
-      const matchedUser = adminUsers.find((a) => a.email.toLowerCase() === targetRoleToSwitch.email.toLowerCase());
-      if (matchedUser && (matchedUser.password === enteredPass || enteredPass === 'admin@123' || enteredPass === 'hotel@123' || enteredPass === 'travel@123')) {
-        isMatch = true;
-      }
+    if (!targetRoleToSwitch || !roleSwitchPassword.trim()) {
+      setRoleSwitchError('Password is required.');
+      return;
     }
 
-    if (isMatch) {
-      setActiveRoleEmail(targetRoleToSwitch.email);
-      setAuthToken(targetRoleToSwitch.email);
-      setActiveRoleUser(targetRoleToSwitch);
-      setTargetRoleToSwitch(null);
-      setRoleSwitchError(null);
-      if (onRefreshData) onRefreshData();
-    } else {
-      setRoleSwitchError('Invalid password for this admin account. Access denied.');
+    const isValid = AdminService.verifyDashboardRolePassword(targetRoleToSwitch.email, roleSwitchPassword);
+    if (!isValid) {
+      setRoleSwitchError('Incorrect password entered. Authentication failed.');
+      return;
+    }
+
+    setAuthToken(targetRoleToSwitch.email);
+    setActiveRoleEmail(targetRoleToSwitch.email);
+    setActiveRoleUser(targetRoleToSwitch);
+    setTargetRoleToSwitch(null);
+    setRoleSwitchPassword('');
+    setRoleSwitchError(null);
+    if (onRefreshData) onRefreshData();
+  };
+
+  // Filter Bookings Based on Active Role Scope
+  const isolatedBookings = bookings.filter((b) => {
+    if (!activeRoleUser || activeRoleUser.role === 'MAIN_ADMIN') return true;
+    if (activeRoleUser.role === 'HOTEL_ADMIN') {
+      return b.hotel?.id === activeRoleUser.hotelId || b.hotel?.name === activeRoleUser.hotelName;
+    }
+    if (activeRoleUser.role === 'TRAVEL_ADMIN') {
+      return true;
+    }
+    return true;
+  });
+
+  const confirmedBookings = isolatedBookings.filter((b) => b.status === 'Confirmed').length;
+
+  // Filter Partners List
+  const filteredPartners = partnersList.filter((p) => {
+    const roleMatch = partnerSubTab === 'hotels' ? p.role === 'HOTEL_ADMIN' : p.role === 'TRAVEL_ADMIN';
+    const query = partnerSearchTerm.toLowerCase().trim();
+    if (!query) return roleMatch;
+    return (
+      roleMatch &&
+      (p.name.toLowerCase().includes(query) ||
+        p.email.toLowerCase().includes(query) ||
+        p.phone.toLowerCase().includes(query) ||
+        (p.address || '').toLowerCase().includes(query))
+    );
+  });
+
+  // Password Strength Validator
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: 'Empty', color: 'bg-zinc-700' };
+    let score = 0;
+    if (pass.length >= 8) score += 1;
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[a-z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score <= 2) return { score, label: 'Weak', color: 'bg-red-500' };
+    if (score <= 4) return { score, label: 'Medium', color: 'bg-amber-500' };
+    return { score, label: 'Strong (Secure)', color: 'bg-emerald-500' };
+  };
+
+  // Handle Create Hotel Account
+  const handleCreateHotelAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setHotelFormError(null);
+
+    if (hotelFormPassword !== hotelFormConfirmPassword) {
+      setHotelFormError('Passwords do not match.');
+      return;
+    }
+
+    if (hotelFormPassword.length < 8) {
+      setHotelFormError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    try {
+      await createHotelAccountApi({
+        hotelName: hotelFormName,
+        email: hotelFormEmail,
+        password: hotelFormPassword,
+        phone: hotelFormPhone,
+        address: hotelFormAddress,
+        status: hotelFormStatus,
+      });
+
+      setIsCreateHotelModalOpen(false);
+      setHotelFormName('');
+      setHotelFormEmail('');
+      setHotelFormPassword('');
+      setHotelFormConfirmPassword('');
+      setHotelFormPhone('');
+      setHotelFormAddress('');
+      await loadData();
+      alert(`Hotel Account Created Successfully!\nHotel: ${hotelFormName}\nLogin Email: ${hotelFormEmail}`);
+    } catch (err: any) {
+      setHotelFormError(err.message || 'Failed to create Hotel account.');
+    }
+  };
+
+  // Handle Create Travel Agency Account
+  const handleCreateAgencyAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAgencyFormError(null);
+
+    if (agencyFormPassword !== agencyFormConfirmPassword) {
+      setAgencyFormError('Passwords do not match.');
+      return;
+    }
+
+    if (agencyFormPassword.length < 8) {
+      setAgencyFormError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    try {
+      await createAgencyAccountApi({
+        agencyName: agencyFormName,
+        email: agencyFormEmail,
+        password: agencyFormPassword,
+        phone: agencyFormPhone,
+        address: agencyFormAddress,
+        status: agencyFormStatus,
+      });
+
+      setIsCreateAgencyModalOpen(false);
+      setAgencyFormName('');
+      setAgencyFormEmail('');
+      setAgencyFormPassword('');
+      setAgencyFormConfirmPassword('');
+      setAgencyFormPhone('');
+      setAgencyFormAddress('');
+      await loadData();
+      alert(`Travel Agency Account Created Successfully!\nAgency: ${agencyFormName}\nLogin Email: ${agencyFormEmail}`);
+    } catch (err: any) {
+      setAgencyFormError(err.message || 'Failed to create Travel Agency account.');
+    }
+  };
+
+  // Handle Toggle Status (Active ↔ Disabled)
+  const handleTogglePartnerStatus = async (partner: AuthRoleUser) => {
+    try {
+      const nextStatus = partner.isActive === false ? true : false;
+      await updatePartnerStatusApi(partner.id, nextStatus);
+      await loadData();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update account status.');
+    }
+  };
+
+  // Handle Reset Password
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPartner || !resetPasswordInput.trim()) return;
+
+    if (resetPasswordInput.length < 8) {
+      setResetPasswordError('Password must be at least 8 characters long.');
+      return;
+    }
+
+    try {
+      await resetPartnerPasswordApi(resetPartner.id, resetPasswordInput.trim());
+      setResetPartner(null);
+      setResetPasswordInput('');
+      setResetPasswordError(null);
+      alert(`Password Reset Successful for ${resetPartner.email}`);
+    } catch (err: any) {
+      setResetPasswordError(err.message || 'Failed to reset password.');
+    }
+  };
+
+  // Handle Delete Partner Account
+  const handleDeletePartnerSubmit = async () => {
+    if (!deletePartnerConfirm) return;
+    try {
+      await deletePartnerAccountApi(deletePartnerConfirm.id);
+      setDeletePartnerConfirm(null);
+      await loadData();
+      alert('Account deleted successfully.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete partner account.');
     }
   };
 
@@ -171,7 +367,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const handleVerifyToken = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!verifyTokenInput.trim()) return;
-
     setIsVerifying(true);
     setVerifyResult(null);
 
@@ -179,19 +374,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       const res = await verifyTokenApi(verifyTokenInput.trim());
       setVerifyResult(res);
     } catch (err: any) {
-      setVerifyResult({ valid: false, error: err.message || 'Verification service error' });
+      setVerifyResult({ valid: false, error: err.message || 'Verification failed' });
     } finally {
       setIsVerifying(false);
     }
-  };
-
-  // Open Approval Modal
-  const openApprovalModal = (req: AdminRequest) => {
-    setApprovingRequest(req);
-    setApprovalEmail(req.email);
-    const slug = req.businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    setApprovalPassword(`${slug.slice(0, 6)}Pass@2026`);
-    setApprovalPartnerName(req.businessName);
   };
 
   // Handle Confirm Approval & Create Credentials
@@ -217,165 +403,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     } finally {
       setIsSubmittingApproval(false);
     }
-  };
-
-  // Handle Reject Partner Request
-  const handleRejectRequest = async (id: string) => {
-    try {
-      await rejectAdminRequestApi(id);
-      loadData();
-    } catch (err: any) {
-      alert(err.message || 'Rejection failed');
-    }
-  };
-
-  // Data isolation filter based on active role
-  const isolatedBookings = bookings.filter((b) => {
-    if (!activeRoleUser) return true;
-    if (activeRoleUser.role === 'MAIN_ADMIN') return true;
-    if (activeRoleUser.role === 'HOTEL_ADMIN') {
-      return b.hotel && b.hotel.id === activeRoleUser.hotelId;
-    }
-    if (activeRoleUser.role === 'TRAVEL_ADMIN') {
-      return Boolean(b.vehicle);
-    }
-    if (activeRoleUser.role === 'USER') {
-      return (b.user.email || '').toLowerCase() === activeRoleUser.email.toLowerCase();
-    }
-    return true;
-  });
-
-  // Admin Metrics & Totals
-  const totalBookings = isolatedBookings.length;
-  const confirmedBookings = isolatedBookings.filter((b) => b.status === 'Confirmed').length;
-  const pendingBookings = isolatedBookings.filter((b) => b.status === 'Pending').length;
-  const cancelledBookings = isolatedBookings.filter((b) => b.status === 'Cancelled').length;
-
-  // Unique Users Count
-  const uniqueUsers = new Set(
-    isolatedBookings.map((b) => b.userId || b.user.userId || b.user.email || b.user.phone)
-  ).size;
-
-  // Total Revenue (Sum of confirmed finalTotal)
-  const totalRevenue = isolatedBookings
-    .filter((b) => b.status === 'Confirmed')
-    .reduce((sum, b) => {
-      const amount = b.finalTotal || b.pricing?.finalTotal || b.pricing?.total || 0;
-      return sum + amount;
-    }, 0);
-
-  const avgOrderValue = confirmedBookings > 0 ? Math.round(totalRevenue / confirmedBookings) : 0;
-
-  // Advanced Search Across: User ID, Booking ID, Journey Token, Name, Email, Phone, Hotel, Travel Agency
-  const filtered = isolatedBookings.filter((b) => {
-    const matchesFilter = statusFilter === 'all' || b.status === statusFilter;
-    const query = searchTerm.toLowerCase().trim();
-
-    if (!query) return matchesFilter;
-
-    const uId = (b.userId || b.user?.userId || '').toLowerCase();
-    const bkgId = (b.bookingId || b.id || '').toLowerCase();
-    const jToken = (b.journeyToken || b.id || '').toLowerCase();
-    const name = (b.user?.fullName || '').toLowerCase();
-    const email = (b.user?.email || '').toLowerCase();
-    const phone = (b.user?.phone || '').toLowerCase();
-    const hotelName = (b.hotel?.name || '').toLowerCase();
-    const vehicleName = (b.vehicle?.name || '').toLowerCase();
-    const fromCity = (b.from || '').toLowerCase();
-    const toCity = (b.to || '').toLowerCase();
-
-    const matchesSearch =
-      uId.includes(query) ||
-      bkgId.includes(query) ||
-      jToken.includes(query) ||
-      name.includes(query) ||
-      email.includes(query) ||
-      phone.includes(query) ||
-      hotelName.includes(query) ||
-      vehicleName.includes(query) ||
-      fromCity.includes(query) ||
-      toCity.includes(query);
-
-    return matchesFilter && matchesSearch;
-  });
-
-  const handleExportCSV = () => {
-    const headers = [
-      'User ID',
-      'Journey Token',
-      'Booking ID',
-      'User Name',
-      'Email',
-      'Phone',
-      'From',
-      'To',
-      'Distance (km)',
-      'Travel Time',
-      'Number of People',
-      'Start Date',
-      'Start Time',
-      'Car',
-      'Car Cost (INR)',
-      'Hotel',
-      'Hotel Price/Night (INR)',
-      'Hotel Nights',
-      'Hotel Total (INR)',
-      'Food Items Count',
-      'Food Total (INR)',
-      'Service Fee (INR)',
-      'Tax (INR)',
-      'Final Total (INR)',
-      'Booking Status',
-      'Created Date',
-    ];
-
-    const rows = isolatedBookings.map((b) => {
-      const people = b.numberOfPeople || b.travelers || b.user?.numberOfPeople || 1;
-      const carCost = b.carCost || b.pricing?.carCost || b.pricing?.vehicleCost || b.vehicle.price;
-      const hotelRate = b.hotelPricePerNight || b.hotel?.pricePerNight || 0;
-      const hotelTotal = b.hotelTotal || b.pricing?.hotelCost || (b.hotel ? hotelRate * (b.hotelNights || 1) : 0);
-      const foodTotal = b.foodTotal || b.pricing?.foodCost || b.pricing?.pitstopCost || 0;
-      const foodCount = b.selectedFoodItems ? b.selectedFoodItems.length : b.pitstops ? b.pitstops.length : 0;
-      const finalAmt = b.finalTotal || b.pricing?.finalTotal || b.pricing?.total || 0;
-
-      return [
-        `"${b.userId || b.user.userId || ''}"`,
-        `"${b.journeyToken || b.id}"`,
-        `"${b.bookingId || b.id}"`,
-        `"${b.user.fullName}"`,
-        `"${b.user.email || ''}"`,
-        `"${b.user.phone}"`,
-        `"${b.from}"`,
-        `"${b.to}"`,
-        b.distanceKm || '',
-        `"${b.durationText || b.vehicle.travelTime || ''}"`,
-        people,
-        `"${b.travelDate}"`,
-        `"${b.travelTime || '08:00 AM'}"`,
-        `"${b.vehicle.name}"`,
-        carCost,
-        `"${b.hotel?.name || 'Transit'}"`,
-        hotelRate,
-        b.hotelNights || 0,
-        hotelTotal,
-        foodCount,
-        foodTotal,
-        b.serviceFee || b.pricing?.serviceFee || 0,
-        b.tax || b.pricing?.tax || 0,
-        finalAmt,
-        `"${b.status}"`,
-        `"${new Date(b.createdAt).toISOString()}"`,
-      ];
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `TOURGUIDE_AI_MASTER_MANIFEST_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
   };
 
   return (
@@ -408,25 +435,16 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handleExportCSV}
-              id="export-csv-btn"
-              className="px-3 py-1.5 rounded-lg bg-[#14141B] hover:bg-[#20202A] border border-zinc-800 text-[#F3E5AB] text-xs font-mono-tech flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Export CSV</span>
-            </button>
-
-            <button
               onClick={onClose}
               id="close-admin-panel-btn"
-              className="w-9 h-9 rounded-xl bg-[#14141B] hover:bg-[#20202A] text-zinc-400 hover:text-white flex items-center justify-center transition-colors ml-2 cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-[#14141B] hover:bg-[#20202A] text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Role Switcher */}
+        {/* Role Switcher Bar */}
         <div className="px-6 py-3 bg-[#08080C] border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono-tech">
           <div className="flex items-center gap-2 text-zinc-400">
             <Key className="w-3.5 h-3.5 text-[#D4AF37]" />
@@ -538,6 +556,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
           {activeRoleUser?.role === 'MAIN_ADMIN' && (
             <button
+              onClick={() => setActiveTab('partner_accounts')}
+              className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'partner_accounts'
+                  ? 'border-[#D4AF37] text-[#F3E5AB]'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Partner Accounts</span>
+            </button>
+          )}
+
+          {activeRoleUser?.role === 'MAIN_ADMIN' && (
+            <button
               onClick={() => setActiveTab('partner_requests')}
               className={`py-3 border-b-2 font-bold uppercase transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'partner_requests'
@@ -567,434 +599,403 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </button>
         </div>
 
-        {/* Tab 1: Bookings Management */}
+        {/* --- TAB 1: BOOKINGS MANAGEMENT --- */}
         {activeTab === 'bookings' && (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
             
-            {/* Metric Totals Cards */}
-            <div className="p-5 bg-[#0B0B0F] border-b border-zinc-800 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              
-              {/* 1. Total Revenue */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-[#D4AF37]/30">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>TOTAL REVENUE</span>
-                  <DollarSign className="w-3.5 h-3.5 text-[#D4AF37]" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-[#F3E5AB]">
-                  {formatINR(totalRevenue)}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">Confirmed Total</div>
-              </div>
-
-              {/* 2. Total Bookings */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-zinc-800">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>TOTAL BOOKINGS</span>
-                  <Ticket className="w-3.5 h-3.5 text-zinc-400" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-white">
-                  {totalBookings}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">System Records</div>
-              </div>
-
-              {/* 3. Total Users */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-zinc-800">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>TOTAL USERS</span>
-                  <Users className="w-3.5 h-3.5 text-zinc-400" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-white">
-                  {uniqueUsers}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">Unique Passengers</div>
-              </div>
-
-              {/* 4. Confirmed */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-emerald-500/20">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>CONFIRMED</span>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-emerald-400">
-                  {confirmedBookings}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">Active Tickets</div>
-              </div>
-
-              {/* 5. Pending */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-amber-500/20">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>PENDING</span>
-                  <Clock className="w-3.5 h-3.5 text-amber-400" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-amber-400">
-                  {pendingBookings}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">Awaiting Check-in</div>
-              </div>
-
-              {/* 6. Cancelled */}
-              <div className="p-3.5 rounded-xl bg-[#121218] border border-rose-500/20">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-zinc-400 mb-1">
-                  <span>CANCELLED</span>
-                  <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                </div>
-                <div className="font-serif-luxury text-xl font-bold text-rose-400">
-                  {cancelledBookings}
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono-tech">Revoked Passes</div>
-              </div>
-
-            </div>
-
-            {/* Search & Filter Bar */}
-            <div className="p-4 bg-[#0E0E14] border-b border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="relative w-full sm:w-96">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            {/* Filter Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Search User ID, Token ID, Name, Phone, Hotel..."
+                  placeholder="Search user, booking ID, phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-[#14141C] text-white placeholder-zinc-500 pl-9 pr-3 py-2 rounded-xl border border-zinc-800 focus:border-[#D4AF37] text-xs font-mono-tech outline-none"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#121218] border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-zinc-500" />
-                <div className="flex items-center gap-1 p-1 rounded-xl bg-[#14141C] border border-zinc-800 text-xs font-mono-tech">
-                  {['all', 'Confirmed', 'Pending', 'Cancelled'].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setStatusFilter(tab)}
-                      className={`px-3 py-1 rounded-lg capitalize transition-all cursor-pointer ${
-                        statusFilter === tab
-                          ? 'bg-[#D4AF37] text-black font-bold'
-                          : 'text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto flex-1 p-5">
-              {filtered.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShieldAlert className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                  <div className="text-zinc-400 font-mono-tech text-sm">No bookings found matching current filters.</div>
-                </div>
-              ) : (
-                <table className="w-full text-left font-mono-tech text-xs">
-                  <thead>
-                    <tr className="border-b border-zinc-800 text-zinc-400 uppercase text-[10px]">
-                      <th className="pb-3 pr-3">Token & User ID</th>
-                      <th className="pb-3 px-3">Passenger</th>
-                      <th className="pb-3 px-3">Route & Distance</th>
-                      <th className="pb-3 px-3">People</th>
-                      <th className="pb-3 px-3">Car Fare</th>
-                      <th className="pb-3 px-3">Hotel Total</th>
-                      <th className="pb-3 px-3">Food Total</th>
-                      <th className="pb-3 px-3">Final Total</th>
-                      <th className="pb-3 px-3">Status</th>
-                      <th className="pb-3 pl-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800/60">
-                    {filtered.map((b) => {
-                      const people = b.numberOfPeople || b.travelers || b.user?.numberOfPeople || 1;
-                      const peopleLabel = people === 1 ? '1 Person' : `${people} People`;
-                      const carCost = b.carCost || b.pricing?.carCost || b.pricing?.vehicleCost || b.vehicle.price;
-                      const hotelTotal = b.hotelTotal || b.pricing?.hotelCost || (b.hotel ? (b.hotelPricePerNight || b.hotel.pricePerNight) * (b.hotelNights || 1) : 0);
-                      const foodTotal = b.foodTotal || b.pricing?.foodCost || b.pricing?.pitstopCost || 0;
-                      const finalTotal = b.finalTotal || b.pricing?.finalTotal || b.pricing?.total || 0;
-
-                      return (
-                        <tr key={b.id} className="hover:bg-zinc-900/40 transition-colors">
-                          
-                          {/* Token & User ID */}
-                          <td className="py-3.5 pr-3">
-                            <span className="font-bold text-[#F3E5AB] block">{b.journeyToken || b.id}</span>
-                            <span className="text-[10px] text-[#D4AF37]">
-                              UID: {b.userId || b.user.userId || 'TGAI-USER'}
-                            </span>
-                          </td>
-
-                          {/* Passenger */}
-                          <td className="py-3.5 px-3">
-                            <div className="font-bold text-white">{b.user.fullName}</div>
-                            <div className="text-[10px] text-zinc-400">{b.user.phone}</div>
-                          </td>
-
-                          {/* Route */}
-                          <td className="py-3.5 px-3">
-                            <div className="text-white font-medium">
-                              {b.from} <span className="text-[#D4AF37]">➔</span> {b.to}
-                            </div>
-                            <div className="text-[10px] text-zinc-400">
-                              {b.distanceKm ? `${b.distanceKm} km • ` : ''}{b.travelDate}
-                            </div>
-                          </td>
-
-                          {/* People */}
-                          <td className="py-3.5 px-3">
-                            <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[11px] font-bold">
-                              {peopleLabel}
-                            </span>
-                          </td>
-
-                          {/* Car Fare */}
-                          <td className="py-3.5 px-3">
-                            <div className="font-bold text-white">{formatINR(carCost)}</div>
-                            <div className="text-[10px] text-zinc-400 truncate max-w-[120px]">{b.vehicle.name}</div>
-                          </td>
-
-                          {/* Hotel Total */}
-                          <td className="py-3.5 px-3">
-                            <div className="font-bold text-white">{formatINR(hotelTotal)}</div>
-                            <div className="text-[10px] text-zinc-400 truncate max-w-[120px]">
-                              {b.hotel ? `${b.hotel.name} (${b.hotelNights}N)` : 'No Hotel'}
-                            </div>
-                          </td>
-
-                          {/* Food Total */}
-                          <td className="py-3.5 px-3">
-                            <div className="font-bold text-white">{formatINR(foodTotal)}</div>
-                            <div className="text-[10px] text-zinc-400">
-                              {b.selectedFoodItems?.length ? `${b.selectedFoodItems.length} items` : b.pitstops?.length ? `${b.pitstops.length} stops` : 'None'}
-                            </div>
-                          </td>
-
-                          {/* Final Total */}
-                          <td className="py-3.5 px-3">
-                            <span className="font-serif-luxury font-bold text-[#F3E5AB] text-sm">
-                              {formatINR(finalTotal)}
-                            </span>
-                          </td>
-
-                          {/* Status */}
-                          <td className="py-3.5 px-3">
-                            <select
-                              value={b.status}
-                              onChange={(e) => onUpdateStatus(b.id, e.target.value as any)}
-                              className={`px-2 py-0.5 rounded text-[10px] font-mono-tech font-bold outline-none border cursor-pointer ${
-                                b.status === 'Confirmed'
-                                  ? 'bg-emerald-950 text-emerald-400 border-emerald-500/50'
-                                  : b.status === 'Cancelled'
-                                  ? 'bg-rose-950 text-rose-400 border-rose-500/50'
-                                  : 'bg-amber-950 text-amber-400 border-amber-500/50'
-                              }`}
-                            >
-                              <option value="Confirmed">Confirmed</option>
-                              <option value="Pending">Pending</option>
-                              <option value="Cancelled">Cancelled</option>
-                            </select>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3.5 pl-3 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Open Full Details Drawer */}
-                              <button
-                                onClick={() => setInspectBooking(b)}
-                                className="p-1.5 rounded-lg bg-[#15151D] hover:bg-[#20202C] text-[#D4AF37] border border-zinc-800 transition-all cursor-pointer"
-                                title="View Complete Booking Details"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* View Boarding Pass */}
-                              <button
-                                onClick={() => onViewTicket(b)}
-                                className="p-1.5 rounded-lg bg-[#15151D] hover:bg-[#20202C] text-[#F3E5AB] border border-[#D4AF37]/30 transition-all cursor-pointer"
-                                title="View Boarding Pass Ticket"
-                              >
-                                <Ticket className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* Delete */}
-                              <button
-                                onClick={() => onDeleteBooking(b.id)}
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-all cursor-pointer"
-                                title="Delete Record"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-          </div>
-        )}
-
-        {/* Tab 2: Partner Applications */}
-        {activeTab === 'partner_requests' && (
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-base font-bold font-serif-luxury text-white">
-                Pending Sub-Admin Partner Registrations
-              </h4>
-              <button
-                onClick={loadData}
-                className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-mono-tech text-zinc-300 flex items-center gap-1.5 cursor-pointer"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Refresh</span>
-              </button>
-            </div>
-
-            {partnerRequests.length === 0 ? (
-              <div className="text-center py-12 text-zinc-400 font-mono-tech">
-                No partner requests submitted yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {partnerRequests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="p-5 rounded-2xl bg-[#0E0E14] border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4"
+              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                {['all', 'Confirmed', 'Pending', 'Cancelled'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono-tech uppercase font-semibold transition-all cursor-pointer ${
+                      statusFilter === st
+                        ? 'bg-[#D4AF37] text-black font-bold'
+                        : 'bg-[#121218] border border-zinc-800 text-zinc-400 hover:text-white'
+                    }`}
                   >
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-mono-tech uppercase font-bold">
-                          {req.businessType === 'HOTEL_ADMIN' ? 'Hotel Partner' : 'Travel Fleet Partner'}
-                        </span>
-                        <span className="text-xs font-bold text-white">{req.businessName}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono-tech ${
-                          req.status === 'APPROVED' ? 'bg-emerald-950 text-emerald-400' : req.status === 'REJECTED' ? 'bg-red-950 text-red-400' : 'bg-amber-950 text-amber-400'
-                        }`}>
-                          {req.status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-zinc-400 font-mono-tech space-x-2">
-                        <span>Owner: <strong className="text-white">{req.ownerName}</strong></span>
-                        <span>•</span>
-                        <span>Phone: <strong className="text-white">{req.phone}</strong></span>
-                        <span>•</span>
-                        <span>Email: <strong className="text-white">{req.email}</strong></span>
-                      </div>
-                      <div className="text-xs text-zinc-400 mt-1">
-                        Address: {req.address} {req.notes && `• Notes: ${req.notes}`}
-                      </div>
-                    </div>
-
-                    {req.status === 'PENDING' && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openApprovalModal(req)}
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-black font-bold font-mono-tech text-xs uppercase flex items-center gap-1.5 cursor-pointer shadow-lg"
-                        >
-                          <Check className="w-4 h-4" />
-                          <span>Approve & Set Credentials</span>
-                        </button>
-                        <button
-                          onClick={() => handleRejectRequest(req.id)}
-                          className="px-4 py-2 rounded-xl bg-red-900/50 hover:bg-red-800 text-red-300 font-mono-tech text-xs uppercase cursor-pointer"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                    {st}
+                  </button>
                 ))}
               </div>
-            )}
+            </div>
+
+            {/* Bookings Table */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono-tech">
+                  <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3.5">Booking ID</th>
+                      <th className="p-3.5">Traveler</th>
+                      <th className="p-3.5">Route</th>
+                      <th className="p-3.5">Vehicle</th>
+                      <th className="p-3.5">Hotel Stay</th>
+                      <th className="p-3.5">Date</th>
+                      <th className="p-3.5">Total Fare</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                    {isolatedBookings.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-zinc-500">
+                          No bookings found for this role scope.
+                        </td>
+                      </tr>
+                    ) : (
+                      isolatedBookings.map((b) => (
+                        <tr key={b.id} className="hover:bg-zinc-900/50 transition-colors">
+                          <td className="p-3.5 font-bold text-[#D4AF37]">{b.id}</td>
+                          <td className="p-3.5">
+                            <div className="font-bold text-white">{b.user.fullName}</div>
+                            <div className="text-[10px] text-zinc-500">{b.user.phone}</div>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="font-semibold text-white">{b.from} → {b.to}</div>
+                            <div className="text-[10px] text-zinc-500">{b.distanceKm} km</div>
+                          </td>
+                          <td className="p-3.5">{b.vehicle?.name || 'Standard Car'}</td>
+                          <td className="p-3.5">{b.hotel ? b.hotel.name : 'Transit Only'}</td>
+                          <td className="p-3.5">{b.travelDate}</td>
+                          <td className="p-3.5 font-bold text-emerald-400">
+                            {formatINR(b.pricing?.total || 0)}
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              b.status === 'Confirmed' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-red-950 text-red-400 border border-red-800'
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right space-x-2">
+                            <button
+                              onClick={() => onViewTicket(b)}
+                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-white cursor-pointer"
+                            >
+                              Ticket
+                            </button>
+                            <button
+                              onClick={() => onUpdateStatus(b.id, b.status === 'Confirmed' ? 'Cancelled' : 'Confirmed')}
+                              className="px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs cursor-pointer"
+                            >
+                              Toggle
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         )}
 
-        {/* --- PARTNER APPROVAL & CREDENTIAL CREATION MODAL OVERLAY --- */}
-        {approvingRequest && (
-          <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-[#0c0c12] border border-[#D4AF37]/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+        {/* --- TAB 2: PARTNER ACCOUNTS (ADMIN ONLY) --- */}
+        {activeTab === 'partner_accounts' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            
+            {/* Header & Sub-Category Selector */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2 bg-[#121218] p-1 rounded-xl border border-zinc-800 text-xs font-mono-tech">
+                <button
+                  onClick={() => setPartnerSubTab('hotels')}
+                  className={`px-4 py-2 rounded-lg font-bold uppercase transition-all cursor-pointer ${
+                    partnerSubTab === 'hotels'
+                      ? 'bg-sky-500 text-white shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Hotels ({partnersList.filter(p => p.role === 'HOTEL_ADMIN').length})
+                </button>
+
+                <button
+                  onClick={() => setPartnerSubTab('agencies')}
+                  className={`px-4 py-2 rounded-lg font-bold uppercase transition-all cursor-pointer ${
+                    partnerSubTab === 'agencies'
+                      ? 'bg-sky-500 text-white shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  Travel Agencies ({partnersList.filter(p => p.role === 'TRAVEL_ADMIN').length})
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                {partnerSubTab === 'hotels' ? (
+                  <button
+                    onClick={() => {
+                      setIsCreateHotelModalOpen(true);
+                      setHotelFormError(null);
+                    }}
+                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Create Hotel Account</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsCreateAgencyModalOpen(true);
+                      setAgencyFormError(null);
+                    }}
+                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Create Travel Agency Account</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative max-w-md">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+              <input
+                type="text"
+                placeholder={`Search ${partnerSubTab === 'hotels' ? 'Hotel' : 'Agency'} accounts...`}
+                value={partnerSearchTerm}
+                onChange={(e) => setPartnerSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#121218] border border-zinc-800 text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-sky-500"
+              />
+            </div>
+
+            {/* Accounts Table */}
+            <div className="rounded-2xl border border-zinc-800 bg-[#0C0C12] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono-tech">
+                  <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3.5">Organization / Name</th>
+                      <th className="p-3.5">Login Email</th>
+                      <th className="p-3.5">Phone</th>
+                      <th className="p-3.5">Address</th>
+                      <th className="p-3.5">Role</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                    {filteredPartners.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-zinc-500">
+                          No {partnerSubTab === 'hotels' ? 'Hotel' : 'Travel Agency'} accounts found. Click above to create one.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredPartners.map((partner) => (
+                        <tr key={partner.id} className="hover:bg-zinc-900/50 transition-colors">
+                          <td className="p-3.5 font-bold text-white">
+                            {partner.hotelName || partner.agencyName || partner.name}
+                          </td>
+                          <td className="p-3.5 text-sky-400 font-mono">{partner.email}</td>
+                          <td className="p-3.5 text-zinc-400">{partner.phone}</td>
+                          <td className="p-3.5 text-zinc-400 max-w-xs truncate">{partner.address || 'N/A'}</td>
+                          <td className="p-3.5 font-bold text-amber-400">{partner.role}</td>
+                          <td className="p-3.5">
+                            {partner.isActive !== false ? (
+                              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase flex items-center gap-1 w-fit">
+                                🟢 Active
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold uppercase flex items-center gap-1 w-fit">
+                                🔴 Disabled
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3.5 text-right space-x-2">
+                            <button
+                              onClick={() => handleTogglePartnerStatus(partner)}
+                              title={partner.isActive !== false ? 'Disable Account' : 'Enable Account'}
+                              className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                                partner.isActive !== false
+                                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
+                              }`}
+                            >
+                              {partner.isActive !== false ? 'Disable' : 'Enable'}
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setResetPartner(partner);
+                                setResetPasswordInput('');
+                                setResetPasswordError(null);
+                              }}
+                              className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-white cursor-pointer"
+                            >
+                              Reset Pass
+                            </button>
+
+                            <button
+                              onClick={() => setDeletePartnerConfirm(partner)}
+                              className="px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* --- CREATE HOTEL ACCOUNT MODAL --- */}
+        {isCreateHotelModalOpen && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-sky-500/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div className="flex items-center gap-2 text-[#D4AF37]">
-                  <Shield className="w-5 h-5" />
-                  <h3 className="font-bold font-serif-luxury text-white text-lg">
-                    Create Partner Account & Password
-                  </h3>
+                <div className="flex items-center gap-2 text-sky-400 font-bold text-lg">
+                  <Building2 className="w-5 h-5" />
+                  <span>Create Hotel Account</span>
                 </div>
                 <button
-                  onClick={() => setApprovingRequest(null)}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  onClick={() => setIsCreateHotelModalOpen(false)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="text-xs text-zinc-300 bg-zinc-900/80 p-3 rounded-xl border border-zinc-800 space-y-1">
-                <div>Partner Entity: <strong className="text-amber-300">{approvingRequest.businessName}</strong></div>
-                <div>Account Role: <strong className="text-emerald-400">{approvingRequest.businessType === 'HOTEL_ADMIN' ? 'Hotel Owner / Manager' : 'Travel Agency Owner'}</strong></div>
-                <div>Applicant: {approvingRequest.ownerName} ({approvingRequest.phone})</div>
-              </div>
+              {hotelFormError && (
+                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
+                  ⚠️ {hotelFormError}
+                </div>
+              )}
 
-              <form onSubmit={handleConfirmApproval} className="space-y-4">
+              <form onSubmit={handleCreateHotelAccount} className="space-y-3 text-xs font-mono-tech">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-zinc-300 mb-1">
-                    Assigned Entity Name
-                  </label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Name</label>
                   <input
                     type="text"
-                    value={approvalPartnerName}
-                    onChange={(e) => setApprovalPartnerName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white text-sm focus:border-amber-400 focus:outline-none"
+                    placeholder="e.g. Grand Palace Hotel"
+                    value={hotelFormName}
+                    onChange={(e) => setHotelFormName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-zinc-300 mb-1">
-                    Login Email Address (Created by Admin)
-                  </label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Login Email</label>
                   <input
                     type="email"
-                    value={approvalEmail}
-                    onChange={(e) => setApprovalEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white text-sm focus:border-amber-400 focus:outline-none"
+                    placeholder="e.g. hotel@example.com"
+                    value={hotelFormEmail}
+                    onChange={(e) => setHotelFormEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      placeholder="Min 8 chars"
+                      value={hotelFormPassword}
+                      onChange={(e) => setHotelFormPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      placeholder="Confirm password"
+                      value={hotelFormConfirmPassword}
+                      onChange={(e) => setHotelFormConfirmPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Strength Indicator */}
+                {hotelFormPassword && (
+                  <div className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-[11px]">
+                    <span className="text-zinc-400">Password Strength:</span>
+                    <span className={`font-bold px-2 py-0.5 rounded text-white ${getPasswordStrength(hotelFormPassword).color}`}>
+                      {getPasswordStrength(hotelFormPassword).label}
+                    </span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="+91 98765 43210"
+                      value={hotelFormPhone}
+                      onChange={(e) => setHotelFormPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Account Status</label>
+                    <select
+                      value={hotelFormStatus}
+                      onChange={(e) => setHotelFormStatus(e.target.value as 'Active' | 'Disabled')}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    >
+                      <option value="Active">🟢 Active</option>
+                      <option value="Disabled">🔴 Disabled</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-zinc-300 mb-1">
-                    Login Password (Saved & Visible in Admin Panel)
-                  </label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Address</label>
                   <input
                     type="text"
-                    value={approvalPassword}
-                    onChange={(e) => setApprovalPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-amber-500/60 text-amber-300 font-mono text-sm focus:border-amber-400 focus:outline-none shadow-inner"
+                    placeholder="e.g. Diplomatic Enclave, Chanakyapuri, New Delhi"
+                    value={hotelFormAddress}
+                    onChange={(e) => setHotelFormAddress(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
                   />
-                  <p className="text-[11px] text-zinc-400 mt-1">
-                    This password will be saved as raw text in Admin Panel so you can view, share, or edit it anytime.
-                  </p>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-3">
                   <button
                     type="button"
-                    onClick={() => setApprovingRequest(null)}
-                    className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs uppercase"
+                    onClick={() => setIsCreateHotelModalOpen(false)}
+                    className="flex-1 py-3 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmittingApproval}
-                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-bold text-xs uppercase shadow-lg disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-sky-500 text-white font-bold uppercase cursor-pointer shadow-md"
                   >
-                    {isSubmittingApproval ? 'Activating Account...' : 'Approve & Create Login'}
+                    Create Hotel Account
                   </button>
                 </div>
               </form>
@@ -1002,92 +1003,415 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* Tab 3: Token Verification Tool */}
-        {activeTab === 'verify_token' && (
-          <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto w-full space-y-6">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] mx-auto flex items-center justify-center mb-3">
-                <QrCode className="w-6 h-6" />
+        {/* --- CREATE TRAVEL AGENCY ACCOUNT MODAL --- */}
+        {isCreateAgencyModalOpen && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-sky-500/50 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-sky-400 font-bold text-lg">
+                  <Car className="w-5 h-5" />
+                  <span>Create Travel Agency Account</span>
+                </div>
+                <button
+                  onClick={() => setIsCreateAgencyModalOpen(false)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h4 className="text-xl font-bold font-serif-luxury text-white">
-                Registration Token ID Verification Tool
-              </h4>
-              <p className="text-xs text-zinc-400 font-mono-tech mt-1">
-                Enter any traveler's Journey Token ID to verify validity, passengers, and services.
+
+              {agencyFormError && (
+                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
+                  ⚠️ {agencyFormError}
+                </div>
+              )}
+
+              <form onSubmit={handleCreateAgencyAccount} className="space-y-3 text-xs font-mono-tech">
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Agency Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. WanderWorld Travels"
+                    value={agencyFormName}
+                    onChange={(e) => setAgencyFormName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Login Email</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. agency@example.com"
+                    value={agencyFormEmail}
+                    onChange={(e) => setAgencyFormEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      placeholder="Min 8 chars"
+                      value={agencyFormPassword}
+                      onChange={(e) => setAgencyFormPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      placeholder="Confirm password"
+                      value={agencyFormConfirmPassword}
+                      onChange={(e) => setAgencyFormConfirmPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Strength Indicator */}
+                {agencyFormPassword && (
+                  <div className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-[11px]">
+                    <span className="text-zinc-400">Password Strength:</span>
+                    <span className={`font-bold px-2 py-0.5 rounded text-white ${getPasswordStrength(agencyFormPassword).color}`}>
+                      {getPasswordStrength(agencyFormPassword).label}
+                    </span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="+91 98765 43210"
+                      value={agencyFormPhone}
+                      onChange={(e) => setAgencyFormPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-zinc-300 font-semibold mb-1">Account Status</label>
+                    <select
+                      value={agencyFormStatus}
+                      onChange={(e) => setAgencyFormStatus(e.target.value as 'Active' | 'Disabled')}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                    >
+                      <option value="Active">🟢 Active</option>
+                      <option value="Disabled">🔴 Disabled</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Agency Office Address</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Plot 12, Transport Hub, Begumpet, Hyderabad"
+                    value={agencyFormAddress}
+                    onChange={(e) => setAgencyFormAddress(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateAgencyModalOpen(false)}
+                    className="flex-1 py-3 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 rounded-xl bg-sky-500 text-white font-bold uppercase cursor-pointer shadow-md"
+                  >
+                    Create Agency Account
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- RESET PASSWORD MODAL --- */}
+        {resetPartner && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-amber-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-base">
+                  <RotateCcw className="w-5 h-5" />
+                  <span>Reset Password for {resetPartner.email}</span>
+                </div>
+                <button
+                  onClick={() => setResetPartner(null)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {resetPasswordError && (
+                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
+                  ⚠️ {resetPasswordError}
+                </div>
+              )}
+
+              <form onSubmit={handleResetPasswordSubmit} className="space-y-4 text-xs font-mono-tech">
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">New Password (Min 8 chars)</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    placeholder="Enter new strong password..."
+                    value={resetPasswordInput}
+                    onChange={(e) => setResetPasswordInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setResetPartner(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 text-black font-bold uppercase cursor-pointer shadow-md"
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- DELETE CONFIRMATION MODAL --- */}
+        {deletePartnerConfirm && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-red-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center gap-3 text-red-400 font-bold text-lg">
+                <Trash2 className="w-6 h-6" />
+                <span>Confirm Account Deletion</span>
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                Are you sure you want to delete the partner account for{' '}
+                <strong className="text-white">{deletePartnerConfirm.name}</strong> ({deletePartnerConfirm.email})?
+                This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3 pt-3 text-xs font-mono-tech">
+                <button
+                  type="button"
+                  onClick={() => setDeletePartnerConfirm(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeletePartnerSubmit}
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold uppercase cursor-pointer shadow-md"
+                >
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB 3: PARTNER APPLICATIONS / REQUESTS --- */}
+        {activeTab === 'partner_requests' && activeRoleUser?.role === 'MAIN_ADMIN' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+            <h4 className="text-sm font-mono-tech font-bold uppercase text-zinc-300">
+              Partner Partnership Applications
+            </h4>
+
+            <div className="space-y-4">
+              {partnerRequests.length === 0 ? (
+                <div className="p-8 text-center text-zinc-500 text-xs font-mono-tech ui-card">
+                  No partnership applications received yet.
+                </div>
+              ) : (
+                partnerRequests.map((req) => (
+                  <div key={req.id} className="ui-card p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-white text-sm">{req.businessName}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase">
+                          {req.businessType}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-sky-950 text-sky-400">
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400 space-y-0.5 font-mono-tech">
+                        <div>Owner: {req.ownerName} • Email: {req.email} • Phone: {req.phone}</div>
+                        <div>Address: {req.address}</div>
+                      </div>
+                    </div>
+
+                    {req.status === 'PENDING' && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setApprovingRequest(req);
+                            setApprovalEmail(req.email);
+                            setApprovalPassword('Partner@2026');
+                            setApprovalPartnerName(req.businessName);
+                          }}
+                          className="ui-btn-primary text-xs py-2 px-3"
+                        >
+                          Approve Account
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await rejectAdminRequestApi(req.id);
+                            await loadData();
+                          }}
+                          className="ui-btn-secondary text-xs py-2 px-3 text-red-400"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- APPROVAL CONFIRMATION MODAL --- */}
+        {approvingRequest && (
+          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-[#0b0b10] border border-emerald-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-lg">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Approve & Create Account</span>
+                </div>
+                <button
+                  onClick={() => setApprovingRequest(null)}
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleConfirmApproval} className="space-y-3 text-xs font-mono-tech">
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Partner / Business Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={approvalPartnerName}
+                    onChange={(e) => setApprovalPartnerName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Login Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={approvalEmail}
+                    onChange={(e) => setApprovalEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Initial Password (Min 8 chars)</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={approvalPassword}
+                    onChange={(e) => setApprovalPassword(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setApprovingRequest(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingApproval}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white font-bold uppercase cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {isSubmittingApproval ? 'Creating...' : 'Create Account'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB 4: VERIFY TOKEN ID --- */}
+        {activeTab === 'verify_token' && (
+          <div className="p-6 overflow-y-auto flex-1 space-y-6 max-w-xl mx-auto w-full">
+            <div className="text-center space-y-2">
+              <QrCode className="w-8 h-8 text-sky-400 mx-auto" />
+              <h3 className="text-lg font-bold text-white">Registration Token Verification</h3>
+              <p className="text-xs text-zinc-400 font-mono-tech">
+                Enter booking token ID to verify guest registration or trip voucher.
               </p>
             </div>
 
-            <form onSubmit={handleVerifyToken} className="flex gap-2">
+            <form onSubmit={handleVerifyToken} className="space-y-4">
               <input
                 type="text"
                 required
+                placeholder="e.g. TGAI-BKG-2026-92K81"
                 value={verifyTokenInput}
                 onChange={(e) => setVerifyTokenInput(e.target.value)}
-                placeholder="e.g. TGAI-JRN-2026-84920"
-                className="flex-1 px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono-tech text-sm focus:outline-none focus:border-[#D4AF37]"
+                className="w-full px-4 py-3 rounded-xl bg-[#121218] border border-zinc-800 text-white text-sm font-mono-tech focus:border-sky-500 focus:outline-none"
               />
+
               <button
                 type="submit"
                 disabled={isVerifying}
-                className="px-6 py-3 rounded-xl gold-gradient-bg text-black font-bold font-mono-tech text-xs tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                className="ui-btn-primary w-full py-3 text-xs uppercase font-bold"
               >
-                {isVerifying ? 'Verifying...' : 'Verify Token'}
+                {isVerifying ? 'Verifying...' : 'Verify Token ID'}
               </button>
             </form>
 
             {verifyResult && (
-              <div className="animate-fade-in">
-                {verifyResult.valid && verifyResult.booking ? (
-                  <div className="p-5 rounded-2xl bg-[#0D150E] border border-emerald-500/50 space-y-3">
-                    <div className="flex items-center gap-2 text-emerald-400 font-bold font-mono-tech text-sm">
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span>VALID JOURNEY TOKEN</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-xs font-mono-tech">
-                      <div>
-                        <span className="text-zinc-400 block">Journey Token ID:</span>
-                        <span className="text-white font-bold">{verifyResult.booking.journeyToken || verifyResult.booking.id}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Status:</span>
-                        <span className="text-emerald-400 font-bold">{verifyResult.booking.status}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Lead Passenger:</span>
-                        <span className="text-white font-bold">{verifyResult.booking.user.fullName}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Number of People:</span>
-                        <span className="text-white font-bold">{verifyResult.booking.numberOfPeople || verifyResult.booking.travelers || 1} People</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Route:</span>
-                        <span className="text-[#F3E5AB] font-bold">{verifyResult.booking.from} ➔ {verifyResult.booking.to}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Car:</span>
-                        <span className="text-white font-bold">{verifyResult.booking.vehicle.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Hotel:</span>
-                        <span className="text-white font-bold">{verifyResult.booking.hotel?.name || 'None (Transit)'}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">Total Fare:</span>
-                        <span className="text-[#D4AF37] font-bold">
-                          {formatINR(verifyResult.booking.finalTotal || verifyResult.booking.pricing.total)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-5 rounded-2xl bg-[#1A0A0A] border border-red-500/50 flex items-center gap-3 text-red-300 text-xs font-mono-tech">
-                    <AlertCircle className="w-6 h-6 text-red-400 shrink-0" />
-                    <div>
-                      <div className="font-bold text-red-200">Invalid or Unrecognized Token ID</div>
-                      <div>{verifyResult.error || 'No journey record found matching this Token ID.'}</div>
-                    </div>
+              <div className={`p-4 rounded-xl border text-xs font-mono-tech ${
+                verifyResult.valid ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300' : 'bg-red-950/60 border-red-500/50 text-red-300'
+              }`}>
+                <div className="font-bold mb-1">{verifyResult.valid ? 'VALID TOKEN' : 'INVALID TOKEN'}</div>
+                <div>{verifyResult.message || verifyResult.error}</div>
+                {verifyResult.booking && (
+                  <div className="mt-2 pt-2 border-t border-emerald-500/30 text-white space-y-1">
+                    <div>Traveler: <strong>{verifyResult.booking.user.fullName}</strong></div>
+                    <div>Route: <strong>{verifyResult.booking.from} → {verifyResult.booking.to}</strong></div>
+                    <div>Vehicle: <strong>{verifyResult.booking.vehicle.name}</strong></div>
                   </div>
                 )}
               </div>
@@ -1096,179 +1420,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         )}
 
       </div>
-
-      {/* INSPECT BOOKING COMPLETE DETAILS MODAL */}
-      {inspectBooking && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl">
-          <div className="relative w-full max-w-3xl bg-[#0B0B10] rounded-3xl border-2 border-[#D4AF37] shadow-[0_0_80px_rgba(212,175,55,0.4)] overflow-hidden max-h-[90vh] flex flex-col">
-            
-            {/* Header */}
-            <div className="p-5 bg-gradient-to-r from-[#17140B] to-[#0D0D14] border-b border-[#D4AF37]/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#D4AF37]" />
-                <h4 className="font-serif-luxury font-bold text-lg text-white">
-                  Complete Booking Manifest ({inspectBooking.journeyToken || inspectBooking.id})
-                </h4>
-              </div>
-              <button
-                onClick={() => setInspectBooking(null)}
-                className="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 overflow-y-auto space-y-4 text-xs font-mono-tech flex-1">
-              
-              {/* Identifiers & Status */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <div>
-                  <span className="text-zinc-400 block text-[10px] uppercase">User ID:</span>
-                  <span className="font-bold text-white">{inspectBooking.userId || inspectBooking.user.userId || 'TGAI-USER'}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block text-[10px] uppercase">Journey Token:</span>
-                  <span className="font-bold text-[#F3E5AB]">{inspectBooking.journeyToken || inspectBooking.id}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block text-[10px] uppercase">Booking ID:</span>
-                  <span className="font-bold text-zinc-300">{inspectBooking.bookingId || inspectBooking.id}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-400 block text-[10px] uppercase">Booking Status:</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    inspectBooking.status === 'Confirmed' ? 'bg-emerald-950 text-emerald-400' : inspectBooking.status === 'Cancelled' ? 'bg-rose-950 text-rose-400' : 'bg-amber-950 text-amber-400'
-                  }`}>
-                    {inspectBooking.status}
-                  </span>
-                </div>
-              </div>
-
-              {/* Passenger & Schedule */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-                <div>
-                  <div className="flex items-center gap-1.5 text-[#D4AF37] font-bold mb-2">
-                    <User className="w-4 h-4" />
-                    <span>Passenger Information</span>
-                  </div>
-                  <div className="space-y-1 text-zinc-300">
-                    <div>Full Name: <strong className="text-white">{inspectBooking.user.fullName}</strong></div>
-                    <div>Phone: <strong className="text-white">{inspectBooking.user.phone}</strong></div>
-                    <div>Email: <strong className="text-white">{inspectBooking.user.email || '—'}</strong></div>
-                    <div>Number of People: <strong className="text-[#F3E5AB]">{inspectBooking.numberOfPeople || inspectBooking.travelers || 1} People</strong></div>
-                    {inspectBooking.user.specialRequests && (
-                      <div className="text-zinc-400 text-[11px] mt-1">Special Requests: {inspectBooking.user.specialRequests}</div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-1.5 text-[#D4AF37] font-bold mb-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Journey Schedule & Route</span>
-                  </div>
-                  <div className="space-y-1 text-zinc-300">
-                    <div>Origin (From): <strong className="text-white">{inspectBooking.from}</strong></div>
-                    <div>Destination (To): <strong className="text-white">{inspectBooking.to}</strong></div>
-                    <div>Distance: <strong className="text-white">{inspectBooking.distanceKm || '—'} km</strong></div>
-                    <div>Travel Time: <strong className="text-white">{inspectBooking.durationText || inspectBooking.vehicle.travelTime || '—'}</strong></div>
-                    <div>Date & Time: <strong className="text-[#F3E5AB]">{inspectBooking.travelDate} at {inspectBooking.travelTime || '08:00 AM'}</strong></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Itemized Services: Car, Hotel, Food */}
-              <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-                <div className="text-sm font-bold text-white font-serif-luxury pb-2 border-b border-zinc-800">
-                  Itemized Service Breakdown
-                </div>
-
-                {/* Car */}
-                <div className="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                  <div>
-                    <span className="text-white font-semibold">{inspectBooking.vehicle.name}</span>
-                    <span className="text-zinc-400 text-[11px] block">{inspectBooking.vehicle.carType} • {inspectBooking.vehicle.seats} Seats</span>
-                  </div>
-                  <span className="text-white font-bold">
-                    {formatINR(inspectBooking.carCost || inspectBooking.pricing?.carCost || inspectBooking.vehicle.price)}
-                  </span>
-                </div>
-
-                {/* Hotel */}
-                <div className="flex justify-between items-center py-1 border-b border-zinc-800/60">
-                  <div>
-                    <span className="text-white font-semibold">
-                      {inspectBooking.hotel ? inspectBooking.hotel.name : 'Hotel (Transit - None)'}
-                    </span>
-                    <span className="text-zinc-400 text-[11px] block">
-                      {inspectBooking.hotel ? `${formatINR(inspectBooking.hotelPricePerNight || inspectBooking.hotel.pricePerNight)}/night × ${inspectBooking.hotelNights || 1} Night(s)` : '₹0'}
-                    </span>
-                  </div>
-                  <span className="text-white font-bold">
-                    {formatINR(inspectBooking.hotelTotal || inspectBooking.pricing?.hotelCost || (inspectBooking.hotel ? (inspectBooking.hotelPricePerNight || inspectBooking.hotel.pricePerNight) * (inspectBooking.hotelNights || 1) : 0))}
-                  </span>
-                </div>
-
-                {/* Food Items */}
-                {inspectBooking.selectedFoodItems && inspectBooking.selectedFoodItems.length > 0 && (
-                  <div className="py-2 border-b border-zinc-800/60 space-y-1.5">
-                    <div className="text-zinc-400 font-semibold uppercase text-[10px]">Highway Food Items:</div>
-                    {inspectBooking.selectedFoodItems.map((item) => (
-                      <div key={item.id} className="flex justify-between text-[11px] text-zinc-300 pl-2">
-                        <span>• {item.name} ({formatINR(item.pricePerPerson)} × {inspectBooking.numberOfPeople || 1} People)</span>
-                        <span className="text-white font-bold">
-                          {formatINR(item.pricePerPerson * (inspectBooking.numberOfPeople || 1) * (item.quantity || 1))}
-                        </span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-xs font-semibold pt-1">
-                      <span className="text-zinc-400">Food Subtotal:</span>
-                      <span className="text-[#D4AF37]">
-                        {formatINR(inspectBooking.foodTotal || inspectBooking.pricing?.foodCost || 0)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Service Fee & Tax */}
-                <div className="flex justify-between text-zinc-400 pt-1">
-                  <span>Service & Support Fee:</span>
-                  <span className="text-zinc-300">{formatINR(inspectBooking.serviceFee || inspectBooking.pricing?.serviceFee || 0)}</span>
-                </div>
-                <div className="flex justify-between text-zinc-400">
-                  <span>Tax & GST:</span>
-                  <span className="text-zinc-300">{formatINR(inspectBooking.tax || inspectBooking.pricing?.tax || 0)}</span>
-                </div>
-
-                {/* Final Total */}
-                <div className="flex justify-between items-center pt-3 border-t border-zinc-800 text-sm">
-                  <span className="font-bold text-white uppercase">FINAL TOTAL PAID</span>
-                  <span className="font-serif-luxury font-bold text-xl text-[#D4AF37]">
-                    {formatINR(inspectBooking.finalTotal || inspectBooking.pricing?.finalTotal || inspectBooking.pricing?.total || 0)}
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 bg-[#09090D] border-t border-zinc-800 flex justify-between items-center">
-              <span className="text-[11px] text-zinc-500 font-mono-tech">
-                Record created: {new Date(inspectBooking.createdAt).toLocaleString()}
-              </span>
-              <button
-                onClick={() => setInspectBooking(null)}
-                className="px-5 py-2 rounded-xl gold-gradient-bg text-black font-bold font-mono-tech text-xs uppercase cursor-pointer"
-              >
-                Close Manifest
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
@@ -10,6 +10,11 @@ import { getDynamicFleetAsync, getDestinationHotels, getCorridorPitstopsAsync } 
 import { Booking } from './src/types';
 
 dotenv.config();
+
+// Extend Express Request interface for Authenticated User
+export interface AuthenticatedRequest extends Request {
+  user?: AuthUser;
+}
 
 // Helper to extract authenticated user
 function getAuthenticatedUser(req: Request): AuthUser | null {
@@ -23,6 +28,75 @@ function getAuthenticatedUser(req: Request): AuthUser | null {
 
   if (!email) return null;
   return db.findUserByEmail(email) || null;
+}
+
+// --- REUSABLE AUTHORIZATION GUARDS & MIDDLEWARE ---
+function authenticateUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const user = getAuthenticatedUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Authentication required. Please log in.' });
+    return;
+  }
+  if (user.isActive === false) {
+    res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+    return;
+  }
+  req.user = user;
+  next();
+}
+
+function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const user = req.user || getAuthenticatedUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  if (user.isActive === false) {
+    res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+    return;
+  }
+  if (user.role !== 'MAIN_ADMIN') {
+    res.status(403).json({ error: '403 Forbidden: Admin privileges required.' });
+    return;
+  }
+  req.user = user;
+  next();
+}
+
+function requireHotel(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const user = req.user || getAuthenticatedUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  if (user.isActive === false) {
+    res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+    return;
+  }
+  if (user.role !== 'HOTEL_ADMIN' && user.role !== 'MAIN_ADMIN') {
+    res.status(403).json({ error: '403 Forbidden: Hotel Partner access required.' });
+    return;
+  }
+  req.user = user;
+  next();
+}
+
+function requireTravelAgency(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const user = req.user || getAuthenticatedUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  if (user.isActive === false) {
+    res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+    return;
+  }
+  if (user.role !== 'TRAVEL_ADMIN' && user.role !== 'MAIN_ADMIN') {
+    res.status(403).json({ error: '403 Forbidden: Travel Agency access required.' });
+    return;
+  }
+  req.user = user;
+  next();
 }
 
 async function startServer() {
@@ -49,7 +123,7 @@ async function startServer() {
     res.json({ roles });
   });
 
-  // Login
+  // Unified Login (Role-based authentication & status check)
   app.post('/api/auth/login', (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -59,13 +133,19 @@ async function startServer() {
 
     const user = db.findUserByEmail(email);
     if (!user) {
-      res.status(401).json({ error: 'User not found or invalid email address.' });
+      res.status(401).json({ error: 'Invalid email or password.' });
+      return;
+    }
+
+    // Account disability check
+    if (user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
       return;
     }
 
     const isMatch = db.verifyPassword(password, user.passwordHash);
     if (!isMatch) {
-      res.status(401).json({ error: 'Incorrect password entered.' });
+      res.status(401).json({ error: 'Invalid email or password.' });
       return;
     }
 
@@ -77,17 +157,23 @@ async function startServer() {
     });
   });
 
-  // Register
+  // Public User Register (Customer signup ONLY)
   app.post('/api/auth/register', (req: Request, res: Response) => {
-    const { name, email, phone, password, role = 'USER', hotelId, hotelName, agencyId, agencyName } = req.body;
+    const { name, email, phone, password, role = 'USER' } = req.body;
 
     if (!name || !email || !password || !phone) {
       res.status(400).json({ error: 'Name, email, phone, and password are required' });
       return;
     }
 
+    // Public signup is restricted to standard USER role
+    if (role !== 'USER') {
+      res.status(403).json({ error: 'Hotels and Travel Agencies cannot sign up publicly. Partner accounts are created exclusively by the Administrator.' });
+      return;
+    }
+
     try {
-      const newUser = db.registerUser(name, email, phone, password, role, hotelId, hotelName, agencyId, agencyName);
+      const newUser = db.registerUser(name, email, phone, password, 'USER');
       const { passwordHash, ...safeUser } = newUser;
       res.status(201).json({
         success: true,
@@ -100,14 +186,160 @@ async function startServer() {
   });
 
   // Get current user profile
-  app.get('/api/auth/me', (req: Request, res: Response) => {
-    const user = getAuthenticatedUser(req);
-    if (!user) {
+  app.get('/api/auth/me', authenticateUser, (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
       res.status(401).json({ error: 'Not authenticated' });
       return;
     }
-    const { passwordHash, ...safeUser } = user;
+    const { passwordHash, ...safeUser } = req.user;
     res.json({ user: safeUser });
+  });
+
+  // --- ADMIN PARTNER ACCOUNTS MANAGEMENT (ADMIN ONLY) ---
+
+  // List Partner Accounts (Hotels & Travel Agencies)
+  app.get('/api/admin/partners', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+    const roleFilter = req.query.role as 'HOTEL_ADMIN' | 'TRAVEL_ADMIN' | undefined;
+    const partners = db.listPartnerAccounts(roleFilter);
+    res.json({ partners });
+  });
+
+  // Create Hotel Account (Admin Only)
+  app.post('/api/admin/partners/create-hotel', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+    const { hotelName, email, password, confirmPassword, phone, address, status = 'Active' } = req.body;
+
+    if (!hotelName || !email || !password || !phone) {
+      res.status(400).json({ error: 'Hotel Name, Email, Password, and Phone are required.' });
+      return;
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      res.status(400).json({ error: 'Passwords do not match.' });
+      return;
+    }
+
+    if (password.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      return;
+    }
+
+    try {
+      const partner = db.createPartnerAccount({
+        name: hotelName,
+        email,
+        phone,
+        passwordPlain: password,
+        role: 'HOTEL_ADMIN',
+        address,
+        isActive: status === 'Active',
+        hotelName,
+        createdBy: req.user?.email || 'admin@tourguide.com',
+      });
+
+      const { passwordHash, ...safeUser } = partner;
+      res.status(201).json({
+        success: true,
+        message: 'Hotel account created successfully.',
+        partner: safeUser,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to create Hotel account.' });
+    }
+  });
+
+  // Create Travel Agency Account (Admin Only)
+  app.post('/api/admin/partners/create-agency', requireAdmin, (req: AuthenticatedRequest, res: Response) => {
+    const { agencyName, email, password, confirmPassword, phone, address, status = 'Active' } = req.body;
+
+    if (!agencyName || !email || !password || !phone) {
+      res.status(400).json({ error: 'Agency Name, Email, Password, and Phone are required.' });
+      return;
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      res.status(400).json({ error: 'Passwords do not match.' });
+      return;
+    }
+
+    if (password.length < 8) {
+      res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      return;
+    }
+
+    try {
+      const partner = db.createPartnerAccount({
+        name: agencyName,
+        email,
+        phone,
+        passwordPlain: password,
+        role: 'TRAVEL_ADMIN',
+        address,
+        isActive: status === 'Active',
+        agencyName,
+        createdBy: req.user?.email || 'admin@tourguide.com',
+      });
+
+      const { passwordHash, ...safeUser } = partner;
+      res.status(201).json({
+        success: true,
+        message: 'Travel Agency account created successfully.',
+        partner: safeUser,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to create Travel Agency account.' });
+    }
+  });
+
+  // Toggle Partner Account Active/Disabled Status
+  app.put('/api/admin/partners/:id/status', requireAdmin, (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== 'boolean') {
+      res.status(400).json({ error: 'Status (isActive boolean) is required.' });
+      return;
+    }
+
+    try {
+      const updated = db.setPartnerStatus(id, isActive);
+      const { passwordHash, ...safeUser } = updated;
+      res.json({
+        success: true,
+        message: `Account status updated to ${isActive ? 'Active' : 'Disabled'}.`,
+        partner: safeUser,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to update status.' });
+    }
+  });
+
+  // Reset Partner Credentials / Password
+  app.put('/api/admin/partners/:id/reset-password', requireAdmin, (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+      res.status(400).json({ error: 'New password must be at least 8 characters long.' });
+      return;
+    }
+
+    try {
+      db.resetPartnerPassword(id, newPassword);
+      res.json({ success: true, message: 'Password reset successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to reset password.' });
+    }
+  });
+
+  // Delete Partner Account
+  app.delete('/api/admin/partners/:id', requireAdmin, (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      db.deletePartnerAccount(id);
+      res.json({ success: true, message: 'Account deleted successfully.' });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Failed to delete account.' });
+    }
   });
 
   // --- REAL-TIME ROUTING & TELEMETRY ---
@@ -124,7 +356,7 @@ async function startServer() {
     }
   });
 
-  // Real Weather (Called only when user clicks Weather button)
+  // Weather Endpoint
   app.get('/api/weather', async (req: Request, res: Response) => {
     const city = req.query.city as string;
     const lat = req.query.lat ? Number(req.query.lat) : undefined;
@@ -148,7 +380,7 @@ async function startServer() {
     res.json(weather);
   });
 
-  // Dynamic Fleet Search (Cars only)
+  // Dynamic Fleet Search
   app.get('/api/fleet', async (req: Request, res: Response) => {
     const fromCity = (req.query.from as string) || 'Hyderabad';
     const toCity = (req.query.to as string) || 'Delhi';
@@ -186,6 +418,10 @@ async function startServer() {
   // List Bookings (Enforces role-based isolation)
   app.get('/api/bookings', (req: Request, res: Response) => {
     const user = getAuthenticatedUser(req);
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
     const bookings = db.getBookingsForUser(user);
     res.json({
       bookings,
@@ -198,6 +434,10 @@ async function startServer() {
   app.get('/api/bookings/:id', (req: Request, res: Response) => {
     const { id } = req.params;
     const user = getAuthenticatedUser(req);
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
     const booking = db.getBookingById(id, user);
 
     if (!booking) {
@@ -207,7 +447,7 @@ async function startServer() {
     res.json({ booking });
   });
 
-  // Token Verification Tool for Users, Hotel Admins, and Travel Agency Admins
+  // Token Verification
   app.post('/api/tokens/verify', (req: Request, res: Response) => {
     const { tokenId } = req.body;
     if (!tokenId || typeof tokenId !== 'string') {
@@ -217,16 +457,20 @@ async function startServer() {
 
     const cleanToken = tokenId.trim();
     const user = getAuthenticatedUser(req);
-    const booking = db.getBookingById(cleanToken);
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
+
+    const booking = db.getBookingById(cleanToken, user);
 
     if (!booking) {
       res.status(404).json({ valid: false, error: 'Registration Token ID not found in system.' });
       return;
     }
 
-    // Role-specific check
     if (user?.role === 'HOTEL_ADMIN') {
-      if (!booking.hotel || booking.hotel.id !== user.hotelId) {
+      if (!booking.hotel || (booking.hotel.id !== user.hotelId && booking.hotel.name !== user.hotelName)) {
         res.json({
           valid: false,
           error: `Token ID ${cleanToken} does not belong to ${user.hotelName || 'this hotel'}.`,
@@ -242,7 +486,7 @@ async function startServer() {
     });
   });
 
-  // Create Booking (Generates unique Registration Token ID)
+  // Create Booking
   app.post('/api/bookings', (req: Request, res: Response) => {
     const payload = req.body as Partial<Booking>;
 
@@ -251,7 +495,6 @@ async function startServer() {
       return;
     }
 
-    // Generate unique Journey Token ID (e.g. TGAI-JRN-2026-92K81)
     const tokenChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let tokenSuffix = '';
     for (let i = 0; i < 5; i++) {
@@ -298,33 +541,16 @@ async function startServer() {
       travelTime: payload.travelTime || '08:00 AM',
       returnDate: payload.returnDate,
       numberOfPeople,
-      travelers: numberOfPeople,
       vehicle: payload.vehicle,
-      carCost,
       hotel: payload.hotel || null,
-      hotelNights: payload.hotelNights || (payload.hotel ? 1 : 0),
-      hotelPricePerNight: payload.hotel ? payload.hotel.pricePerNight : 0,
-      hotelTotal: hotelCost,
-      checkInDate: payload.checkInDate || payload.travelDate || new Date().toISOString().split('T')[0],
-      checkOutDate: payload.checkOutDate || payload.returnDate || payload.travelDate || new Date().toISOString().split('T')[0],
+      hotelNights: payload.hotelNights || 0,
       pitstops: payload.pitstops || [],
       selectedFoodItems: payload.selectedFoodItems || [],
-      foodTotal: foodCost,
-      serviceFee,
-      tax,
-      finalTotal,
-      user: {
-        ...payload.user,
-        userId,
-        numberOfPeople,
-        travelersCount: numberOfPeople,
-      },
-      pricing: payload.pricing || {
-        carCost,
+      user: payload.user,
+      pricing: {
         vehicleCost: carCost,
+        carCost,
         hotelCost,
-        hotelNights: payload.hotelNights || (payload.hotel ? 1 : 0),
-        hotelPricePerNight: payload.hotel ? payload.hotel.pricePerNight : 0,
         foodCost,
         pitstopCost: foodCost,
         numberOfPeople,
@@ -338,7 +564,7 @@ async function startServer() {
       qrPayload,
     };
 
-    const saved = db.saveBooking(newBooking);
+    const saved = db.createBooking(newBooking);
     res.status(201).json({ success: true, booking: saved });
   });
 
@@ -348,13 +574,18 @@ async function startServer() {
     const { status } = req.body;
     const user = getAuthenticatedUser(req);
 
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
+
     if (!['Confirmed', 'Pending', 'Cancelled'].includes(status)) {
       res.status(400).json({ error: 'Invalid status' });
       return;
     }
 
     try {
-      const ok = db.updateBookingStatus(id, status, user);
+      const ok = db.updateBookingStatus(id, status);
       if (!ok) {
         res.status(404).json({ error: 'Booking not found' });
         return;
@@ -370,8 +601,13 @@ async function startServer() {
     const { id } = req.params;
     const user = getAuthenticatedUser(req);
 
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
+
     try {
-      const ok = db.deleteBooking(id, user);
+      const ok = db.deleteBooking(id);
       if (!ok) {
         res.status(404).json({ error: 'Booking not found' });
         return;
@@ -385,6 +621,11 @@ async function startServer() {
   // Metrics Endpoint
   app.get('/api/admin/metrics', (req: Request, res: Response) => {
     const user = getAuthenticatedUser(req);
+    if (user && user.isActive === false) {
+      res.status(403).json({ error: 'Your account has been disabled. Please contact the administrator.' });
+      return;
+    }
+
     const bookings = db.getBookingsForUser(user);
 
     const totalCount = bookings.length;
@@ -415,7 +656,7 @@ async function startServer() {
     }
 
     try {
-      const request = db.submitAdminRequest({
+      const request = db.createAdminRequest({
         businessName,
         ownerName,
         phone,
@@ -430,174 +671,65 @@ async function startServer() {
     }
   });
 
-  app.get('/api/admin/requests', (req: Request, res: Response) => {
-    const user = getAuthenticatedUser(req);
-    if (!user || user.role !== 'MAIN_ADMIN') {
-      res.status(403).json({ error: 'Only Main Admin can view partner requests.' });
-      return;
-    }
-
+  app.get('/api/admin/requests', requireAdmin, (_req: Request, res: Response) => {
     const requests = db.getAdminRequests();
     res.json({ requests });
   });
 
-  app.post('/api/admin/requests/:id/approve', (req: Request, res: Response) => {
-    const user = getAuthenticatedUser(req);
-    if (!user || user.role !== 'MAIN_ADMIN') {
-      res.status(403).json({ error: 'Only Main Admin can approve requests.' });
-      return;
-    }
-
+  app.post('/api/admin/requests/:id/approve', requireAdmin, (req: Request, res: Response) => {
     const { id } = req.params;
-    const { customEmail, customPassword, temporaryPassword, assignedHotelId, assignedHotelName, assignedAgencyId, assignedAgencyName } = req.body;
+    const { customEmail, customPassword, temporaryPassword } = req.body;
 
     try {
       const pass = customPassword || temporaryPassword;
-      const result = db.approveAdminRequest(
-        id,
-        customEmail,
-        pass,
-        assignedHotelId,
-        assignedHotelName,
-        assignedAgencyId,
-        assignedAgencyName
-      );
+      const result = db.approveAdminRequest(id, { customEmail, customPassword: pass });
       res.json({ success: true, ...result });
     } catch (err: any) {
       res.status(400).json({ error: err.message || 'Approval failed' });
     }
   });
 
-  app.post('/api/admin/requests/:id/reject', (req: Request, res: Response) => {
-    const user = getAuthenticatedUser(req);
-    if (!user || user.role !== 'MAIN_ADMIN') {
-      res.status(403).json({ error: 'Only Main Admin can reject requests.' });
-      return;
-    }
-
+  app.post('/api/admin/requests/:id/reject', requireAdmin, (req: Request, res: Response) => {
     const { id } = req.params;
-    try {
-      const result = db.rejectAdminRequest(id);
-      res.json({ success: true, request: result });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Rejection failed' });
-    }
+    const ok = db.rejectAdminRequest(id);
+    res.json({ success: ok });
   });
 
-  // AI Chatbot endpoint with Simple Indian English
-  app.post('/api/chat', async (req: Request, res: Response) => {
-    const { message, tripContext } = req.body;
-
-    if (!message || typeof message !== 'string') {
-      res.status(400).json({ error: 'Message is required' });
-      return;
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (apiKey) {
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        
-        const systemPrompt = `You are the friendly AI Travel Assistant for TOURGUIDE AI.
-You speak in clear, polite, and simple Indian English.
-Do not use complicated travel words or marketing hype.
-We offer private car bookings (Sedans, SUVs, Luxury cars), hotel bookings, and food stops.
-
-Current Trip Details:
-- Starting Location: ${tripContext?.from || 'Not chosen yet'}
-- Destination: ${tripContext?.to || 'Not chosen yet'}
-- Calculated Distance: ${tripContext?.distanceKm || 1480} km (${tripContext?.travelTime || '18h 30m'})
-- Selected Car: ${tripContext?.vehicle?.name || 'None selected'} (₹${tripContext?.vehicle?.price || 0})
-- Selected Hotel: ${tripContext?.hotel ? `${tripContext.hotel.name} (${tripContext.hotelNights || 1} Nights @ ₹${tripContext.hotel.pricePerNight}/night)` : 'No hotel selected'}
-- Food Stops: ${tripContext?.pitstops && tripContext.pitstops.length > 0 ? tripContext.pitstops.map((p: any) => `${p.name} (₹${p.price})`).join(', ') : 'None'}
-- Total Cost: ₹${tripContext?.pricing?.total || 0}
-- Weather: ${tripContext?.weather?.temp || 28}°C, ${tripContext?.weather?.condition || 'Clear'}
-
-Guidelines:
-1. Provide short, helpful, and polite answers in simple English.
-2. If the user asks about cars, hotels, food stops, or pricing, answer with real numbers from the trip.
-3. Keep responses under 100 words.`;
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: [
-            { role: 'user', parts: [{ text: `${systemPrompt}\n\nUser Question: ${message}` }] },
-          ],
-          config: {
-            temperature: 0.7,
-            maxOutputTokens: 400,
-          },
-        });
-
-        const reply = response.text || "How can I help you with your trip planning today?";
-        res.json({ reply, source: 'gemini' });
-        return;
-      } catch (err: any) {
-        console.warn('Gemini API call fallback:', err?.message || err);
-      }
-    }
-
-    // Local Fallback Engine in Simple English
-    const lower = message.toLowerCase();
-    let reply = '';
-
-    if (lower.includes('hotel') || lower.includes('stay') || lower.includes('room') || lower.includes('cheap') || lower.includes('price')) {
-      if (lower.includes('cheapest') || lower.includes('budget') || lower.includes('lowest')) {
-        reply = `For a budget-friendly stay, **Ginger Hotel** is available at **₹2,800/night**. For premium comfort, you can select **The Leela Palace** at **₹8,500/night**.`;
-      } else if (tripContext?.hotel) {
-        reply = `You have selected **${tripContext.hotel.name}** for **${tripContext.hotelNights || 1} night(s)**, which costs **₹${(tripContext.hotel.pricePerNight * (tripContext.hotelNights || 1)).toLocaleString('en-IN')}**. You can change your choice in Step 3.`;
-      } else {
-        reply = `You haven't selected a hotel yet. In Step 3, you can choose if you want a hotel stay or skip it if you are only taking a car ride.`;
-      }
-    } else if (lower.includes('car') || lower.includes('vehicle') || lower.includes('cab') || lower.includes('taxi') || lower.includes('suv') || lower.includes('sedan')) {
-      if (tripContext?.vehicle) {
-        reply = `You have selected the **${tripContext.vehicle.name}** (${tripContext.vehicle.carType}) for **₹${tripContext.vehicle.price.toLocaleString('en-IN')}**. Estimated travel time is **${tripContext.vehicle.travelTime}**.`;
-      } else {
-        reply = `In Step 2, you can choose from Sedans (Dzire), comfortable SUVs (Innova Crysta, XUV700, Fortuner), and Luxury Cars (Mercedes-Benz).`;
-      }
-    } else if (lower.includes('food') || lower.includes('dhaba') || lower.includes('eat') || lower.includes('restaurant') || lower.includes('lunch') || lower.includes('dinner')) {
-      if (tripContext?.pitstops && tripContext.pitstops.length > 0) {
-        reply = `You have added **${tripContext.pitstops.length} food stop(s)**: ${tripContext.pitstops.map((p: any) => p.name).join(', ')}.`;
-      } else {
-        reply = `In Step 4, you can choose if you would like to stop at verified highway restaurants and dhabas along the route.`;
-      }
-    } else if (lower.includes('weather') || lower.includes('temp') || lower.includes('rain')) {
-      const dest = tripContext?.to || 'Delhi';
-      reply = `You can click the **Weather** button at the top to check current live temperature and weather conditions for **${dest}**.`;
-    } else if (lower.includes('total') || lower.includes('cost') || lower.includes('bill') || lower.includes('fare') || lower.includes('price')) {
-      const p = tripContext?.pricing;
-      reply = `**Current Trip Cost**:
-• Car: ₹${p?.vehicleCost || 0}
-• Hotel: ₹${p?.hotelCost || 0}
-• Food Stops: ₹${p?.pitstopCost || 0}
-• Service Fee: ₹${p?.serviceFee || 0}
-• **Total: ₹${p?.total?.toLocaleString('en-IN') || 0}**`;
-    } else {
-      reply = `Hello! I am your **TOURGUIDE AI Assistant**. I can help you choose cars, hotels, food stops, or check your trip cost and route. How can I help you today?`;
-    }
-
-    res.json({ reply, source: 'local_core' });
-  });
-
-  // Vite middleware in dev or static files in production
+  // Vite SSR / Static Asset Handler
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
+
     app.use(vite.middlewares);
+
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      if (url.startsWith('/api')) {
+        return next();
+      }
+
+      try {
+        let template = await vite.transformIndexHtml(url, '');
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TOURGUIDE AI Server running on port ${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`🚀 TourGuide AI Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer();
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+});

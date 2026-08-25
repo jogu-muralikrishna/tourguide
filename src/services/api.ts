@@ -15,6 +15,9 @@ export interface AuthRoleUser {
   email: string;
   phone: string;
   role: 'USER' | 'MAIN_ADMIN' | 'HOTEL_ADMIN' | 'TRAVEL_ADMIN';
+  isActive?: boolean;
+  address?: string;
+  createdBy?: string;
   hotelId?: string;
   hotelName?: string;
   agencyId?: string;
@@ -569,3 +572,112 @@ export async function rejectAdminRequestApi(requestId: string): Promise<{ succes
   }
   return { success: true };
 }
+
+// 18. Partner Accounts Management APIs (Admin Only)
+
+export async function fetchPartnersApi(roleFilter?: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN'): Promise<AuthRoleUser[]> {
+  try {
+    const query = roleFilter ? `?role=${roleFilter}` : '';
+    const res = await fetch(`/api/admin/partners${query}`, {
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data.partners) ? data.partners : [];
+    }
+  } catch (err) {
+    console.warn('Fetch partners API fallback:', err);
+  }
+  return [];
+}
+
+export async function createHotelAccountApi(payload: {
+  hotelName: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  phone: string;
+  address?: string;
+  status?: 'Active' | 'Disabled';
+}): Promise<{ success: boolean; partner: AuthRoleUser; message?: string }> {
+  const res = await fetch('/api/admin/partners/create-hotel', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to create Hotel account' }));
+    throw new Error(err.error || 'Failed to create Hotel account');
+  }
+
+  return await res.json();
+}
+
+export async function createAgencyAccountApi(payload: {
+  agencyName: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  phone: string;
+  address?: string;
+  status?: 'Active' | 'Disabled';
+}): Promise<{ success: boolean; partner: AuthRoleUser; message?: string }> {
+  const res = await fetch('/api/admin/partners/create-agency', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to create Travel Agency account' }));
+    throw new Error(err.error || 'Failed to create Travel Agency account');
+  }
+
+  return await res.json();
+}
+
+export async function updatePartnerStatusApi(id: string, isActive: boolean): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch(`/api/admin/partners/${id}/status`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ isActive }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to update account status' }));
+    throw new Error(err.error || 'Failed to update account status');
+  }
+
+  return await res.json();
+}
+
+export async function resetPartnerPasswordApi(id: string, newPasswordPlain: string): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch(`/api/admin/partners/${id}/reset-password`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ newPassword: newPasswordPlain }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to reset password' }));
+    throw new Error(err.error || 'Failed to reset password');
+  }
+
+  return await res.json();
+}
+
+export async function deletePartnerAccountApi(id: string): Promise<{ success: boolean; message?: string }> {
+  const res = await fetch(`/api/admin/partners/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Failed to delete partner account' }));
+    throw new Error(err.error || 'Failed to delete partner account');
+  }
+
+  return await res.json();
+}
+

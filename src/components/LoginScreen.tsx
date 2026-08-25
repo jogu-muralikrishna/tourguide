@@ -349,19 +349,47 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
           )}
 
           {/* Quick Demo Credentials Helper */}
-          <div className="mt-5 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-muted)]">
-            <div className="text-[10px] uppercase font-semibold text-sky-500 mb-1 flex items-center gap-1">
+          <div className="mt-5 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] space-y-2">
+            <div className="text-[10px] uppercase font-bold text-sky-500 flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" />
-              <span>Quick Demo Account</span>
+              <span>Quick Demo Sign-In Credentials</span>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-1 text-[11px]">
-              <span className="font-mono-tech text-[var(--text-primary)] font-medium">aarav.sharma@example.com</span>
+
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('admin@tourguide.com', 'admin#123')}
+                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-sky-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
+              >
+                <div className="font-bold text-amber-500">Admin</div>
+                <div className="text-[10px] text-[var(--text-muted)] truncate">admin@tourguide.com</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('hotel1@tourguide.com', 'hotel@123')}
+                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-emerald-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
+              >
+                <div className="font-bold text-emerald-500">Hotel Partner</div>
+                <div className="text-[10px] text-[var(--text-muted)] truncate">hotel1@tourguide.com</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillDemoAccount('agency1@tourguide.com', 'travel@123')}
+                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-blue-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
+              >
+                <div className="font-bold text-blue-500">Travel Agency</div>
+                <div className="text-[10px] text-[var(--text-muted)] truncate">agency1@tourguide.com</div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => fillDemoAccount('aarav.sharma@example.com', 'Travel@2026')}
-                className="text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
+                className="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-sky-500/10 border border-[var(--border-color)] text-left cursor-pointer transition-colors"
               >
-                Autofill
+                <div className="font-bold text-sky-500">Customer</div>
+                <div className="text-[10px] text-[var(--text-muted)] truncate">aarav.sharma@example.com</div>
               </button>
             </div>
           </div>

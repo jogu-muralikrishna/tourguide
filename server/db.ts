@@ -21,6 +21,10 @@ export interface AuthUser {
   phone: string;
   passwordHash: string;
   role: UserRole;
+  isActive: boolean; // Account status (true = active, false = disabled)
+  address?: string;
+  createdBy?: string;
+  organizationId?: string;
   hotelId?: string; // For HOTEL_ADMIN: isolated to specific hotel
   hotelName?: string;
   agencyId?: string; // For TRAVEL_ADMIN: isolated to fleet agency
@@ -44,7 +48,7 @@ class Database {
     const saltRounds = 10;
     // Secure bcrypt password hashes
     const defaultUserHash = bcrypt.hashSync('Travel@2026', saltRounds);
-    const mainAdminHash = bcrypt.hashSync('admin@123', saltRounds);
+    const mainAdminHash = bcrypt.hashSync('admin#123', saltRounds);
     const hotelAdminHash = bcrypt.hashSync('hotel@123', saltRounds);
     const travelAdminHash = bcrypt.hashSync('travel@123', saltRounds);
 
@@ -57,16 +61,22 @@ class Database {
         phone: '+91 99000 00001',
         passwordHash: mainAdminHash,
         role: 'MAIN_ADMIN',
+        isActive: true,
+        address: 'TourGuide AI HQ, Cyber City, Gurgaon',
+        createdBy: 'SYSTEM',
         createdAt: '2026-01-01T00:00:00Z',
       },
       {
         id: 'TGAI-USER-HTL0001',
         userId: 'TGAI-USER-HTL0001',
-        name: 'Hotel Manager - The Leela Palace',
+        name: 'Grand Palace Hotel Admin',
         email: 'hotel1@tourguide.com',
         phone: '+91 11 3933 1234',
         passwordHash: hotelAdminHash,
         role: 'HOTEL_ADMIN',
+        isActive: true,
+        address: 'Diplomatic Enclave, Chanakyapuri, New Delhi',
+        createdBy: 'admin@tourguide.com',
         hotelId: 'hotel-leela-palace',
         hotelName: 'The Leela Palace',
         createdAt: '2026-01-10T00:00:00Z',
@@ -74,11 +84,14 @@ class Database {
       {
         id: 'TGAI-USER-HTL0002',
         userId: 'TGAI-USER-HTL0002',
-        name: 'Hotel Manager - Taj Palace',
+        name: 'Taj Palace Hotel Manager',
         email: 'hotel2@tourguide.com',
         phone: '+91 11 2611 0202',
         passwordHash: hotelAdminHash,
         role: 'HOTEL_ADMIN',
+        isActive: true,
+        address: 'Sardar Patel Marg, Diplomatic Enclave, New Delhi',
+        createdBy: 'admin@tourguide.com',
         hotelId: 'hotel-taj-palace',
         hotelName: 'Taj Palace Hotel',
         createdAt: '2026-01-12T00:00:00Z',
@@ -86,11 +99,14 @@ class Database {
       {
         id: 'TGAI-USER-TRV0001',
         userId: 'TGAI-USER-TRV0001',
-        name: 'TourGuide Travel Agency Operations',
+        name: 'WanderWorld Express Agency Admin',
         email: 'agency1@tourguide.com',
         phone: '+91 98000 11223',
         passwordHash: travelAdminHash,
         role: 'TRAVEL_ADMIN',
+        isActive: true,
+        address: 'Plot 12, Transport Hub, Begumpet, Hyderabad',
+        createdBy: 'admin@tourguide.com',
         agencyId: 'agency-express',
         agencyName: 'TourGuide Express Fleet',
         createdAt: '2026-01-20T00:00:00Z',
@@ -103,6 +119,7 @@ class Database {
         phone: '+91 98765 43210',
         passwordHash: defaultUserHash,
         role: 'USER',
+        isActive: true,
         createdAt: '2026-02-01T00:00:00Z',
       },
     ];
@@ -147,7 +164,7 @@ class Database {
 
   public findUserById(id: string): AuthUser | undefined {
     for (const user of this.users.values()) {
-      if (user.id === id) return user;
+      if (user.id === id || user.userId === id) return user;
     }
     return undefined;
   }
@@ -163,20 +180,22 @@ class Database {
     agencyId?: string,
     agencyName?: string
   ): AuthUser {
-    const existing = this.findUserByEmail(email);
+    const cleanEmail = email.toLowerCase().trim();
+    const existing = this.findUserByEmail(cleanEmail);
     if (existing) {
-      throw new Error('An account with this email address already exists.');
+      throw new Error('This email is already registered.');
     }
     const passwordHash = bcrypt.hashSync(passwordPlain, 10);
     const uid = generateUserId();
     const newUser: AuthUser = {
       id: uid,
       userId: uid,
-      name,
-      email: email.toLowerCase().trim(),
-      phone,
+      name: name.trim(),
+      email: cleanEmail,
+      phone: phone.trim(),
       passwordHash,
       role,
+      isActive: true,
       hotelId,
       hotelName,
       agencyId,
@@ -187,6 +206,99 @@ class Database {
     return newUser;
   }
 
+  // Admin-Only Partner Account Creation (Hotels & Travel Agencies)
+  public createPartnerAccount(data: {
+    name: string;
+    email: string;
+    phone: string;
+    passwordPlain: string;
+    role: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN';
+    address?: string;
+    isActive?: boolean;
+    hotelId?: string;
+    hotelName?: string;
+    agencyId?: string;
+    agencyName?: string;
+    createdBy?: string;
+  }): AuthUser {
+    const cleanEmail = data.email.toLowerCase().trim();
+    if (this.findUserByEmail(cleanEmail)) {
+      throw new Error('This email is already registered.');
+    }
+
+    if (data.passwordPlain.length < 8) {
+      throw new Error('Password must be at least 8 characters long.');
+    }
+
+    const passwordHash = bcrypt.hashSync(data.passwordPlain, 10);
+    const uid = generateUserId();
+    const orgId = data.role === 'HOTEL_ADMIN' 
+      ? (data.hotelId || `hotel-${Date.now()}`) 
+      : (data.agencyId || `agency-${Date.now()}`);
+    const orgName = data.role === 'HOTEL_ADMIN'
+      ? (data.hotelName || data.name)
+      : (data.agencyName || data.name);
+
+    const partnerUser: AuthUser = {
+      id: uid,
+      userId: uid,
+      name: data.name.trim(),
+      email: cleanEmail,
+      phone: data.phone.trim(),
+      passwordHash,
+      role: data.role,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      address: data.address || '',
+      createdBy: data.createdBy || 'admin@tourguide.com',
+      organizationId: orgId,
+      ...(data.role === 'HOTEL_ADMIN'
+        ? { hotelId: orgId, hotelName: orgName }
+        : { agencyId: orgId, agencyName: orgName }),
+      createdAt: new Date().toISOString(),
+    };
+
+    this.users.set(partnerUser.email, partnerUser);
+    return partnerUser;
+  }
+
+  // Set Partner Account Active/Disabled Status
+  public setPartnerStatus(userId: string, isActive: boolean): AuthUser {
+    const user = this.findUserById(userId);
+    if (!user) {
+      throw new Error('Account not found.');
+    }
+    user.isActive = isActive;
+    this.users.set(user.email, user);
+    return user;
+  }
+
+  // Reset Partner Password
+  public resetPartnerPassword(userId: string, newPasswordPlain: string): boolean {
+    const user = this.findUserById(userId);
+    if (!user) {
+      throw new Error('Account not found.');
+    }
+    if (newPasswordPlain.length < 8) {
+      throw new Error('Password must be at least 8 characters long.');
+    }
+    user.passwordHash = bcrypt.hashSync(newPasswordPlain, 10);
+    this.users.set(user.email, user);
+    return true;
+  }
+
+  // Delete Partner Account
+  public deletePartnerAccount(userId: string): boolean {
+    const user = this.findUserById(userId);
+    if (!user) {
+      throw new Error('Account not found.');
+    }
+    if (user.role === 'MAIN_ADMIN') {
+      throw new Error('Cannot delete the primary System Administrator account.');
+    }
+    this.users.delete(user.email);
+    return true;
+  }
+
   public verifyPassword(plain: string, hash: string): boolean {
     return bcrypt.compareSync(plain, hash);
   }
@@ -195,50 +307,155 @@ class Database {
     return Array.from(this.users.values()).map(({ passwordHash, ...rest }) => rest);
   }
 
-  // --- Bookings Methods with Role-Based Isolation ---
+  public listPartnerAccounts(roleFilter?: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN'): Array<Omit<AuthUser, 'passwordHash'>> {
+    return Array.from(this.users.values())
+      .filter((u) => {
+        if (roleFilter) return u.role === roleFilter;
+        return u.role === 'HOTEL_ADMIN' || u.role === 'TRAVEL_ADMIN';
+      })
+      .map(({ passwordHash, ...rest }) => rest);
+  }
+
+  // --- Bookings Methods with Role-Based Data Isolation ---
   public getBookingsForUser(user: AuthUser | null): Booking[] {
     const all = Array.from(this.bookings.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
 
-    if (!user) {
+    if (!user) return all;
+
+    if (user.role === 'MAIN_ADMIN') return all;
+
+    if (user.role === 'HOTEL_ADMIN') {
+      return all.filter((b) => b.hotel?.id === user.hotelId || b.hotel?.name === user.hotelName);
+    }
+
+    if (user.role === 'TRAVEL_ADMIN') {
       return all;
     }
 
-    switch (user.role) {
-      case 'MAIN_ADMIN':
-        return all;
-
-      case 'HOTEL_ADMIN':
-        // Isolated to this specific hotel
-        return all.filter((b) => b.hotel && b.hotel.id === user.hotelId);
-
-      case 'TRAVEL_ADMIN':
-        // Isolated to travel agency car bookings
-        return all.filter((b) => Boolean(b.vehicle));
-
-      case 'USER':
-      default:
-        // Isolated to traveler's own bookings
-        return all.filter(
-          (b) => b.user.email.toLowerCase() === user.email.toLowerCase() || b.user.phone === user.phone
-        );
-    }
+    return all.filter((b) => b.user?.email?.toLowerCase() === user.email.toLowerCase() || b.userId === user.id);
   }
 
-  public getBookingById(id: string, user: AuthUser | null = null): Booking | undefined {
+  public getBookingById(id: string, user?: AuthUser | null): Booking | undefined {
     const booking = this.bookings.get(id);
     if (!booking) return undefined;
 
-    if (user) {
-      if (user.role === 'HOTEL_ADMIN' && booking.hotel?.id !== user.hotelId) {
-        return undefined;
-      }
-      if (user.role === 'USER' && booking.user.email.toLowerCase() !== user.email.toLowerCase()) {
-        return undefined;
-      }
+    if (!user || user.role === 'MAIN_ADMIN') return booking;
+
+    if (user.role === 'HOTEL_ADMIN') {
+      if (booking.hotel && booking.hotel.id === user.hotelId) return booking;
+      return undefined;
     }
-    return booking;
+
+    if (user.role === 'TRAVEL_ADMIN') return booking;
+
+    if (booking.user?.email?.toLowerCase() === user.email.toLowerCase() || booking.userId === user.id) {
+      return booking;
+    }
+    return undefined;
+  }
+
+  public createBooking(payload: Partial<Booking>): Booking {
+    const randomDigits = Math.floor(10000 + Math.random() * 90000);
+    const bookingId = payload.id || `TGAI-2026-${randomDigits}`;
+    const newBooking: Booking = {
+      ...payload,
+      id: bookingId,
+      createdAt: new Date().toISOString(),
+      status: payload.status || 'Confirmed',
+      qrPayload: JSON.stringify({
+        bookingId,
+        traveler: payload.user?.fullName,
+        total: `₹${payload.pricing?.total?.toLocaleString('en-IN')}`,
+      }),
+    } as Booking;
+
+    this.bookings.set(newBooking.id, newBooking);
+    return newBooking;
+  }
+
+  public updateBookingStatus(id: string, status: 'Confirmed' | 'Pending' | 'Cancelled'): boolean {
+    const booking = this.bookings.get(id);
+    if (!booking) return false;
+    booking.status = status;
+    this.bookings.set(id, booking);
+    return true;
+  }
+
+  public deleteBooking(id: string): boolean {
+    return this.bookings.delete(id);
+  }
+
+  // Admin Request Handlers
+  public getAdminRequests(): AdminRequest[] {
+    return Array.from(this.adminRequests.values());
+  }
+
+  public createAdminRequest(req: Partial<AdminRequest>): AdminRequest {
+    const newReq: AdminRequest = {
+      id: `req-${Date.now()}`,
+      businessName: req.businessName || '',
+      ownerName: req.ownerName || '',
+      phone: req.phone || '',
+      email: req.email || '',
+      address: req.address || '',
+      businessType: req.businessType || 'HOTEL_ADMIN',
+      notes: req.notes || '',
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    };
+    this.adminRequests.set(newReq.id, newReq);
+    return newReq;
+  }
+
+  public approveAdminRequest(id: string, customDetails?: { customEmail?: string; customPassword?: string; assignedHotelName?: string; assignedAgencyName?: string }): { success: boolean; user?: AuthUser } {
+    const request = this.adminRequests.get(id);
+    if (!request) throw new Error('Request not found');
+
+    request.status = 'APPROVED';
+    this.adminRequests.set(id, request);
+
+    const email = (customDetails?.customEmail || request.email).toLowerCase().trim();
+    const plainPassword = customDetails?.customPassword || 'Partner@2026';
+    const role: UserRole = request.businessType === 'TRAVEL_ADMIN' ? 'TRAVEL_ADMIN' : 'HOTEL_ADMIN';
+
+    const newUser = this.createPartnerAccount({
+      name: request.ownerName || request.businessName,
+      email,
+      phone: request.phone,
+      passwordPlain: plainPassword.length >= 8 ? plainPassword : `${plainPassword}#123`,
+      role,
+      address: request.address,
+      hotelName: request.businessName,
+      agencyName: request.businessName,
+      createdBy: 'admin@tourguide.com',
+    });
+
+    return { success: true, user: newUser };
+  }
+
+  public rejectAdminRequest(id: string): boolean {
+    const request = this.adminRequests.get(id);
+    if (!request) return false;
+    request.status = 'REJECTED';
+    this.adminRequests.set(id, request);
+    return true;
+  }
+
+  // Catalog accessors
+  public getVehicles(): Vehicle[] {
+    return Array.from(this.vehicles.values());
+  }
+
+  public getHotels(destinationCity?: string): Hotel[] {
+    const all = Array.from(this.hotels.values());
+    if (!destinationCity) return all;
+    return all.filter((h) => h.location.toLowerCase().includes(destinationCity.toLowerCase()));
+  }
+
+  public getPitstops(): Pitstop[] {
+    return Array.from(this.pitstops.values());
   }
 
   public saveBooking(booking: Booking): Booking {
@@ -246,136 +463,8 @@ class Database {
     return booking;
   }
 
-  public updateBookingStatus(
-    id: string,
-    status: 'Confirmed' | 'Pending' | 'Cancelled',
-    user: AuthUser | null = null
-  ): boolean {
-    const booking = this.bookings.get(id);
-    if (!booking) return false;
-
-    if (user && user.role === 'HOTEL_ADMIN' && booking.hotel?.id !== user.hotelId) {
-      throw new Error('Unauthorized: Hotel sub-admins cannot modify other hotels.');
-    }
-
-    booking.status = status;
-    this.bookings.set(id, booking);
-    return true;
-  }
-
-  public deleteBooking(id: string, user: AuthUser | null = null): boolean {
-    const booking = this.bookings.get(id);
-    if (!booking) return false;
-
-    if (user && user.role === 'HOTEL_ADMIN') {
-      throw new Error('Unauthorized: Only Main Admins or Travelers may cancel bookings.');
-    }
-
-    return this.bookings.delete(id);
-  }
-
-  // --- Admin Requests ---
-  public submitAdminRequest(data: Omit<AdminRequest, 'id' | 'status' | 'createdAt'>): AdminRequest {
-    const id = `req-${Date.now()}`;
-    const newReq: AdminRequest = {
-      ...data,
-      id,
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-    };
-    this.adminRequests.set(id, newReq);
-    return newReq;
-  }
-
-  public getAdminRequests(): AdminRequest[] {
-    return Array.from(this.adminRequests.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }
-
-  public approveAdminRequest(
-    id: string,
-    customEmail?: string,
-    customPassword?: string,
-    assignedHotelId?: string,
-    assignedHotelName?: string,
-    assignedAgencyId?: string,
-    assignedAgencyName?: string
-  ): { request: AdminRequest; user: AuthUser } {
-    const req = this.adminRequests.get(id);
-    if (!req) throw new Error('Request not found');
-
-    const pass = customPassword || 'Admin@123';
-    const cleanEmail = (customEmail || req.email).toLowerCase().trim();
-    const isHotel = req.businessType === 'HOTEL_ADMIN';
-    const isAgency = req.businessType === 'TRAVEL_ADMIN';
-
-    const hId = assignedHotelId || (isHotel ? `hotel-${Date.now()}` : undefined);
-    const hName = assignedHotelName || (isHotel ? req.businessName : undefined);
-    const aId = assignedAgencyId || (isAgency ? `agency-${Date.now()}` : undefined);
-    const aName = assignedAgencyName || (isAgency ? req.businessName : undefined);
-
-    // Create or update user as partner admin
-    let user = this.findUserByEmail(cleanEmail);
-    if (!user) {
-      user = this.registerUser(
-        req.ownerName || req.businessName,
-        cleanEmail,
-        req.phone || '+91 99000 00000',
-        pass,
-        req.businessType,
-        hId,
-        hName,
-        aId,
-        aName
-      );
-    } else {
-      user.role = req.businessType;
-      if (isHotel) {
-        user.hotelId = hId || user.hotelId;
-        user.hotelName = hName || user.hotelName;
-      }
-      if (isAgency) {
-        user.agencyId = aId || user.agencyId;
-        user.agencyName = aName || user.agencyName;
-      }
-    }
-
-    req.status = 'APPROVED';
-    req.assignedHotelId = user.hotelId;
-    req.assignedHotelName = user.hotelName;
-    req.generatedCredentials = {
-      email: user.email,
-      temporaryPassword: pass,
-    };
-    this.adminRequests.set(id, req);
-
-    return { request: req, user };
-  }
-
-  public rejectAdminRequest(id: string): AdminRequest {
-    const req = this.adminRequests.get(id);
-    if (!req) throw new Error('Request not found');
-    req.status = 'REJECTED';
-    this.adminRequests.set(id, req);
-    return req;
-  }
-
-  // --- Entities Retrieval ---
-  public getHotels(cityFilter?: string): Hotel[] {
-    const list = Array.from(this.hotels.values());
-    if (!cityFilter) return list;
-    const lower = cityFilter.toLowerCase();
-    const matched = list.filter((h) => h.location.toLowerCase().includes(lower) || h.name.toLowerCase().includes(lower));
-    return matched.length > 0 ? matched : list;
-  }
-
-  public getVehicles(): Vehicle[] {
-    return Array.from(this.vehicles.values());
-  }
-
-  public getPitstops(): Pitstop[] {
-    return Array.from(this.pitstops.values());
+  public submitAdminRequest(req: Partial<AdminRequest>): AdminRequest {
+    return this.createAdminRequest(req);
   }
 }
 
