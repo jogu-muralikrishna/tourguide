@@ -148,6 +148,7 @@ export const HotelDashboard: React.FC<HotelDashboardProps> = ({ user, onLogout }
           </div>
         </div>
 
+        <div className="flex items-center gap-3">
           <button
             onClick={onLogout}
             className="px-3.5 py-2 rounded-xl bg-[#14141B] hover:bg-[#20202A] border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer mr-1"
