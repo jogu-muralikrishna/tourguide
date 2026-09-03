@@ -326,12 +326,22 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     const roleMatch = userRoleFilter === 'all' || u.role === userRoleFilter;
     const query = userSearchTerm.toLowerCase().trim();
     if (!query) return roleMatch;
+
+    const userBooking = bookings.find(
+      (b) =>
+        b.user?.email?.toLowerCase() === u.email.toLowerCase() ||
+        b.userId === u.id ||
+        b.userId === u.userId
+    );
+    const tripToken = (userBooking?.id || '').toLowerCase();
+
     return (
       roleMatch &&
       (u.name.toLowerCase().includes(query) ||
         u.email.toLowerCase().includes(query) ||
         u.phone.toLowerCase().includes(query) ||
-        u.id.toLowerCase().includes(query))
+        u.id.toLowerCase().includes(query) ||
+        tripToken.includes(query))
     );
   });
 
@@ -1061,10 +1071,12 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">User Token / ID</th>
                       <th className="p-3.5">Name</th>
                       <th className="p-3.5">Email</th>
-                      <th className="p-3.5">Phone</th>
+                      <th className="p-3.5">Mobile</th>
+                      <th className="p-3.5">Trip Token</th>
+                      <th className="p-3.5">Hotel Booked</th>
+                      <th className="p-3.5">Car Booked</th>
                       <th className="p-3.5">Role</th>
                       <th className="p-3.5">Status</th>
                       <th className="p-3.5 text-right">Actions</th>
@@ -1073,54 +1085,68 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                   <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-zinc-500">
+                        <td colSpan={9} className="p-8 text-center text-zinc-500">
                           No users found matching filter criteria.
                         </td>
                       </tr>
                     ) : (
-                      filteredUsers.map((u) => (
-                        <tr key={u.id} className="hover:bg-zinc-900/50 transition-colors">
-                          <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{u.id}</td>
-                          <td className="p-3.5 font-bold text-white">{u.name}</td>
-                          <td className="p-3.5 text-sky-400 font-mono">{u.email}</td>
-                          <td className="p-3.5 text-zinc-400">{u.phone}</td>
-                          <td className="p-3.5 font-bold text-amber-400">{u.role}</td>
-                          <td className="p-3.5">
-                            {u.isActive !== false ? (
-                              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase">
-                                🟢 Active
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold uppercase">
-                                🔴 Disabled
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-3.5 text-right space-x-2">
-                            {u.role !== 'MAIN_ADMIN' && (
-                              <>
-                                <button
-                                  onClick={() => handleToggleUserStatus(u)}
-                                  className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
-                                    u.isActive !== false
-                                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
-                                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                                  }`}
-                                >
-                                  {u.isActive !== false ? 'Disable' : 'Enable'}
-                                </button>
+                      filteredUsers.map((u) => {
+                        const userBooking = bookings.find(
+                          (b) =>
+                            b.user?.email?.toLowerCase() === u.email.toLowerCase() ||
+                            b.userId === u.id ||
+                            b.userId === u.userId
+                        );
+                        const tripToken = userBooking?.id || 'Not booked';
+                        const hotelBooked = userBooking?.hotel?.name || 'Not booked';
+                        const carBooked = userBooking?.vehicle?.name || 'Not booked';
 
-                                <button
-                                  onClick={() => setDeleteUserConfirm(u)}
-                                  className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold cursor-pointer transition-all"
-                                >
-                                  Delete User
-                                </button>
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      ))
+                        return (
+                          <tr key={u.id} className="hover:bg-zinc-900/50 transition-colors">
+                            <td className="p-3.5 font-bold text-white">{u.name}</td>
+                            <td className="p-3.5 text-sky-400 font-mono">{u.email}</td>
+                            <td className="p-3.5 text-zinc-400">{u.phone || 'N/A'}</td>
+                            <td className="p-3.5 font-bold text-[#D4AF37] font-mono">{tripToken}</td>
+                            <td className="p-3.5 text-zinc-300">{hotelBooked}</td>
+                            <td className="p-3.5 text-zinc-300">{carBooked}</td>
+                            <td className="p-3.5 font-bold text-amber-400">{u.role}</td>
+                            <td className="p-3.5">
+                              {u.isActive !== false ? (
+                                <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase">
+                                  🟢 Active
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 text-[10px] font-bold uppercase">
+                                  🔴 Disabled
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3.5 text-right space-x-2">
+                              {u.role !== 'MAIN_ADMIN' && (
+                                <>
+                                  <button
+                                    onClick={() => handleToggleUserStatus(u)}
+                                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                                      u.isActive !== false
+                                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
+                                    }`}
+                                  >
+                                    {u.isActive !== false ? 'Disable' : 'Enable'}
+                                  </button>
+
+                                  <button
+                                    onClick={() => setDeleteUserConfirm(u)}
+                                    className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold cursor-pointer transition-all"
+                                  >
+                                    Delete User
+                                  </button>
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
