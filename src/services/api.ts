@@ -573,19 +573,43 @@ export async function loginApi(email: string, passwordPlain: string): Promise<{ 
 
   const cachedUser = getCachedUser();
   const userEmail = email.toLowerCase().trim();
+
+  // Check if partner or sub-user account exists in local state
+  const existingAccount = [...localUsersList, ...localPartnersList, ...DEFAULT_PARTNERS, ...DEFAULT_USERS].find(
+    (u) => u.email?.toLowerCase().trim() === userEmail
+  );
+
+  if (existingAccount && existingAccount.isActive === false) {
+    throw new Error('Your account has been disabled. Please contact TourGuide AI administration.');
+  }
+
   const isAdminUser = userEmail === 'tourguide@gmail.com' || userEmail === 'admin@tourguide.com';
-  const userName = isAdminUser ? 'Main Administrator' : (cachedUser?.fullName || cachedUser?.name || userEmail.split('@')[0] || 'Traveler');
+  const isHotelPartner = existingAccount?.role === 'HOTEL_ADMIN' || userEmail.includes('hotel') || userEmail.endsWith('@hotel.com');
+  const isAgencyPartner = existingAccount?.role === 'TRAVEL_ADMIN' || userEmail.includes('travel') || userEmail.includes('agency') || userEmail.endsWith('@travels.com');
+
+  let detectedRole: 'MAIN_ADMIN' | 'HOTEL_ADMIN' | 'TRAVEL_ADMIN' | 'USER' = 'USER';
+  if (isAdminUser || existingAccount?.role === 'MAIN_ADMIN') detectedRole = 'MAIN_ADMIN';
+  else if (isHotelPartner) detectedRole = 'HOTEL_ADMIN';
+  else if (isAgencyPartner) detectedRole = 'TRAVEL_ADMIN';
+
+  const userName = existingAccount?.name || (isAdminUser ? 'Main Administrator' : (cachedUser?.fullName || cachedUser?.name || userEmail.split('@')[0] || 'Traveler'));
   const randomChars = Math.random().toString(36).substring(2, 9).toUpperCase();
-  const userId = cachedUser?.id || cachedUser?.userId || (isAdminUser ? 'TGAI-USER-ADM0001' : `TGAI-USER-${randomChars}`);
+  const userId = existingAccount?.id || cachedUser?.id || (isAdminUser ? 'TGAI-USER-ADM0001' : `TGAI-USER-${randomChars}`);
 
   const user: AuthRoleUser = {
     id: userId,
     userId,
     name: userName,
     email: userEmail,
-    phone: cachedUser?.phone || '+91 99000 00001',
-    role: isAdminUser ? 'MAIN_ADMIN' : 'USER',
+    phone: existingAccount?.phone || cachedUser?.phone || '+91 98765 43210',
+    role: detectedRole,
+    isActive: existingAccount?.isActive !== false,
+    hotelId: existingAccount?.hotelId || (isHotelPartner ? `hotel-${userEmail.split('@')[0]}` : undefined),
+    hotelName: existingAccount?.hotelName || (isHotelPartner ? `${userEmail.split('@')[0].toUpperCase()} Hotel` : undefined),
+    agencyId: existingAccount?.agencyId || (isAgencyPartner ? `agency-${userEmail.split('@')[0]}` : undefined),
+    agencyName: existingAccount?.agencyName || (isAgencyPartner ? `${userEmail.split('@')[0].toUpperCase()} Travels` : undefined),
   };
+
   setAuthToken(userEmail);
   saveCachedUser(user);
   return { success: true, user, token: userEmail };
@@ -842,6 +866,53 @@ export async function resetPartnerPasswordApi(id: string, newPasswordPlain: stri
   }
 
   return await res.json();
+}
+
+export async function createSubAdminAccountApi(data: {
+  name: string;
+  email: string;
+  password: string;
+  role: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN';
+  companyName: string;
+  phone: string;
+  status?: 'Active' | 'Disabled';
+}): Promise<{ success: boolean; user: AuthRoleUser }> {
+  try {
+    const res = await fetch('/api/admin/partners', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      const resData = await res.json();
+      if (resData.user) {
+        addLocalPartner(resData.user);
+        return resData;
+      }
+    }
+  } catch (err) {
+    console.warn('createSubAdminAccountApi fallback:', err);
+  }
+
+  const cleanEmail = data.email.toLowerCase().trim();
+  const id = `partner-${Date.now()}`;
+  const newPartner: AuthRoleUser = {
+    id,
+    userId: id,
+    name: data.name,
+    email: cleanEmail,
+    phone: data.phone,
+    role: data.role,
+    isActive: data.status !== 'Disabled',
+    password: data.password,
+    hotelId: data.role === 'HOTEL_ADMIN' ? `hotel-${cleanEmail.split('@')[0]}` : undefined,
+    hotelName: data.role === 'HOTEL_ADMIN' ? data.companyName : undefined,
+    agencyId: data.role === 'TRAVEL_ADMIN' ? `agency-${cleanEmail.split('@')[0]}` : undefined,
+    agencyName: data.role === 'TRAVEL_ADMIN' ? data.companyName : undefined,
+  };
+
+  addLocalPartner(newPartner);
+  return { success: true, user: newPartner };
 }
 
 export interface AuditLogRecord {
