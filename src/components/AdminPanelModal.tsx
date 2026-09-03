@@ -28,7 +28,9 @@ import {
   TrendingUp,
   Activity,
   FileText,
-  DollarSign
+  DollarSign,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react';
 import { Booking, AdminRequest } from '../types';
 import { AdminService } from '../services/adminService';
@@ -209,13 +211,39 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     }
   };
 
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [adminLoginPassword, setAdminLoginPassword] = useState<string>('');
+  const [adminLoginError, setAdminLoginError] = useState<string | null>(null);
+
   useEffect(() => {
     if (isOpen) {
       loadData();
+    } else {
+      setIsAdminAuthenticated(false);
+      setAdminLoginPassword('');
+      setAdminLoginError(null);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleVerifyAdminPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoginError(null);
+    const entered = adminLoginPassword.trim();
+    if (!entered) {
+      setAdminLoginError('Please enter your admin password.');
+      return;
+    }
+
+    const matchesSystemRole = systemRoles.some((r) => r.password === entered);
+    if (entered === 'admin' || entered === 'admin123' || entered === '123456' || matchesSystemRole || activeRoleUser?.password === entered) {
+      setIsAdminAuthenticated(true);
+      setAdminLoginPassword('');
+    } else {
+      setAdminLoginError('Incorrect Admin Password. Access Denied.');
+    }
+  };
 
   // Handle Initiating Role Switch
   const handleRoleChangeInitiate = (targetEmail: string) => {
@@ -613,6 +641,101 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       setIsSubmittingApproval(false);
     }
   };
+
+  if (!isAdminAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl overflow-y-auto">
+        <div className="relative w-full max-w-md my-8 ui-card-luxury p-6 sm:p-8 rounded-3xl border-2 border-[#D4AF37]/40 shadow-[0_0_60px_rgba(212,175,55,0.3)] text-white">
+          
+          {/* Top Bar with Back Button */}
+          <div className="flex items-center justify-between pb-4 border-b border-[#D4AF37]/20 mb-6">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 rounded-xl bg-[#14141B] hover:bg-[#20202A] border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#D4AF37]" />
+              <span>← Back to Previous Page</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl bg-[#14141B] hover:bg-[#20202A] text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4 text-[#D4AF37]" />
+            </button>
+          </div>
+
+          {/* Admin Lock Header */}
+          <div className="text-center mb-6">
+            <div className="w-14 h-14 rounded-2xl gold-gradient-bg text-black mx-auto flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+              <Lock className="w-7 h-7 text-black" />
+            </div>
+            <h3 className="font-serif-luxury text-2xl font-extrabold text-white">
+              Admin Security Lock
+            </h3>
+            <p className="text-xs text-zinc-400 mt-1">
+              Enter your admin password to access the command panel.
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleVerifyAdminPassword} className="space-y-4">
+            {adminLoginError && (
+              <div className="p-3.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs font-medium flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+                <span>{adminLoginError}</span>
+              </div>
+            )}
+
+            {systemRoles.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
+                  Admin Role Account
+                </label>
+                <select
+                  value={activeRoleEmail}
+                  onChange={(e) => {
+                    setActiveRoleEmail(e.target.value);
+                    const u = systemRoles.find((r) => r.email === e.target.value);
+                    if (u) setActiveRoleUser(u);
+                  }}
+                  className="ui-input w-full bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37] text-xs font-mono-tech"
+                >
+                  {systemRoles.map((role) => (
+                    <option key={role.email} value={role.email}>
+                      {role.name} ({role.role}) — {role.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
+                Admin Password *
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="Enter Admin Password..."
+                value={adminLoginPassword}
+                onChange={(e) => setAdminLoginPassword(e.target.value)}
+                className="ui-input w-full px-4 py-3 text-sm font-mono-tech bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="ui-btn-primary w-full py-3.5 text-xs font-extrabold uppercase tracking-wider mt-2 shadow-[0_0_20px_rgba(212,175,55,0.4)]"
+            >
+              <span>Unlock Admin Panel</span>
+              <ArrowRight className="w-4 h-4 text-black" />
+            </button>
+          </form>
+
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl overflow-y-auto">

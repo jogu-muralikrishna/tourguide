@@ -1,9 +1,8 @@
 import React from 'react';
-import { Mail, Phone, ShieldCheck, Compass, History, LogOut, ArrowRight, Sparkles, Building2, Sun, Moon, Laptop } from 'lucide-react';
+import { Mail, Phone, ShieldCheck, Compass, History, LogOut, ArrowRight, Sparkles, Building2, ArrowLeft } from 'lucide-react';
 import { AuthRoleUser } from '../services/api';
 import { Booking } from '../types';
 import { formatINR } from '../utils/pricing';
-import { useTheme } from '../context/ThemeContext';
 
 interface UserProfileScreenProps {
   currentUser: AuthRoleUser;
@@ -26,7 +25,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   onLogout,
   onSelectBookingTicket,
 }) => {
-  const { theme, setTheme } = useTheme();
   const isSpecialAdmin = currentUser.role !== 'USER';
   const displayUserId = currentUser.id || currentUser.userId || 'TG-USER-82F4K91';
 
@@ -38,60 +36,44 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col justify-between py-8 px-4 sm:px-6 relative overflow-hidden transition-colors">
+    <div className="min-h-screen bg-[#07070a] text-white flex flex-col justify-between py-8 px-4 sm:px-6 relative overflow-hidden transition-colors">
       
       {/* Top Header */}
       <div className="max-w-5xl mx-auto w-full flex items-center justify-between z-10 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
-            TG
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">TourGuide AI</h1>
-            <span className="text-[10px] uppercase font-semibold text-[var(--text-muted)] tracking-wider">Smart Travel Hub</span>
+          {/* Back to Previous Page Option */}
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#14141B] hover:bg-[#20202A] border border-[#D4AF37]/40 text-xs font-mono-tech font-bold text-[#F3E5AB] transition-colors cursor-pointer mr-2"
+            title="Go to Previous Page (Login Screen)"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#D4AF37]" />
+            <span>← Back to Previous Page</span>
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl gold-gradient-bg text-black flex items-center justify-center font-extrabold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] border border-[#D4AF37]">
+              <Compass className="w-6 h-6 text-black" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-white font-serif-luxury">
+                TourGuide <span className="gold-gradient-text font-black">AI</span>
+              </h1>
+              <span className="text-[10px] uppercase font-mono-tech text-[#F3E5AB]">Luxury Travel Hub</span>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Theme Switcher */}
-          <div className="flex items-center bg-[var(--bg-surface-elevated)] p-0.5 rounded-xl border border-[var(--border-color)]">
-            <button
-              onClick={() => setTheme('light')}
-              title="Light Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'light' ? 'bg-[var(--bg-surface)] text-amber-500 shadow-xs' : 'text-[var(--text-muted)]'
-              }`}
-            >
-              <Sun className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('dark')}
-              title="Dark Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'dark' ? 'bg-[var(--bg-surface)] text-sky-400 shadow-xs' : 'text-[var(--text-muted)]'
-              }`}
-            >
-              <Moon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('system')}
-              title="System Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'system' ? 'bg-[var(--bg-surface)] text-indigo-500 shadow-xs' : 'text-[var(--text-muted)]'
-              }`}
-            >
-              <Laptop className="w-4 h-4" />
-            </button>
-          </div>
-
           {isSpecialAdmin && (
             <button
               type="button"
               onClick={onOpenAdmin}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 text-[#F3E5AB] border border-[#D4AF37]/40 text-xs font-semibold cursor-pointer shadow-sm"
             >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Admin</span>
+              <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Admin Panel</span>
             </button>
           )}
 
@@ -106,7 +88,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
           <button
             type="button"
             onClick={onLogout}
-            className="ui-btn-secondary py-1.5 px-3 text-xs text-rose-500 hover:text-rose-600"
+            className="ui-btn-secondary py-1.5 px-3 text-xs text-rose-400 hover:text-rose-300"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Log Out</span>
@@ -118,33 +100,33 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       <div className="max-w-4xl w-full mx-auto my-auto z-10 space-y-6">
         
         {/* User Card */}
-        <div className="ui-card p-6 sm:p-8 shadow-xl relative">
+        <div className="ui-card-luxury p-6 sm:p-8 shadow-[0_10px_50px_rgba(0,0,0,0.9)] border border-[#D4AF37]/30 relative">
           
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 pb-6 border-b border-[var(--border-color)]">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 pb-6 border-b border-[#D4AF37]/20">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-              <div className="w-18 h-18 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-3xl font-bold shadow-md">
+              <div className="w-18 h-18 rounded-2xl gold-gradient-bg text-black flex items-center justify-center text-3xl font-extrabold shadow-[0_0_20px_rgba(212,175,55,0.4)]">
                 {currentUser.name.charAt(0).toUpperCase()}
               </div>
 
               <div>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-serif-luxury">
                     {currentUser.name}
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono-tech">
                     <ShieldCheck className="w-3 h-3" />
-                    <span>Verified</span>
+                    <span>Verified Guest</span>
                   </span>
                 </div>
 
-                <div className="text-[var(--text-muted)] text-xs sm:text-sm space-y-0.5">
+                <div className="text-zinc-400 text-xs sm:text-sm space-y-0.5">
                   <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                    <Mail className="w-3.5 h-3.5" />
+                    <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
                     <span>{currentUser.email}</span>
                   </div>
                   {currentUser.phone && (
                     <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                      <Phone className="w-3.5 h-3.5" />
+                      <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
                       <span>{currentUser.phone}</span>
                     </div>
                   )}
@@ -153,11 +135,11 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
             </div>
 
             {/* Permanent User ID Box */}
-            <div className="bg-[var(--bg-surface-elevated)] p-4 rounded-2xl border border-[var(--border-color)] text-center sm:text-right min-w-[200px]">
-              <div className="text-[10px] uppercase tracking-wider text-sky-500 font-semibold mb-1">
+            <div className="bg-[#0a0a0f] p-4 rounded-2xl border border-[#D4AF37]/30 text-center sm:text-right min-w-[200px]">
+              <div className="text-[10px] uppercase tracking-wider text-[#F3E5AB] font-semibold mb-1 font-mono-tech">
                 Permanent User ID
               </div>
-              <div className="text-base sm:text-lg font-bold text-[var(--text-primary)] tracking-wider">
+              <div className="text-base sm:text-lg font-extrabold text-white tracking-wider font-mono-tech">
                 {displayUserId}
               </div>
             </div>
@@ -169,11 +151,11 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               type="button"
               id="start-journey-btn"
               onClick={onStartJourney}
-              className="ui-btn-primary py-4 text-sm font-bold uppercase tracking-wider shadow-md"
+              className="ui-btn-primary py-4 text-sm font-extrabold uppercase tracking-wider shadow-[0_0_25px_rgba(212,175,55,0.4)]"
             >
-              <Compass className="w-5 h-5" />
+              <Compass className="w-5 h-5 text-black" />
               <span>✨ Plan My Trip</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 text-black" />
             </button>
 
             <button
@@ -182,7 +164,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               onClick={onOpenMyTrips}
               className="ui-btn-secondary py-4 text-sm font-bold uppercase tracking-wider"
             >
-              <History className="w-5 h-5 text-sky-500" />
+              <History className="w-5 h-5 text-[#D4AF37]" />
               <span>My Trips ({userBookings.length})</span>
             </button>
           </div>
@@ -191,16 +173,16 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
 
         {/* Recent Bookings */}
         {userBookings.length > 0 && (
-          <div className="ui-card p-6 shadow-md">
+          <div className="ui-card-luxury p-6 shadow-md border border-[#D4AF37]/25">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-sky-500" />
+              <h3 className="text-base font-bold text-white flex items-center gap-2 font-serif-luxury">
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                 <span>Recent Bookings</span>
               </h3>
               <button
                 type="button"
                 onClick={onOpenMyTrips}
-                className="text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
+                className="text-xs text-[#F3E5AB] hover:underline font-semibold cursor-pointer"
               >
                 View all ({userBookings.length})
               </button>
@@ -211,28 +193,28 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
                 <div
                   key={b.id}
                   onClick={() => onSelectBookingTicket(b)}
-                  className="p-4 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] hover:border-sky-500 transition-all cursor-pointer flex flex-col justify-between"
+                  className="p-4 rounded-xl bg-[#0e0e15] border border-[#D4AF37]/25 hover:border-[#D4AF37] transition-all cursor-pointer flex flex-col justify-between shadow-sm"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-xs mb-2">
-                      <span className="text-sky-500 font-bold">{b.id}</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center justify-between text-xs mb-2 font-mono-tech">
+                      <span className="text-[#F3E5AB] font-bold">{b.id}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-950/60 text-emerald-400 border border-emerald-500/40">
                         {b.status}
                       </span>
                     </div>
 
-                    <div className="text-sm font-bold text-[var(--text-primary)] mb-1">
-                      {b.from} <span className="text-sky-500">→</span> {b.to}
+                    <div className="text-sm font-bold text-white mb-1 font-serif-luxury">
+                      {b.from} <span className="text-[#D4AF37]">→</span> {b.to}
                     </div>
 
-                    <div className="text-xs text-[var(--text-muted)]">
+                    <div className="text-xs text-zinc-400 font-mono-tech">
                       <span>{b.travelDate} at {b.travelTime || '08:00'}</span>
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
-                    <span className="text-[var(--text-muted)]">{b.vehicle.name}</span>
-                    <span className="text-sm font-bold text-sky-600 dark:text-sky-400">
+                  <div className="mt-3 pt-2 border-t border-[#D4AF37]/15 flex items-center justify-between text-xs">
+                    <span className="text-zinc-400">{b.vehicle.name}</span>
+                    <span className="text-sm font-bold text-[#F3E5AB] font-mono-tech">
                       {formatINR(b.pricing.total)}
                     </span>
                   </div>
@@ -244,8 +226,8 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
 
       </div>
 
-      <div className="text-center text-[11px] text-[var(--text-muted)] z-10">
-        © 2026 TourGuide AI — Smart Travel Platform
+      <div className="text-center text-[11px] text-zinc-400 z-10">
+        © 2026 TourGuide AI — Luxury Travel Platform
       </div>
     </div>
   );

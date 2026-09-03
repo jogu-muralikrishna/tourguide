@@ -67,13 +67,21 @@ export const WeatherModal: React.FC<WeatherModalProps> = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            id="close-weather-modal-btn"
-            className="w-8 h-8 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-mono-tech flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>← Back to Previous Page</span>
+            </button>
+            <button
+              onClick={onClose}
+              id="close-weather-modal-btn"
+              className="w-8 h-8 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}

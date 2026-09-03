@@ -106,40 +106,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right: Actions & Theme Toggle */}
+        {/* Right: Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* Theme Selector Dropdown / Button Toggle */}
-          <div className="flex items-center bg-[#0F0F17] p-0.5 rounded-xl border border-[#D4AF37]/20">
-            <button
-              onClick={() => setTheme('light')}
-              title="Light Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'light' ? 'bg-[#1A1A26] text-[#F3E5AB] shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              <Sun className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('dark')}
-              title="Dark Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'dark' ? 'bg-[#1A1A26] text-[#D4AF37] shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              <Moon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('system')}
-              title="System Auto Mode"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'system' ? 'bg-[#1A1A26] text-amber-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              <Laptop className="w-4 h-4" />
-            </button>
-          </div>
-
           {/* Weather Button */}
           <button
             onClick={onOpenWeather}
@@ -147,22 +116,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111118] hover:bg-[#1A1A24] border border-[#D4AF37]/25 text-[#F3E5AB] text-xs font-medium transition-all cursor-pointer"
             title="Check live destination weather"
           >
-            <Sun className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span className="hidden sm:inline">Weather</span>
           </button>
 
-          {/* Admin Panel Button if admin */}
-          {isSpecialAdmin && (
-            <button
-              onClick={onOpenAdmin}
-              id="nav-admin-btn"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-medium transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
-              title="Admin Dashboard"
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span className="hidden sm:inline">Admin</span>
-            </button>
-          )}
+          {/* Admin Panel Button (Requires Password Security Verification) */}
+          <button
+            onClick={onOpenAdmin}
+            id="nav-admin-btn"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-semibold transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+            title="Admin Dashboard (Password Protected)"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span className="hidden sm:inline">Admin Panel</span>
+          </button>
 
           {/* User Profile Avatar / Tag */}
           {currentUser && (

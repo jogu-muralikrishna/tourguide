@@ -164,9 +164,15 @@ export const AgencyDashboard: React.FC<AgencyDashboardProps> = ({ user, onLogout
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={onLogout}
+            className="px-3.5 py-2 rounded-xl bg-[#14141B] hover:bg-[#20202A] border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer mr-1"
+          >
+            <span>← Back to Previous Page</span>
+          </button>
           <div className="text-right hidden sm:block">
             <div className="text-xs font-bold text-white font-mono-tech">{user.email}</div>
-            <div className="text-[10px] text-sky-400 font-mono-tech">Role: TRAVEL_ADMIN</div>
+            <div className="text-[10px] text-[#F3E5AB] font-mono-tech">Role: TRAVEL_ADMIN</div>
           </div>
           <button
             onClick={onLogout}
