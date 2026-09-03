@@ -62,14 +62,14 @@ export const Step5Map: React.FC<Step5MapProps> = ({
       subdomains: 'abcd',
     }).addTo(map);
 
-    // Custom Map Pins
+    // Custom Luxury Gold Map Pins
     const startPinIcon = L.divIcon({
       className: 'start-map-pin',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       html: `
-        <div style="background: #0284c7; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; box-shadow: 0 4px 12px rgba(2,132,199,0.5); display: flex; align-items: center; justify-content: center;">
-          <div style="transform: rotate(45deg); color: #FFFFFF; font-size: 11px; font-weight: 800;">A</div>
+        <div style="background: linear-gradient(135deg, #F3E5AB, #D4AF37); width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; box-shadow: 0 0 15px rgba(212,175,55,0.8); display: flex; align-items: center; justify-content: center;">
+          <div style="transform: rotate(45deg); color: #000000; font-size: 11px; font-weight: 900;">A</div>
         </div>
       `,
     });
@@ -79,8 +79,8 @@ export const Step5Map: React.FC<Step5MapProps> = ({
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       html: `
-        <div style="background: #10B981; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; box-shadow: 0 4px 12px rgba(16,185,129,0.5); display: flex; align-items: center; justify-content: center;">
-          <div style="transform: rotate(45deg); color: #FFFFFF; font-size: 11px; font-weight: 800;">B</div>
+        <div style="background: linear-gradient(135deg, #D4AF37, #AA7C11); width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; box-shadow: 0 0 15px rgba(212,175,55,0.8); display: flex; align-items: center; justify-content: center;">
+          <div style="transform: rotate(45deg); color: #FFFFFF; font-size: 11px; font-weight: 900;">B</div>
         </div>
       `,
     });
@@ -94,7 +94,7 @@ export const Step5Map: React.FC<Step5MapProps> = ({
     if (routeData?.routeGeometry && routeData.routeGeometry.length > 0) {
       const routeLatLngs = routeData.routeGeometry.map(([lng, lat]) => [lat, lng] as [number, number]);
       const routeLine = L.polyline(routeLatLngs, {
-        color: '#0284c7',
+        color: '#D4AF37',
         weight: 5,
         opacity: 0.9,
       }).addTo(map);
@@ -102,7 +102,7 @@ export const Step5Map: React.FC<Step5MapProps> = ({
       map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
     } else {
       const fallbackLine = L.polyline([[startLat, startLng], [destLat, destLng]], {
-        color: '#0284c7',
+        color: '#D4AF37',
         weight: 4,
         dashArray: '8, 8',
       }).addTo(map);
@@ -115,8 +115,8 @@ export const Step5Map: React.FC<Step5MapProps> = ({
         iconSize: [28, 28],
         iconAnchor: [14, 28],
         html: `
-          <div style="background: #F59E0B; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center;">
-            <div style="transform: rotate(45deg); color: #FFF; font-size: 10px; font-weight: bold;">H</div>
+          <div style="background: #F3E5AB; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #000; display: flex; align-items: center; justify-content: center;">
+            <div style="transform: rotate(45deg); color: #000; font-size: 10px; font-weight: bold;">H</div>
           </div>
         `,
       });
@@ -130,8 +130,8 @@ export const Step5Map: React.FC<Step5MapProps> = ({
         iconSize: [26, 26],
         iconAnchor: [13, 26],
         html: `
-          <div style="background: #EA580C; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center;">
-            <div style="transform: rotate(45deg); color: #FFF; font-size: 9px; font-weight: bold;">F</div>
+          <div style="background: #E6CA65; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #000; display: flex; align-items: center; justify-content: center;">
+            <div style="transform: rotate(45deg); color: #000; font-size: 9px; font-weight: bold;">F</div>
           </div>
         `,
       });
@@ -160,26 +160,22 @@ export const Step5Map: React.FC<Step5MapProps> = ({
           onClick={onGoBack}
           className="ui-btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 text-[#D4AF37]" />
           <span>Back to Step 4 (Food Stops)</span>
         </button>
 
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider">
-          <Compass className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-semibold uppercase tracking-wider shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+          <Compass className="w-3.5 h-3.5 text-[#D4AF37]" />
           <span>Step 5 of 7</span>
         </div>
       </div>
 
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-2">
-          <Compass className="w-3.5 h-3.5" />
-          <span>Step 5 • Tactical Route Map</span>
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-serif-luxury">
           Route Map
         </h2>
-        <p className="text-[var(--text-muted)] text-sm">
+        <p className="text-zinc-400 text-sm">
           Interactive view of your departure, highway path, pitstops, and destination.
         </p>
       </div>
@@ -189,7 +185,7 @@ export const Step5Map: React.FC<Step5MapProps> = ({
         <button
           onClick={() => setMobileView('map')}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold ${
-            mobileView === 'map' ? 'bg-sky-500 text-white' : 'ui-btn-secondary'
+            mobileView === 'map' ? 'gold-gradient-bg text-black font-bold' : 'ui-btn-secondary'
           }`}
         >
           <MapIcon className="w-3.5 h-3.5" />
@@ -198,7 +194,7 @@ export const Step5Map: React.FC<Step5MapProps> = ({
         <button
           onClick={() => setMobileView('list')}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold ${
-            mobileView === 'list' ? 'bg-sky-500 text-white' : 'ui-btn-secondary'
+            mobileView === 'list' ? 'gold-gradient-bg text-black font-bold' : 'ui-btn-secondary'
           }`}
         >
           <List className="w-3.5 h-3.5" />
@@ -210,46 +206,46 @@ export const Step5Map: React.FC<Step5MapProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Left Column: Itinerary Details (Visible on desktop or when mobileView === 'list') */}
         <div className={`md:col-span-5 space-y-3 ${mobileView === 'map' ? 'hidden md:block' : 'block'}`}>
-          <div className="ui-card p-4">
-            <h3 className="font-bold text-sm text-[var(--text-primary)] mb-3 flex items-center justify-between">
+          <div className="ui-card-luxury p-4 border border-[#D4AF37]/25 shadow-[0_10px_30px_rgba(0,0,0,0.7)]">
+            <h3 className="font-bold text-sm text-white font-serif-luxury mb-3 flex items-center justify-between">
               <span>Trip Waypoints</span>
-              <span className="text-xs text-sky-600 dark:text-sky-400">{distanceKm} km</span>
+              <span className="text-xs text-[#F3E5AB] font-mono-tech">{distanceKm} km</span>
             </h3>
 
             <div className="space-y-3 text-xs">
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)]">
-                <div className="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-xs">A</div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#D4AF37]/25">
+                <div className="w-6 h-6 rounded-full gold-gradient-bg text-black font-bold flex items-center justify-center text-xs shadow-xs">A</div>
                 <div>
-                  <div className="font-bold text-[var(--text-primary)]">Departure: {fromLocation}</div>
-                  <div className="text-[11px] text-[var(--text-muted)]">Starting Point</div>
+                  <div className="font-bold text-white">Departure: {fromLocation}</div>
+                  <div className="text-[11px] text-zinc-400">Starting Point</div>
                 </div>
               </div>
 
               {pitstops.map((p, i) => (
-                <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)]">
-                  <div className="w-6 h-6 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center text-xs">F</div>
+                <div key={p.id} className="flex items-start gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#D4AF37]/20">
+                  <div className="w-6 h-6 rounded-full bg-[#E6CA65] text-black font-bold flex items-center justify-center text-xs">F</div>
                   <div>
-                    <div className="font-bold text-[var(--text-primary)]">{p.name}</div>
-                    <div className="text-[11px] text-[var(--text-muted)]">{p.cuisine} • Food Stop</div>
+                    <div className="font-bold text-white">{p.name}</div>
+                    <div className="text-[11px] text-zinc-400">{p.cuisine} • Food Stop</div>
                   </div>
                 </div>
               ))}
 
               {hotel && (
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)]">
-                  <div className="w-6 h-6 rounded-full bg-amber-500 text-white font-bold flex items-center justify-center text-xs">H</div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#D4AF37]/20">
+                  <div className="w-6 h-6 rounded-full bg-[#F3E5AB] text-black font-bold flex items-center justify-center text-xs">H</div>
                   <div>
-                    <div className="font-bold text-[var(--text-primary)]">{hotel.name}</div>
-                    <div className="text-[11px] text-[var(--text-muted)]">Hotel Stay</div>
+                    <div className="font-bold text-white">{hotel.name}</div>
+                    <div className="text-[11px] text-zinc-400">Hotel Stay</div>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-color)]">
-                <div className="w-6 h-6 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-xs">B</div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#D4AF37]/25">
+                <div className="w-6 h-6 rounded-full bg-[#D4AF37] text-black font-bold flex items-center justify-center text-xs shadow-xs">B</div>
                 <div>
-                  <div className="font-bold text-[var(--text-primary)]">Destination: {toLocation}</div>
-                  <div className="text-[11px] text-[var(--text-muted)]">Arrival Point</div>
+                  <div className="font-bold text-white">Destination: {toLocation}</div>
+                  <div className="text-[11px] text-zinc-400">Arrival Point</div>
                 </div>
               </div>
             </div>
@@ -258,14 +254,14 @@ export const Step5Map: React.FC<Step5MapProps> = ({
 
         {/* Right Column: Map Box (Visible on desktop or when mobileView === 'map') */}
         <div className={`md:col-span-7 ${mobileView === 'list' ? 'hidden md:block' : 'block'}`}>
-          <div className="relative rounded-2xl overflow-hidden ui-card h-[450px] shadow-lg">
+          <div className="relative rounded-2xl overflow-hidden ui-card-luxury h-[450px] shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-[#D4AF37]/30">
             <div ref={mapContainerRef} className="w-full h-full z-0" />
           </div>
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="ui-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="ui-card-luxury p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <button
           type="button"
           onClick={onGoBack}
@@ -275,8 +271,8 @@ export const Step5Map: React.FC<Step5MapProps> = ({
         </button>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <div className="hidden md:flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-            <CheckCircle2 className="w-4 h-4" />
+          <div className="hidden md:flex items-center gap-2 text-[#F3E5AB] text-xs font-semibold">
+            <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
             <span>Route Verified</span>
           </div>
           <button
@@ -286,7 +282,7 @@ export const Step5Map: React.FC<Step5MapProps> = ({
             className="ui-btn-primary w-full sm:w-auto"
           >
             <span>Next Step</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-black" />
           </button>
         </div>
       </div>

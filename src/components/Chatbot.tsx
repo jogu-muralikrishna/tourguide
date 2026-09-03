@@ -107,10 +107,10 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
         <button
           onClick={() => setIsOpen(true)}
           id="open-sage-chat-btn"
-          className="w-13 h-13 rounded-full bg-sky-500 text-white shadow-lg hover:scale-105 transition-transform flex items-center justify-center cursor-pointer"
+          className="w-14 h-14 rounded-full gold-gradient-bg text-black shadow-[0_0_25px_rgba(212,175,55,0.5)] border-2 border-[#D4AF37] hover:scale-110 transition-all flex items-center justify-center cursor-pointer"
           title="TourGuide AI Assistant"
         >
-          <Bot className="w-6 h-6" />
+          <Bot className="w-7 h-7 text-black" />
         </button>
       )}
 
@@ -118,21 +118,21 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
       {isOpen && (
         <div 
           id="sage-chat-panel"
-          className="w-[330px] sm:w-[380px] h-[500px] rounded-2xl ui-card shadow-2xl flex flex-col overflow-hidden animate-fade-in border-sky-500/30"
+          className="w-[330px] sm:w-[380px] h-[520px] rounded-2xl ui-card-luxury shadow-[0_10px_50px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden animate-fade-in border-2 border-[#D4AF37]/40"
         >
           
           {/* Header */}
-          <div className="p-3.5 bg-[var(--bg-surface-elevated)] border-b border-[var(--border-color)] flex items-center justify-between">
+          <div className="p-3.5 bg-[#0b0b12] border-b border-[#D4AF37]/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center">
-                <Bot className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl gold-gradient-bg text-black flex items-center justify-center shadow-xs">
+                <Bot className="w-4 h-4 text-black" />
               </div>
               <div>
-                <div className="font-bold text-sm text-[var(--text-primary)]">
+                <div className="font-bold text-sm text-white font-serif-luxury">
                   TourGuide AI
                 </div>
-                <div className="text-[10px] text-[var(--text-muted)]">
-                  Your personal travel assistant
+                <div className="text-[10px] text-[#F3E5AB]">
+                  Your personal luxury travel assistant
                 </div>
               </div>
             </div>
@@ -140,15 +140,15 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
+                className="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-[#D4AF37]" />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-[#07070b]">
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
 
@@ -157,16 +157,16 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
                   key={msg.id}
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
-                  <div className="flex items-center gap-1 mb-1 text-[10px] text-[var(--text-muted)]">
-                    {isUser ? <span>You</span> : <span className="text-sky-500 font-semibold">TourGuide AI</span>}
+                  <div className="flex items-center gap-1 mb-1 text-[10px] text-zinc-400">
+                    {isUser ? <span className="text-zinc-300 font-semibold">You</span> : <span className="text-[#F3E5AB] font-bold">TourGuide AI</span>}
                     <span>• {msg.timestamp}</span>
                   </div>
 
                   <div
-                    className={`max-w-[85%] p-3 rounded-xl leading-relaxed ${
+                    className={`max-w-[85%] p-3 rounded-xl leading-relaxed shadow-sm ${
                       isUser
-                        ? 'bg-sky-500 text-white font-medium rounded-tr-xs'
-                        : 'bg-[var(--bg-surface-elevated)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-xs'
+                        ? 'gold-gradient-bg text-black font-bold rounded-tr-xs'
+                        : 'bg-[#101018] text-zinc-100 border border-[#D4AF37]/25 rounded-tl-xs'
                     }`}
                   >
                     {msg.text}
@@ -179,7 +179,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
                           key={idx}
                           type="button"
                           onClick={() => handleSendMessage(sug)}
-                          className="px-2.5 py-1 rounded-full text-[10px] bg-[var(--bg-surface-elevated)] border border-[var(--border-color)] hover:border-sky-500 text-sky-600 dark:text-sky-400 font-medium transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-full text-[10px] bg-[#12121b] border border-[#D4AF37]/30 hover:border-[#D4AF37] text-[#F3E5AB] font-medium transition-colors cursor-pointer"
                         >
                           {sug}
                         </button>
@@ -191,8 +191,8 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
             })}
 
             {isLoading && (
-              <div className="flex items-center gap-2 text-[11px] text-sky-500 py-1">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <div className="flex items-center gap-2 text-[11px] text-[#F3E5AB] py-1">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#D4AF37]" />
                 <span>AI is generating response...</span>
               </div>
             )}
@@ -201,7 +201,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
           </div>
 
           {/* Input Box */}
-          <div className="p-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)]">
+          <div className="p-3 bg-[#0a0a0f] border-t border-[#D4AF37]/20">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -214,14 +214,14 @@ export const Chatbot: React.FC<ChatbotProps> = ({ tripContext }) => {
                 placeholder="Ask TourGuide AI..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="ui-input flex-1 text-xs"
+                className="ui-input flex-1 text-xs bg-[#12121b] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isLoading}
                 className="ui-btn-primary py-2 px-3 text-xs"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 text-black" />
               </button>
             </form>
           </div>

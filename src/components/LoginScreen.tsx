@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, ShieldCheck, Sparkles, Building2, Sun, Moon, Laptop } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Sparkles, Building2, Sun, Moon, Laptop, Compass } from 'lucide-react';
 import { loginApi, registerApi, AuthRoleUser } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -69,61 +69,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-hidden transition-colors">
+    <div className="min-h-screen bg-[#07070a] text-white flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-hidden transition-colors">
       
+      {/* Background Subtle Ambient Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
+
       {/* Top Header */}
       <header className="max-w-5xl mx-auto w-full flex items-center justify-between z-10 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-sky-500 text-white flex items-center justify-center font-bold text-lg shadow-md">
-            TG
+          <div className="w-10 h-10 rounded-2xl gold-gradient-bg text-black flex items-center justify-center font-extrabold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] border border-[#D4AF37]">
+            <Compass className="w-6 h-6 text-black" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">
-              TourGuide <span className="text-sky-500">AI</span>
+            <h1 className="text-xl font-bold tracking-tight text-white font-serif-luxury">
+              TourGuide <span className="gold-gradient-text font-black">AI</span>
             </h1>
-            <p className="text-xs text-[var(--text-muted)] font-medium">Personal Travel Copilot</p>
+            <p className="text-xs text-[#F3E5AB] font-mono-tech">Personal Travel Copilot</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Theme Selector */}
-          <div className="flex items-center bg-[var(--bg-surface-elevated)] p-0.5 rounded-xl border border-[var(--border-color)]">
-            <button
-              onClick={() => setTheme('light')}
-              title="Light Mode"
-              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                theme === 'light' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Sun className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('dark')}
-              title="Dark Mode"
-              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                theme === 'dark' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Moon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setTheme('system')}
-              title="System Theme"
-              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                theme === 'system' ? 'bg-sky-500 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Laptop className="w-4 h-4" />
-            </button>
-          </div>
-
           {/* Partner Registration Modal Opener */}
           <button
             onClick={onRequestAdmin}
             id="partner-request-header-btn"
-            className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#F3E5AB] border border-[#D4AF37]/40 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Building2 className="w-3.5 h-3.5" />
+            <Building2 className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span className="hidden sm:inline">Partner Registration</span>
             <span className="sm:hidden">Partner</span>
           </button>
@@ -140,7 +112,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
               };
               onLoginSuccess(guestUser, 'guest@tourguide.com');
             }}
-            className="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-[#14141B] hover:bg-[#20202A] text-[#F3E5AB] border border-[#D4AF37]/40 text-xs font-mono-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <span>← Back to Previous Page</span>
           </button>
@@ -151,18 +123,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
       <main className="max-w-md mx-auto w-full my-auto py-8 z-10">
         
         {/* Card Container */}
-        <div className="ui-card p-6 sm:p-8 shadow-xl">
+        <div className="ui-card-luxury p-6 sm:p-8 shadow-[0_10px_50px_rgba(0,0,0,0.9)] border border-[#D4AF37]/30">
           
           {/* Welcome Banner */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-semibold mb-3 shadow-[0_0_15px_rgba(212,175,55,0.15)] uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Smart AI Travel Platform</span>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-serif-luxury">
               {isRegisterMode ? 'Create Your Account' : 'Sign In to Your Hub'}
             </h2>
-            <p className="text-xs text-[var(--text-muted)] mt-1">
+            <p className="text-xs text-zinc-400 mt-1">
               {isRegisterMode
                 ? 'Register to plan and book custom highway journeys'
                 : 'Access your trips, bookings, and custom itineraries'}
@@ -170,17 +142,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg-surface-elevated)] rounded-xl border border-[var(--border-color)] mb-6 text-xs font-semibold">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-[#0a0a0f] rounded-xl border border-[#D4AF37]/20 mb-6 text-xs font-semibold">
             <button
               type="button"
               onClick={() => {
                 setIsRegisterMode(false);
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-lg font-semibold transition-all cursor-pointer text-center ${
+              className={`py-2 rounded-lg font-bold transition-all cursor-pointer text-center ${
                 !isRegisterMode
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  ? 'gold-gradient-bg text-black shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               Sign In
@@ -191,10 +163,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 setIsRegisterMode(true);
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-lg font-semibold transition-all cursor-pointer text-center ${
+              className={`py-2 rounded-lg font-bold transition-all cursor-pointer text-center ${
                 isRegisterMode
-                  ? 'bg-sky-500 text-white shadow-xs'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  ? 'gold-gradient-bg text-black shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               Create Account
@@ -203,7 +175,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
 
           {/* Error Message Box */}
           {errorMsg && (
-            <div className="mb-5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-medium flex items-center gap-2">
+            <div className="mb-5 p-3.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 text-xs font-medium flex items-center gap-2">
               <span className="text-sm">⚠️</span>
               <span>{errorMsg}</span>
             </div>
@@ -213,7 +185,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
           {!isRegisterMode ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Email Address
                 </label>
                 <input
@@ -222,12 +194,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="e.g. aarav.sharma@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Password
                 </label>
                 <input
@@ -236,21 +208,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="ui-btn-primary w-full py-3.5 text-xs font-bold uppercase tracking-wider"
+                className="ui-btn-primary w-full py-3.5 text-xs font-extrabold uppercase tracking-wider mt-2"
               >
                 {isLoading ? (
                   <span>Signing in...</span>
                 ) : (
                   <>
                     <span>Sign In to Dashboard</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-black" />
                   </>
                 )}
               </button>
@@ -259,7 +231,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
             /* CREATE ACCOUNT FORM */
             <form onSubmit={handleRegister} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">
                   Full Name
                 </label>
                 <input
@@ -268,12 +240,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="e.g. Aarav Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">
                   Email Address
                 </label>
                 <input
@@ -282,12 +254,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="e.g. traveler@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">
                   Phone Number
                 </label>
                 <input
@@ -296,12 +268,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="+91 98765 43210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">
                   Create Password
                 </label>
                 <input
@@ -311,21 +283,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                   placeholder="At least 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="ui-input w-full px-4 py-3 text-sm font-medium"
+                  className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="ui-btn-primary w-full py-3.5 text-xs font-bold uppercase tracking-wider mt-2"
+                className="ui-btn-primary w-full py-3.5 text-xs font-extrabold uppercase tracking-wider mt-2"
               >
                 {isLoading ? (
                   <span>Creating Account...</span>
                 ) : (
                   <>
                     <span>Create My Account</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-black" />
                   </>
                 )}
               </button>
@@ -333,8 +305,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
           )}
 
           {/* Security badge */}
-          <div className="mt-5 pt-3 border-t border-[var(--border-color)] flex items-center justify-center gap-1.5 text-[11px] text-[var(--text-muted)]">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+          <div className="mt-5 pt-3 border-t border-[#D4AF37]/20 flex items-center justify-center gap-1.5 text-[11px] text-zinc-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Secure SSL encrypted connection</span>
           </div>
 
@@ -342,8 +314,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
       </main>
 
       {/* Footer */}
-      <footer className="text-center text-[11px] text-[var(--text-muted)] z-10 py-2">
-        © 2026 TourGuide AI — Smart Travel Platform
+      <footer className="text-center text-[11px] text-zinc-400 z-10 py-2">
+        © 2026 TourGuide AI — Luxury Travel Platform
       </footer>
     </div>
   );

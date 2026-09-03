@@ -1,61 +1,46 @@
 @import "tailwindcss";
 
 @layer base {
-  :root {
-    /* Brand Accent Colors */
-    --accent: #0284c7;
-    --accent-light: #38bdf8;
-    --accent-dark: #0369a1;
-    --accent-rgb: 2, 132, 199;
+  :root, html.dark, :root[data-theme="dark"] {
+    /* Brand Accent Colors - Gold Luxury System */
+    --accent: #d4af37;
+    --accent-light: #f3e5ab;
+    --accent-dark: #aa7c11;
+    --accent-rgb: 212, 175, 55;
 
-    /* Base Tokens (Light Mode Default) */
-    --bg-page: #f8fafc;
-    --bg-surface: #ffffff;
-    --bg-surface-hover: #f1f5f9;
-    --bg-surface-elevated: #f8fafc;
+    /* Base Tokens (Deep Black / Midnight Luxury) */
+    --bg-page: #07070a;
+    --bg-surface: #0e0e15;
+    --bg-surface-hover: #161622;
+    --bg-surface-elevated: #12121b;
     
-    --border-color: #e2e8f0;
-    --border-hover: #cbd5e1;
+    --border-color: rgba(212, 175, 55, 0.2);
+    --border-hover: rgba(212, 175, 55, 0.45);
     
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-inverse: #ffffff;
+    --text-primary: #fcfcfd;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --text-inverse: #07070a;
 
-    --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-    --card-shadow-hover: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
-  }
-
-  html.dark, :root[data-theme="dark"] {
-    /* Base Tokens (Dark Mode) */
-    --bg-page: #0b0f17;
-    --bg-surface: #141c2e;
-    --bg-surface-hover: #1e293b;
-    --bg-surface-elevated: #1a2438;
-    
-    --border-color: #243047;
-    --border-hover: #334155;
-    
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-inverse: #0f172a;
-
-    --card-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.35);
-    --card-shadow-hover: 0 12px 35px -4px rgba(0, 0, 0, 0.5);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.05);
+    --card-shadow-hover: 0 14px 40px 0 rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.25);
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg-page);
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #07070a;
     color: var(--text-primary);
     transition: background-color 0.25s ease, color 0.25s ease;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', 'Inter', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Outfit', 'Cinzel', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-serif-luxury {
+    font-family: 'Cinzel', serif;
   }
 
   .font-mono-tech {
@@ -80,9 +65,17 @@
 }
 
 .ui-card-selected {
-  background-color: var(--bg-surface);
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+  background-color: rgba(18, 18, 28, 0.95);
+  border: 2px solid #D4AF37;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);
+}
+
+.ui-card-luxury {
+  background: rgba(14, 14, 21, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 .ui-input {
@@ -96,79 +89,89 @@
 
 .ui-input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
 }
 
 .ui-btn-primary {
-  background-color: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
+  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C11 100%);
+  color: #000000;
+  font-weight: 700;
   border-radius: 12px;
   padding: 0.625rem 1.25rem;
   transition: all 0.2s ease;
   display: inline-flex;
-  items-center: center;
+  align-items: center;
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25);
 }
 
 .ui-btn-primary:hover {
-  background-color: var(--accent-dark);
-  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 6px 30px rgba(212, 175, 55, 0.45);
   transform: translateY(-1px);
 }
 
 .ui-btn-secondary {
   background-color: var(--bg-surface-hover);
-  color: var(--text-primary);
+  color: #F3E5AB;
   border: 1px solid var(--border-color);
   font-weight: 500;
   border-radius: 12px;
   padding: 0.625rem 1.25rem;
   transition: all 0.15s ease;
   display: inline-flex;
-  items-center: center;
+  align-items: center;
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
 }
 
 .ui-btn-secondary:hover {
-  background-color: var(--border-color);
-  color: var(--text-primary);
+  background-color: var(--bg-surface-elevated);
+  border-color: #D4AF37;
+  color: #FFFFFF;
 }
 
 .brand-gradient-text {
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-light) 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F3E5AB 50%, #D4AF37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-gradient-text {
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  background: linear-gradient(135deg, #FFF8DC 0%, #F3E5AB 40%, #D4AF37 80%, #AA7C11 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Custom Minimal Scrollbar */
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C11 100%);
+}
+
+.gold-border-glow {
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
+}
+
+/* Custom Minimal Gold Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-page);
+  background: #07070a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-hover);
+  background: rgba(212, 175, 55, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: #D4AF37;
 }
 
 /* Smooth Fade & Transition Utilities */
@@ -187,13 +190,13 @@
   }
 }
 
-/* Leaflet Map Styling - Authentic Clean White Google Maps Style */
+/* Leaflet Map Styling - Dark Luxury Theme */
 .leaflet-tile {
-  filter: none !important;
+  filter: brightness(0.7) invert(100%) hue-rotate(190deg) contrast(1.2) saturate(0.8) !important;
 }
 
 .leaflet-container {
-  background: #f8fafc !important;
+  background: #09090e !important;
 }
 
 /* Print Styles */
@@ -206,3 +209,4 @@
     display: none !important;
   }
 }
+

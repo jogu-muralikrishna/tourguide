@@ -58,48 +58,48 @@ export const Navbar: React.FC<NavbarProps> = ({
             id="navbar-brand-logo"
             className="flex items-center gap-2.5 cursor-pointer group select-none"
           >
-            <div className="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow-md group-hover:bg-sky-600 transition-all duration-300">
-              <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
+            <div className="w-9 h-9 rounded-xl gold-gradient-bg text-black flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:scale-105 transition-all duration-300">
+              <Compass className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500 text-black" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-base tracking-tight text-[var(--text-primary)] group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                <span className="font-bold text-base tracking-tight text-white group-hover:text-[#F3E5AB] transition-colors font-serif-luxury">
                   TourGuide
                 </span>
-                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-[#D4AF37]/20 text-[#F3E5AB] border border-[#D4AF37]/40">
                   AI
                 </span>
               </div>
-              <span className="text-[10px] text-[var(--text-muted)] font-medium">
-                Smart Travel Platform
+              <span className="text-[10px] text-zinc-400 font-medium">
+                Luxury Travel System
               </span>
             </div>
           </div>
         </div>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 bg-[var(--bg-surface-elevated)] p-1 rounded-xl border border-[var(--border-color)]">
+        <nav className="hidden md:flex items-center gap-1 bg-[#0F0F17]/80 p-1 rounded-xl border border-[#D4AF37]/20 backdrop-blur-md">
           <button
             onClick={() => onSelectNavTab?.('home')}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg text-zinc-300 hover:text-white hover:bg-[#181824] transition-all cursor-pointer"
           >
             Explore
           </button>
           <button
             onClick={() => onSelectNavTab?.('planner')}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg text-sky-600 dark:text-sky-400 hover:bg-[var(--bg-surface)] transition-all flex items-center gap-1 cursor-pointer font-semibold"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg text-[#F3E5AB] bg-[#D4AF37]/15 border border-[#D4AF37]/30 hover:bg-[#D4AF37]/25 transition-all flex items-center gap-1 cursor-pointer font-semibold shadow-[0_0_10px_rgba(212,175,55,0.15)]"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
             Plan Trip
           </button>
           <button
             onClick={onOpenMyTrips}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg text-zinc-300 hover:text-white hover:bg-[#181824] transition-all flex items-center gap-1 cursor-pointer"
           >
-            <Luggage className="w-3.5 h-3.5" />
+            <Luggage className="w-3.5 h-3.5 text-[#D4AF37]" />
             My Trips
             {confirmedCount > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 rounded-full bg-sky-500 text-white text-[10px] font-bold">
+              <span className="ml-1 px-1.5 py-0.2 rounded-full gold-gradient-bg text-black text-[10px] font-bold">
                 {confirmedCount}
               </span>
             )}
@@ -110,12 +110,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-3">
           
           {/* Theme Selector Dropdown / Button Toggle */}
-          <div className="flex items-center bg-[var(--bg-surface-elevated)] p-0.5 rounded-xl border border-[var(--border-color)]">
+          <div className="flex items-center bg-[#0F0F17] p-0.5 rounded-xl border border-[#D4AF37]/20">
             <button
               onClick={() => setTheme('light')}
               title="Light Mode"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'light' ? 'bg-[var(--bg-surface)] text-amber-500 shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                theme === 'light' ? 'bg-[#1A1A26] text-[#F3E5AB] shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               <Sun className="w-4 h-4" />
@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setTheme('dark')}
               title="Dark Mode"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'dark' ? 'bg-[var(--bg-surface)] text-sky-400 shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                theme === 'dark' ? 'bg-[#1A1A26] text-[#D4AF37] shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               <Moon className="w-4 h-4" />
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setTheme('system')}
               title="System Auto Mode"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                theme === 'system' ? 'bg-[var(--bg-surface)] text-indigo-500 shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                theme === 'system' ? 'bg-[#1A1A26] text-amber-400 shadow-xs' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               <Laptop className="w-4 h-4" />
@@ -144,10 +144,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenWeather}
             id="nav-weather-btn"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface-hover)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-medium transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#111118] hover:bg-[#1A1A24] border border-[#D4AF37]/25 text-[#F3E5AB] text-xs font-medium transition-all cursor-pointer"
             title="Check live destination weather"
           >
-            <Sun className="w-3.5 h-3.5 text-amber-500" />
+            <Sun className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span className="hidden sm:inline">Weather</span>
           </button>
 
@@ -156,10 +156,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenAdmin}
               id="nav-admin-btn"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-medium transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-medium transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
               title="Admin Dashboard"
             >
-              <ShieldAlert className="w-3.5 h-3.5" />
+              <ShieldAlert className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span className="hidden sm:inline">Admin</span>
             </button>
           )}
@@ -168,13 +168,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           {currentUser && (
             <div 
               onClick={onGoToProfile}
-              className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[var(--bg-surface-hover)] border border-[var(--border-color)] text-xs cursor-pointer hover:border-sky-500 transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#111118] border border-[#D4AF37]/30 text-xs cursor-pointer hover:border-[#D4AF37] transition-colors"
               title="View Profile"
             >
-              <div className="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center text-xs">
+              <div className="w-6 h-6 rounded-full gold-gradient-bg text-black font-bold flex items-center justify-center text-xs">
                 {currentUser.name.charAt(0).toUpperCase()}
               </div>
-              <span className="hidden lg:inline text-[var(--text-primary)] font-medium max-w-[100px] truncate">
+              <span className="hidden lg:inline text-zinc-200 font-medium max-w-[100px] truncate">
                 {currentUser.name}
               </span>
             </div>
@@ -184,10 +184,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isJourneyActive && (
             <div 
               id="navbar-live-bill-pill"
-              className="hidden xs:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-xs font-medium"
+              className="hidden xs:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-medium shadow-[0_0_15px_rgba(212,175,55,0.2)]"
             >
-              <Sparkles className="w-3.5 h-3.5 text-sky-500" />
-              <span className="font-semibold">{formatINR(totalPrice)}</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="font-bold font-mono-tech text-white">{formatINR(totalPrice)}</span>
             </div>
           )}
 

@@ -35,24 +35,24 @@ export const Step2Fleet: React.FC<Step2FleetProps> = ({
             onClick={onGoBack}
             className="ui-btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Back to Step 1 (Locations)</span>
           </button>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider">
-            <Car className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-xs font-semibold uppercase tracking-wider shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+            <Car className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Step 2 of 7</span>
           </div>
         </div>
 
         {/* Section Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-3 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight font-serif-luxury">
             Choose Your Transport
           </h2>
-          <p className="text-[var(--text-muted)] text-sm sm:text-base max-w-xl mx-auto">
-            Select a vehicle for your route from <strong className="text-[var(--text-primary)]">{fromLocation}</strong> to{' '}
-            <strong className="text-[var(--text-primary)]">{toLocation}</strong> ({distanceKm} km).
+          <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto">
+            Select a car for your trip from <strong className="text-[#F3E5AB]">{fromLocation}</strong> to{' '}
+            <strong className="text-[#F3E5AB]">{toLocation}</strong> ({distanceKm} km).
           </p>
         </div>
 
@@ -68,24 +68,26 @@ export const Step2Fleet: React.FC<Step2FleetProps> = ({
                 key={car.id}
                 id={`vehicle-card-${car.id}`}
                 onClick={() => onSelectVehicle(car)}
-                className={`ui-card group relative overflow-hidden transition-all flex flex-col justify-between cursor-pointer ${
-                  isSelected ? 'ui-card-selected' : 'ui-card-hover'
+                className={`ui-card group relative overflow-hidden transition-all duration-300 flex flex-col justify-between cursor-pointer rounded-2xl ${
+                  isSelected 
+                    ? 'bg-[#12121e] border-2 border-[#D4AF37] shadow-[0_0_30px_rgba(212,175,55,0.3)]' 
+                    : 'bg-[#0e0e15] border border-[#D4AF37]/20 hover:border-[#D4AF37]/60 hover:bg-[#151520] hover:shadow-[0_8px_30px_rgba(0,0,0,0.7)]'
                 }`}
               >
                 {/* Image */}
-                <div className="relative h-48 w-full overflow-hidden bg-[var(--bg-surface-elevated)]">
+                <div className="relative h-48 w-full overflow-hidden bg-[#09090d]">
                   <img
                     src={imgUrl}
                     alt={car.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {isSelected && (
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-sky-500 text-white text-xs font-bold rounded-full shadow-md flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    <div className="absolute top-3 right-3 px-3 py-1 gold-gradient-bg text-black text-xs font-bold rounded-full shadow-[0_0_15px_rgba(212,175,55,0.5)] flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black" />
                       <span>Selected</span>
                     </div>
                   )}
-                  <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-semibold">
+                  <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-[#F3E5AB] border border-[#D4AF37]/30 text-[10px] uppercase tracking-wider font-semibold font-mono-tech">
                     {car.category || car.carType || 'Car'}
                   </div>
                 </div>
@@ -94,32 +96,32 @@ export const Step2Fleet: React.FC<Step2FleetProps> = ({
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-bold text-[var(--text-primary)]">{car.name}</h3>
-                      <div className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                      <h3 className="text-lg font-bold text-white font-serif-luxury">{car.name}</h3>
+                      <div className="text-xs font-bold text-[#F3E5AB] font-mono-tech">
                         ₹{pricePerKm}/km
                       </div>
                     </div>
-                    <p className="text-xs text-[var(--text-muted)] mb-4 line-clamp-2">{car.subtitle || car.carType || 'Comfortable air-conditioned highway car'}</p>
+                    <p className="text-xs text-zinc-400 mb-4 line-clamp-2">{car.subtitle || car.carType || 'Comfortable air-conditioned highway car'}</p>
 
-                    <div className="grid grid-cols-3 gap-2 py-3 border-y border-[var(--border-color)] text-xs">
-                      <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-                        <Users className="w-3.5 h-3.5 text-sky-500" />
+                    <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#D4AF37]/20 text-xs">
+                      <div className="flex items-center gap-1.5 text-zinc-300">
+                        <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
                         <span>{car.seats || 4} Seats</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-                        <Briefcase className="w-3.5 h-3.5 text-sky-500" />
+                      <div className="flex items-center gap-1.5 text-zinc-300">
+                        <Briefcase className="w-3.5 h-3.5 text-[#D4AF37]" />
                         <span>{car.luggage || '3 Bags'}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-                        <Gauge className="w-3.5 h-3.5 text-sky-500" />
+                      <div className="flex items-center gap-1.5 text-zinc-300">
+                        <Gauge className="w-3.5 h-3.5 text-[#D4AF37]" />
                         <span>{car.specs?.fuelType || 'Petrol'}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 flex items-center justify-between text-xs">
-                    <span className="text-[var(--text-muted)]">Car Fare ({distanceKm} km):</span>
-                    <span className="text-base font-bold text-sky-600 dark:text-sky-400">
+                  <div className="mt-4 pt-3 flex items-center justify-between text-xs border-t border-[#D4AF37]/15">
+                    <span className="text-zinc-400">Total Car Fare ({distanceKm} km):</span>
+                    <span className="text-base font-bold text-[#F3E5AB] font-mono-tech">
                       {formatINR(car.price)}
                     </span>
                   </div>
@@ -130,7 +132,7 @@ export const Step2Fleet: React.FC<Step2FleetProps> = ({
         </div>
 
         {/* Action Bar */}
-        <div className="ui-card p-4 flex items-center justify-between gap-4">
+        <div className="ui-card-luxury p-4 flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={onGoBack}
@@ -147,7 +149,7 @@ export const Step2Fleet: React.FC<Step2FleetProps> = ({
             className="ui-btn-primary py-3 px-6 text-sm font-bold uppercase tracking-wider flex items-center gap-2 disabled:opacity-50"
           >
             <span>Hotel Stay (Step 3)</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-black" />
           </button>
         </div>
 

@@ -29,7 +29,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   ];
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-surface)]/95 backdrop-blur-lg border-t border-[var(--border-color)] px-2 py-1.5 no-print shadow-lg">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#09090F]/95 backdrop-blur-lg border-t border-[#D4AF37]/20 px-2 py-1.5 no-print shadow-[0_-4px_25px_rgba(0,0,0,0.8)]">
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -40,18 +40,18 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               onClick={() => onSelectTab(tab.id)}
               className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer relative ${
                 isActive
-                  ? 'text-sky-600 dark:text-sky-400 font-semibold'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  ? 'text-[#F3E5AB] font-bold'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
               <div className="relative">
                 <Icon
                   className={`w-5 h-5 transition-transform ${
-                    isActive ? 'scale-110' : ''
-                  } ${tab.highlight && isActive ? 'text-sky-500' : ''}`}
+                    isActive ? 'scale-110 text-[#D4AF37]' : ''
+                  }`}
                 />
                 {!!tab.badge && tab.badge > 0 && (
-                  <span className="absolute -top-1 -right-2 w-4 h-4 bg-sky-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-2 w-4 h-4 gold-gradient-bg text-black text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                     {tab.badge}
                   </span>
                 )}
