@@ -868,53 +868,6 @@ export async function resetPartnerPasswordApi(id: string, newPasswordPlain: stri
   return await res.json();
 }
 
-export async function createSubAdminAccountApi(data: {
-  name: string;
-  email: string;
-  password: string;
-  role: 'HOTEL_ADMIN' | 'TRAVEL_ADMIN';
-  companyName: string;
-  phone: string;
-  status?: 'Active' | 'Disabled';
-}): Promise<{ success: boolean; user: AuthRoleUser }> {
-  try {
-    const res = await fetch('/api/admin/partners', {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
-    if (res.ok) {
-      const resData = await res.json();
-      if (resData.user) {
-        addLocalPartner(resData.user);
-        return resData;
-      }
-    }
-  } catch (err) {
-    console.warn('createSubAdminAccountApi fallback:', err);
-  }
-
-  const cleanEmail = data.email.toLowerCase().trim();
-  const id = `partner-${Date.now()}`;
-  const newPartner: AuthRoleUser = {
-    id,
-    userId: id,
-    name: data.name,
-    email: cleanEmail,
-    phone: data.phone,
-    role: data.role,
-    isActive: data.status !== 'Disabled',
-    password: data.password,
-    hotelId: data.role === 'HOTEL_ADMIN' ? `hotel-${cleanEmail.split('@')[0]}` : undefined,
-    hotelName: data.role === 'HOTEL_ADMIN' ? data.companyName : undefined,
-    agencyId: data.role === 'TRAVEL_ADMIN' ? `agency-${cleanEmail.split('@')[0]}` : undefined,
-    agencyName: data.role === 'TRAVEL_ADMIN' ? data.companyName : undefined,
-  };
-
-  addLocalPartner(newPartner);
-  return { success: true, user: newPartner };
-}
-
 export interface AuditLogRecord {
   id: string;
   action: string;
