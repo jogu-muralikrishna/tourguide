@@ -47,7 +47,6 @@ import {
   fetchPartnersApi,
   createHotelAccountApi,
   createAgencyAccountApi,
-  createSubAdminAccountApi,
   updatePartnerStatusApi,
   resetPartnerPasswordApi,
   deletePartnerAccountApi,
@@ -117,6 +116,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   // Create Hotel Account Modal State
   const [isCreateHotelModalOpen, setIsCreateHotelModalOpen] = useState(false);
   const [hotelFormName, setHotelFormName] = useState('');
+  const [hotelAdminName, setHotelAdminName] = useState('');
   const [hotelFormEmail, setHotelFormEmail] = useState('');
   const [hotelFormPassword, setHotelFormPassword] = useState('');
   const [hotelFormConfirmPassword, setHotelFormConfirmPassword] = useState('');
@@ -128,6 +128,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   // Create Travel Agency Account Modal State
   const [isCreateAgencyModalOpen, setIsCreateAgencyModalOpen] = useState(false);
   const [agencyFormName, setAgencyFormName] = useState('');
+  const [agencyAdminName, setAgencyAdminName] = useState('');
   const [agencyFormEmail, setAgencyFormEmail] = useState('');
   const [agencyFormPassword, setAgencyFormPassword] = useState('');
   const [agencyFormConfirmPassword, setAgencyFormConfirmPassword] = useState('');
@@ -135,19 +136,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [agencyFormAddress, setAgencyFormAddress] = useState('');
   const [agencyFormStatus, setAgencyFormStatus] = useState<'Active' | 'Disabled'>('Active');
   const [agencyFormError, setAgencyFormError] = useState<string | null>(null);
-
-  // Create Sub-Admin Account Modal State
-  const [isCreateSubAdminModalOpen, setIsCreateSubAdminModalOpen] = useState(false);
-  const [subAdminType, setSubAdminType] = useState<'HOTEL_SUBADMIN' | 'TRAVEL_SUBADMIN'>('HOTEL_SUBADMIN');
-  const [subAdminName, setSubAdminName] = useState('');
-  const [subAdminEmail, setSubAdminEmail] = useState('');
-  const [subAdminPassword, setSubAdminPassword] = useState('');
-  const [subAdminConfirmPassword, setSubAdminConfirmPassword] = useState('');
-  const [subAdminPhone, setSubAdminPhone] = useState('');
-  const [subAdminAssignedName, setSubAdminAssignedName] = useState('');
-  const [subAdminAddress, setSubAdminAddress] = useState('');
-  const [subAdminStatus, setSubAdminStatus] = useState<'Active' | 'Disabled'>('Active');
-  const [subAdminError, setSubAdminError] = useState<string | null>(null);
 
   // Reset Password Modal State
   const [resetPartner, setResetPartner] = useState<AuthRoleUser | null>(null);
@@ -378,6 +366,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     try {
       const res = await createHotelAccountApi({
         hotelName: hotelFormName,
+        name: hotelAdminName || hotelFormName,
         email: hotelFormEmail,
         password: hotelFormPassword,
         phone: hotelFormPhone,
@@ -393,6 +382,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
       setIsCreateHotelModalOpen(false);
       setHotelFormName('');
+      setHotelAdminName('');
       setHotelFormEmail('');
       setHotelFormPassword('');
       setHotelFormConfirmPassword('');
@@ -424,6 +414,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     try {
       const res = await createAgencyAccountApi({
         agencyName: agencyFormName,
+        name: agencyAdminName || agencyFormName,
         email: agencyFormEmail,
         password: agencyFormPassword,
         phone: agencyFormPhone,
@@ -439,6 +430,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
       setIsCreateAgencyModalOpen(false);
       setAgencyFormName('');
+      setAgencyAdminName('');
       setAgencyFormEmail('');
       setAgencyFormPassword('');
       setAgencyFormConfirmPassword('');
@@ -449,60 +441,6 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       alert(`Travel Agency Account Created & Saved Successfully!\nAgency: ${agencyFormName}\nLogin Email: ${agencyFormEmail}`);
     } catch (err: any) {
       setAgencyFormError(err.message || 'Failed to create Travel Agency account.');
-    }
-  };
-
-  // Handle Create Sub-Admin Account
-  const handleCreateSubAdminAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubAdminError(null);
-
-    if (subAdminPassword !== subAdminConfirmPassword) {
-      setSubAdminError('Passwords do not match.');
-      return;
-    }
-
-    if (subAdminPassword.length < 4) {
-      setSubAdminError('Password must be at least 4 characters long.');
-      return;
-    }
-
-    if (!subAdminAssignedName.trim()) {
-      setSubAdminError('Assigned Hotel or Travel Agency name is required.');
-      return;
-    }
-
-    try {
-      const res = await createSubAdminAccountApi({
-        name: subAdminName,
-        email: subAdminEmail,
-        password: subAdminPassword,
-        phone: subAdminPhone,
-        subAdminType,
-        assignedName: subAdminAssignedName,
-        address: subAdminAddress,
-        status: subAdminStatus,
-      });
-
-      if (res.user) {
-        setPartnersList((prev) => [res.user, ...prev.filter((p) => p.email !== res.user.email)]);
-        setUsersList((prev) => [res.user, ...prev.filter((u) => u.email !== res.user.email)]);
-        setSystemRoles((prev) => [res.user, ...prev.filter((r) => r.email !== res.user.email)]);
-      }
-
-      setIsCreateSubAdminModalOpen(false);
-      setSubAdminName('');
-      setSubAdminEmail('');
-      setSubAdminPassword('');
-      setSubAdminConfirmPassword('');
-      setSubAdminPhone('');
-      setSubAdminAssignedName('');
-      setSubAdminAddress('');
-      await loadData();
-      if (onRefreshData) onRefreshData();
-      alert(`Sub-Admin Account Created Successfully!\nSub-Admin: ${subAdminName}\nRole: ${subAdminType === 'HOTEL_SUBADMIN' ? 'Hotel Manager Sub-Admin' : 'Travel Agency Fleet Sub-Admin'}\nAssigned To: ${subAdminAssignedName}\nEmail: ${subAdminEmail}`);
-    } catch (err: any) {
-      setSubAdminError(err.message || 'Failed to create Sub-Admin account.');
     }
   };
 
@@ -1190,39 +1128,25 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    setIsCreateSubAdminModalOpen(true);
-                    setSubAdminType(partnerSubTab === 'hotels' ? 'HOTEL_SUBADMIN' : 'TRAVEL_SUBADMIN');
-                    setSubAdminError(null);
+                    setIsCreateAgencyModalOpen(true);
+                    setAgencyFormError(null);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#b8952b] text-black text-xs font-mono-tech uppercase font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                  className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-mono-tech uppercase font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ Create Sub-Admin Account</span>
+                  <span>+ Create Travel Agency Account</span>
                 </button>
 
-                {partnerSubTab === 'hotels' ? (
-                  <button
-                    onClick={() => {
-                      setIsCreateHotelModalOpen(true);
-                      setHotelFormError(null);
-                    }}
-                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>+ Create Hotel Account</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setIsCreateAgencyModalOpen(true);
-                      setAgencyFormError(null);
-                    }}
-                    className="ui-btn-primary py-2 px-4 text-xs uppercase font-bold flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>+ Create Travel Agency Account</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    setIsCreateHotelModalOpen(true);
+                    setHotelFormError(null);
+                  }}
+                  className="px-4 py-2 rounded-xl gold-gradient-bg text-black text-xs font-mono-tech uppercase font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Create Hotel Account</span>
+                </button>
               </div>
             </div>
 
@@ -1244,12 +1168,12 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <table className="w-full text-left text-xs font-mono-tech">
                   <thead className="bg-[#12121A] text-zinc-400 border-b border-zinc-800 uppercase tracking-wider">
                     <tr>
-                      <th className="p-3.5">Organization Name</th>
-                      <th className="p-3.5">Login Email</th>
-                      <th className="p-3.5">Phone</th>
-                      <th className="p-3.5">Address</th>
-                      <th className="p-3.5">Role</th>
+                      <th className="p-3.5">Name</th>
+                      <th className="p-3.5">Type</th>
+                      <th className="p-3.5">Email</th>
+                      <th className="p-3.5">Mobile</th>
                       <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Created</th>
                       <th className="p-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -1266,10 +1190,11 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                           <td className="p-3.5 font-bold text-white">
                             {partner.hotelName || partner.agencyName || partner.name}
                           </td>
+                          <td className="p-3.5 font-bold text-[#D4AF37]">
+                            {partner.role === 'HOTEL_ADMIN' ? 'Hotel' : 'Travel Agency'}
+                          </td>
                           <td className="p-3.5 text-sky-400 font-mono">{partner.email}</td>
                           <td className="p-3.5 text-zinc-400">{partner.phone}</td>
-                          <td className="p-3.5 text-zinc-400 max-w-xs truncate">{partner.address || 'N/A'}</td>
-                          <td className="p-3.5 font-bold text-amber-400">{partner.role}</td>
                           <td className="p-3.5">
                             {partner.isActive !== false ? (
                               <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold uppercase flex items-center gap-1 w-fit">
@@ -1280,6 +1205,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                                 🔴 Disabled
                               </span>
                             )}
+                          </td>
+                          <td className="p-3.5 text-zinc-400 font-mono">
+                            {partner.createdAt ? new Date(partner.createdAt).toLocaleDateString() : '2026-09-03'}
                           </td>
                           <td className="p-3.5 text-right space-x-2">
                             <button
@@ -1689,6 +1617,18 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </div>
 
                 <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Hotel Admin Name <span className="text-red-400">*</span></label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Arun Kumar"
+                    value={hotelAdminName}
+                    onChange={(e) => setHotelAdminName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-zinc-300 font-semibold mb-1">Login Email <span className="text-red-400">*</span></label>
                   <input
                     type="email"
@@ -1818,13 +1758,25 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
               <form onSubmit={handleCreateAgencyAccount} className="space-y-3 text-xs font-mono-tech">
                 <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Agency Name <span className="text-red-400">*</span></label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Travel Agency Name <span className="text-red-400">*</span></label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. WanderWorld Travels"
+                    placeholder="e.g. ABC Travels"
                     value={agencyFormName}
                     onChange={(e) => setAgencyFormName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-300 font-semibold mb-1">Agency Admin Name <span className="text-red-400">*</span></label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Kumar"
+                    value={agencyAdminName}
+                    onChange={(e) => setAgencyAdminName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-sky-500 focus:outline-none"
                   />
                 </div>
@@ -1934,178 +1886,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
           </div>
         )}
 
-        {/* --- CREATE SUB-ADMIN ACCOUNT MODAL --- */}
-        {isCreateSubAdminModalOpen && (
-          <div className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-[#0b0b10] border border-[#D4AF37]/60 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div className="flex items-center gap-2 text-[#D4AF37] font-bold text-lg">
-                  <ShieldAlert className="w-5 h-5" />
-                  <span>Create Sub-Admin Account</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateSubAdminModalOpen(false)}
-                    className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[#D4AF37] border border-[#D4AF37]/30 text-xs font-mono-tech flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>← Back to Previous Page</span>
-                  </button>
-                  <button
-                    onClick={() => setIsCreateSubAdminModalOpen(false)}
-                    className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
 
-              {subAdminError && (
-                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/50 text-red-300 text-xs font-semibold">
-                  ⚠️ {subAdminError}
-                </div>
-              )}
-
-              <form onSubmit={handleCreateSubAdminAccount} className="space-y-3 text-xs font-mono-tech">
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Sub-Admin Category / Role <span className="text-red-400">*</span></label>
-                  <select
-                    value={subAdminType}
-                    onChange={(e) => setSubAdminType(e.target.value as 'HOTEL_SUBADMIN' | 'TRAVEL_SUBADMIN')}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                  >
-                    <option value="HOTEL_SUBADMIN">🏨 Hotel Manager Sub-Admin (Hotel Panel)</option>
-                    <option value="TRAVEL_SUBADMIN">🚗 Travel Agency Fleet Sub-Admin (Agency Panel)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Sub-Admin Manager Full Name <span className="text-red-400">*</span></label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Rajesh Kumar"
-                    value={subAdminName}
-                    onChange={(e) => setSubAdminName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Sub-Admin Login Email <span className="text-red-400">*</span></label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. rajesh.subadmin@tourguide.com"
-                    value={subAdminEmail}
-                    onChange={(e) => setSubAdminEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Password <span className="text-red-400">*</span></label>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      placeholder="Min 8 chars"
-                      value={subAdminPassword}
-                      onChange={(e) => setSubAdminPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Confirm Password <span className="text-red-400">*</span></label>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      placeholder="Confirm password"
-                      value={subAdminConfirmPassword}
-                      onChange={(e) => setSubAdminConfirmPassword(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {subAdminPassword && (
-                  <div className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-400">Password Strength:</span>
-                    <span className={`font-bold px-2 py-0.5 rounded text-white ${getPasswordStrength(subAdminPassword).color}`}>
-                      {getPasswordStrength(subAdminPassword).label}
-                    </span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Assigned Hotel Property / Agency Name <span className="text-red-400">*</span></label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={subAdminType === 'HOTEL_SUBADMIN' ? "e.g. The Leela Palace" : "e.g. Express Fleet Logistics"}
-                    value={subAdminAssignedName}
-                    onChange={(e) => setSubAdminAssignedName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Phone Number <span className="text-red-400">*</span></label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={subAdminPhone}
-                      onChange={(e) => setSubAdminPhone(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-zinc-300 font-semibold mb-1">Account Status</label>
-                    <select
-                      value={subAdminStatus}
-                      onChange={(e) => setSubAdminStatus(e.target.value as 'Active' | 'Disabled')}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                    >
-                      <option value="Active">🟢 Active</option>
-                      <option value="Disabled">🔴 Disabled</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-zinc-300 font-semibold mb-1">Office / Location Address</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Cyber City, Gurgaon"
-                    value={subAdminAddress}
-                    onChange={(e) => setSubAdminAddress(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white focus:border-[#D4AF37] focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateSubAdminModalOpen(false)}
-                    className="flex-1 py-3 rounded-xl bg-zinc-800 text-zinc-300 font-bold uppercase cursor-pointer"
-                  >
-                    ← Back to Previous Page
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-3 rounded-xl bg-[#D4AF37] text-black font-bold uppercase cursor-pointer shadow-md"
-                  >
-                    Save Sub-Admin Account
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
 
         {/* --- DELETE USER CONFIRMATION MODAL --- */}
         {deleteUserConfirm && (
