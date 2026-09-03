@@ -212,6 +212,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   };
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [adminLoginEmail, setAdminLoginEmail] = useState<string>('');
   const [adminLoginPassword, setAdminLoginPassword] = useState<string>('');
   const [adminLoginError, setAdminLoginError] = useState<string | null>(null);
 
@@ -220,6 +221,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       loadData();
     } else {
       setIsAdminAuthenticated(false);
+      setAdminLoginEmail('');
       setAdminLoginPassword('');
       setAdminLoginError(null);
     }
@@ -230,18 +232,25 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const handleVerifyAdminPassword = (e: React.FormEvent) => {
     e.preventDefault();
     setAdminLoginError(null);
-    const entered = adminLoginPassword.trim();
-    if (!entered) {
+    const emailEntered = adminLoginEmail.trim().toLowerCase();
+    const passEntered = adminLoginPassword.trim();
+    if (!passEntered) {
       setAdminLoginError('Please enter your admin password.');
       return;
     }
 
-    const matchesSystemRole = systemRoles.some((r) => r.password === entered);
-    if (entered === 'admin' || entered === 'admin123' || entered === '123456' || matchesSystemRole || activeRoleUser?.password === entered) {
+    const matchesSystemRole = systemRoles.some((r) => r.password === passEntered);
+    if (
+      (emailEntered === 'tourguide@gmail.com' && passEntered === 'murali@123') ||
+      (passEntered === 'murali@123') ||
+      (emailEntered === 'admin@tourguide.com' && passEntered === 'admin') ||
+      (passEntered === 'admin' || passEntered === 'admin123' || matchesSystemRole || activeRoleUser?.password === passEntered)
+    ) {
       setIsAdminAuthenticated(true);
+      setAdminLoginEmail('');
       setAdminLoginPassword('');
     } else {
-      setAdminLoginError('Incorrect Admin Password. Access Denied.');
+      setAdminLoginError('Incorrect Admin Email or Password. Access Denied.');
     }
   };
 
@@ -686,28 +695,19 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
               </div>
             )}
 
-            {systemRoles.length > 0 && (
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
-                  Admin Role Account
-                </label>
-                <select
-                  value={activeRoleEmail}
-                  onChange={(e) => {
-                    setActiveRoleEmail(e.target.value);
-                    const u = systemRoles.find((r) => r.email === e.target.value);
-                    if (u) setActiveRoleUser(u);
-                  }}
-                  className="ui-input w-full bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37] text-xs font-mono-tech"
-                >
-                  {systemRoles.map((role) => (
-                    <option key={role.email} value={role.email}>
-                      {role.name} ({role.role}) — {role.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
+                Admin Email Address *
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="Enter Admin Email..."
+                value={adminLoginEmail}
+                onChange={(e) => setAdminLoginEmail(e.target.value)}
+                className="ui-input w-full px-4 py-3 text-sm font-mono-tech bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
+              />
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">

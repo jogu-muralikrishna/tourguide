@@ -80,7 +80,7 @@ const DEFAULT_USERS: AuthRoleUser[] = [
     id: 'TGAI-USER-ADM0001',
     userId: 'TGAI-USER-ADM0001',
     name: 'Main Administrator',
-    email: 'admin@tourguide.com',
+    email: 'tourguide@gmail.com',
     phone: '+91 99000 00001',
     role: 'MAIN_ADMIN',
     isActive: true,
@@ -88,8 +88,8 @@ const DEFAULT_USERS: AuthRoleUser[] = [
   {
     id: 'TGAI-USER-CUST001',
     userId: 'TGAI-USER-CUST001',
-    name: 'Aarav Sharma',
-    email: 'aarav.sharma@example.com',
+    name: 'Ammu',
+    email: 'ammu@gmail.com',
     phone: '+91 98765 43210',
     role: 'USER',
     isActive: true,
@@ -573,17 +573,18 @@ export async function loginApi(email: string, passwordPlain: string): Promise<{ 
 
   const cachedUser = getCachedUser();
   const userEmail = email.toLowerCase().trim();
-  const userName = cachedUser?.fullName || cachedUser?.name || userEmail.split('@')[0] || 'Traveler';
+  const isAdminUser = userEmail === 'tourguide@gmail.com' || userEmail === 'admin@tourguide.com';
+  const userName = isAdminUser ? 'Main Administrator' : (cachedUser?.fullName || cachedUser?.name || userEmail.split('@')[0] || 'Traveler');
   const randomChars = Math.random().toString(36).substring(2, 9).toUpperCase();
-  const userId = cachedUser?.id || cachedUser?.userId || `TGAI-USER-${randomChars}`;
+  const userId = cachedUser?.id || cachedUser?.userId || (isAdminUser ? 'TGAI-USER-ADM0001' : `TGAI-USER-${randomChars}`);
 
   const user: AuthRoleUser = {
     id: userId,
     userId,
     name: userName,
     email: userEmail,
-    phone: cachedUser?.phone || '+91 98765 43210',
-    role: 'USER',
+    phone: cachedUser?.phone || '+91 99000 00001',
+    role: isAdminUser ? 'MAIN_ADMIN' : 'USER',
   };
   setAuthToken(userEmail);
   saveCachedUser(user);
@@ -1043,9 +1044,9 @@ export async function fetchGuestVerificationsApi(): Promise<any[]> {
     {
       id: 'GV-101',
       bookingId: 'TGAI-BKG-2026-84920',
-      guestName: 'Aarav Sharma',
+      guestName: 'Ammu',
       mobileNumber: '+91 98765 43210',
-      email: 'aarav.sharma@example.com',
+      email: 'ammu@gmail.com',
       verificationStatus: 'VERIFIED',
       verificationTokenHash: 'hash-84920-v1',
       checkInDate: '2026-03-15',

@@ -191,7 +191,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 <input
                   type="email"
                   required
-                  placeholder="e.g. aarav.sharma@example.com"
+                  placeholder="e.g. ammu@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
@@ -237,7 +237,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Aarav Sharma"
+                  placeholder="e.g. Ammu"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
@@ -251,7 +251,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onRequ
                 <input
                   type="email"
                   required
-                  placeholder="e.g. traveler@example.com"
+                  placeholder="e.g. ammu@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="ui-input w-full px-4 py-3 text-sm font-medium bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"

@@ -353,9 +353,9 @@ export const INITIAL_SAMPLE_BOOKINGS: Booking[] = [
     finalTotal: 25980,
     user: {
       userId: 'TGAI-USER-82F4K91',
-      fullName: 'Aarav Sharma',
+      fullName: 'Ammu',
       phone: '+91 98765 43210',
-      email: 'aarav.sharma@example.com',
+      email: 'ammu@gmail.com',
       specialRequests: 'Child seat requested for car ride.',
       numberOfPeople: 2,
       travelersCount: 2,

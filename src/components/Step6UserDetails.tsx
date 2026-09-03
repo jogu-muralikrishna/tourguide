@@ -73,38 +73,28 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
                 <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Full Name *
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                    <User className="w-4 h-4 text-[#D4AF37]" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Aarav Sharma"
-                    value={userProfile.fullName}
-                    onChange={(e) => onUpdateProfile({ fullName: e.target.value })}
-                    className="ui-input w-full pl-9 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
-                  />
-                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ammu"
+                  value={userProfile.fullName}
+                  onChange={(e) => onUpdateProfile({ fullName: e.target.value })}
+                  className="ui-input w-full px-4 py-3 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
                   Phone Number *
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                    <Phone className="w-4 h-4 text-[#D4AF37]" />
-                  </div>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={userProfile.phone}
-                    onChange={(e) => onUpdateProfile({ phone: e.target.value })}
-                    className="ui-input w-full pl-9 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  required
+                  placeholder="e.g. +91 98765 43210"
+                  value={userProfile.phone}
+                  onChange={(e) => onUpdateProfile({ phone: e.target.value })}
+                  className="ui-input w-full px-4 py-3 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
+                />
               </div>
             </div>
 
@@ -113,18 +103,13 @@ export const Step6UserDetails: React.FC<Step6UserDetailsProps> = ({
               <label className="block text-xs font-semibold text-zinc-400 mb-1.5 uppercase tracking-wider">
                 Email Address
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-                  <Mail className="w-4 h-4 text-[#D4AF37]" />
-                </div>
-                <input
-                  type="email"
-                  placeholder="e.g. traveler@example.com"
-                  value={userProfile.email || ''}
-                  onChange={(e) => onUpdateProfile({ email: e.target.value })}
-                  className="ui-input w-full pl-9 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
-                />
-              </div>
+              <input
+                type="email"
+                placeholder="e.g. ammu@gmail.com"
+                value={userProfile.email || ''}
+                onChange={(e) => onUpdateProfile({ email: e.target.value })}
+                className="ui-input w-full px-4 py-3 bg-[#0a0a0f] border-[#D4AF37]/30 text-white focus:border-[#D4AF37]"
+              />
             </div>
 
             {/* Date & Time */}

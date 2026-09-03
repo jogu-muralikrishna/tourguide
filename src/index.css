@@ -190,13 +190,13 @@
   }
 }
 
-/* Leaflet Map Styling - Dark Luxury Theme */
+/* Leaflet Map Styling - Normal Light Google Maps Style */
 .leaflet-tile {
-  filter: brightness(0.7) invert(100%) hue-rotate(190deg) contrast(1.2) saturate(0.8) !important;
+  filter: none !important;
 }
 
 .leaflet-container {
-  background: #09090e !important;
+  background: #f8fafc !important;
 }
 
 /* Print Styles */
