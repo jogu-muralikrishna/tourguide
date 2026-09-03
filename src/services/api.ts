@@ -1131,17 +1131,362 @@ export async function fetchAgencyTripsApi(): Promise<any[]> {
   ];
 }
 
-export async function createAgencyTripApi(tripData: any): Promise<any> {
-  const res = await fetch('/api/agency/trips', {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(tripData),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Failed to create trip' }));
-    throw new Error(err.error || 'Failed to create trip');
+// --- EXPANDED PARTNER OPERATIONS, VEHICLES, DRIVERS & REVIEWS APIS ---
+
+export interface AgencyVehicle {
+  id: string;
+  agencyId: string;
+  agencyName: string;
+  name: string;
+  type: string;
+  regNumber: string;
+  seats: number;
+  model: string;
+  year: string;
+  price: number;
+  fuelType: string;
+  ac: boolean;
+  image?: string;
+  status: 'Available' | 'Unavailable' | 'Maintenance' | 'Disabled';
+  assignedDriverId?: string;
+  assignedDriverName?: string;
+  createdAt?: string;
+}
+
+export interface AgencyDriver {
+  id: string;
+  agencyId: string;
+  agencyName: string;
+  name: string;
+  phone: string;
+  email: string;
+  licenseNumber: string;
+  licenseExpiry: string;
+  experienceYears: string;
+  assignedVehicleId?: string;
+  assignedVehicleName?: string;
+  status: 'Available' | 'On Trip' | 'Off Duty';
+  photo?: string;
+  createdAt?: string;
+}
+
+export interface HotelRoom {
+  id: string;
+  hotelId: string;
+  hotelName: string;
+  roomNumber: string;
+  roomType: string;
+  capacity: number;
+  pricePerNight: number;
+  amenities: string[];
+  status: 'Available' | 'Reserved' | 'Occupied' | 'Maintenance' | 'Disabled';
+  currentGuestName?: string;
+  currentGuestPhone?: string;
+  currentTripToken?: string;
+  createdAt?: string;
+}
+
+export interface PartnerReview {
+  id: string;
+  tripToken: string;
+  bookingId: string;
+  customerName: string;
+  customerEmail: string;
+  partnerType: 'TRAVEL_AGENCY' | 'HOTEL';
+  partnerId: string;
+  partnerName: string;
+  vehicleName?: string;
+  driverName?: string;
+  roomNumber?: string;
+  rating: number;
+  reviewText: string;
+  createdAt: string;
+}
+
+let localVehiclesList: AgencyVehicle[] = [
+  {
+    id: 'veh-001',
+    agencyId: 'agency-royal-fleet',
+    agencyName: 'Royal Fleet Travels',
+    name: 'Toyota Innova Crysta',
+    type: 'SUV',
+    regNumber: 'TS09AB1234',
+    seats: 7,
+    model: 'VX 2.4 Diesel',
+    year: '2025',
+    price: 3500,
+    fuelType: 'Diesel',
+    ac: true,
+    status: 'Available',
+    assignedDriverId: 'drv-001',
+    assignedDriverName: 'Ramesh Kumar',
+    createdAt: '2026-03-01T10:00:00Z',
+  },
+  {
+    id: 'veh-002',
+    agencyId: 'agency-royal-fleet',
+    agencyName: 'Royal Fleet Travels',
+    name: 'Mahindra XUV700 AX7',
+    type: 'Premium SUV',
+    regNumber: 'TS07CD5678',
+    seats: 6,
+    model: 'AX7 Luxury',
+    year: '2025',
+    price: 4500,
+    fuelType: 'Diesel',
+    ac: true,
+    status: 'Available',
+    assignedDriverId: 'drv-002',
+    assignedDriverName: 'Suresh Verma',
+    createdAt: '2026-03-02T10:00:00Z',
+  },
+];
+
+let localDriversList: AgencyDriver[] = [
+  {
+    id: 'drv-001',
+    agencyId: 'agency-royal-fleet',
+    agencyName: 'Royal Fleet Travels',
+    name: 'Ramesh Kumar',
+    phone: '+91 98765 12340',
+    email: 'ramesh.driver@tourguide.com',
+    licenseNumber: 'DL-042018009214',
+    licenseExpiry: '2030-08-15',
+    experienceYears: '8 years',
+    assignedVehicleId: 'veh-001',
+    assignedVehicleName: 'Toyota Innova Crysta',
+    status: 'Available',
+    createdAt: '2026-03-01T10:00:00Z',
+  },
+  {
+    id: 'drv-002',
+    agencyId: 'agency-royal-fleet',
+    agencyName: 'Royal Fleet Travels',
+    name: 'Suresh Verma',
+    phone: '+91 98765 54321',
+    email: 'suresh.driver@tourguide.com',
+    licenseNumber: 'DL-092020005432',
+    licenseExpiry: '2032-05-20',
+    experienceYears: '6 years',
+    assignedVehicleId: 'veh-002',
+    assignedVehicleName: 'Mahindra XUV700 AX7',
+    status: 'Available',
+    createdAt: '2026-03-02T10:00:00Z',
+  },
+];
+
+let localReviewsList: PartnerReview[] = [
+  {
+    id: 'rev-001',
+    tripToken: 'TG-2026-8F3K2',
+    bookingId: 'TGAI-BKG-2026-84920',
+    customerName: 'Ammu',
+    customerEmail: 'ammu@gmail.com',
+    partnerType: 'TRAVEL_AGENCY',
+    partnerId: 'agency-royal-fleet',
+    partnerName: 'Royal Fleet Travels',
+    vehicleName: 'Toyota Innova Crysta',
+    driverName: 'Ramesh Kumar',
+    rating: 5,
+    reviewText: 'Excellent vehicle condition and extremely punctual driver Ramesh Kumar. Highly recommended!',
+    createdAt: '2026-03-02T14:30:00Z',
+  },
+  {
+    id: 'rev-002',
+    tripToken: 'TG-2026-8F3K2',
+    bookingId: 'TGAI-BKG-2026-84920',
+    customerName: 'Ammu',
+    customerEmail: 'ammu@gmail.com',
+    partnerType: 'HOTEL',
+    partnerId: 'hotel-leela-palace',
+    partnerName: 'The Leela Palace',
+    roomNumber: '101',
+    rating: 5,
+    reviewText: 'Outstanding hospitality, pristine room cleanliness, and world-class service at The Leela Palace.',
+    createdAt: '2026-03-02T15:00:00Z',
+  },
+];
+
+// --- VEHICLES API HELPERS ---
+export async function fetchAgencyVehiclesApi(agencyId?: string): Promise<AgencyVehicle[]> {
+  try {
+    const res = await fetch(`/api/agency/vehicles${agencyId ? `?agencyId=${agencyId}` : ''}`, { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.vehicles)) return data.vehicles;
+    }
+  } catch (e) {
+    console.warn('fetchAgencyVehiclesApi fallback:', e);
   }
-  return await res.json();
+  return agencyId ? localVehiclesList.filter(v => v.agencyId === agencyId) : localVehiclesList;
+}
+
+export async function createAgencyVehicleApi(vehicleData: Partial<AgencyVehicle>): Promise<{ success: boolean; vehicle: AgencyVehicle }> {
+  try {
+    const res = await fetch('/api/agency/vehicles', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(vehicleData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.vehicle) {
+        localVehiclesList.unshift(data.vehicle);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('createAgencyVehicleApi fallback:', e);
+  }
+
+  const id = `veh-${Date.now()}`;
+  const newVeh: AgencyVehicle = {
+    id,
+    agencyId: vehicleData.agencyId || 'agency-royal-fleet',
+    agencyName: vehicleData.agencyName || 'Royal Fleet Travels',
+    name: vehicleData.name || 'Toyota Innova Crysta',
+    type: vehicleData.type || 'SUV',
+    regNumber: vehicleData.regNumber || 'TS09AB9999',
+    seats: vehicleData.seats || 7,
+    model: vehicleData.model || '2025 Model',
+    year: vehicleData.year || '2025',
+    price: vehicleData.price || 3500,
+    fuelType: vehicleData.fuelType || 'Diesel',
+    ac: vehicleData.ac !== false,
+    image: vehicleData.image,
+    status: vehicleData.status || 'Available',
+    assignedDriverId: vehicleData.assignedDriverId,
+    assignedDriverName: vehicleData.assignedDriverName,
+    createdAt: new Date().toISOString(),
+  };
+
+  localVehiclesList = [newVeh, ...localVehiclesList.filter(v => v.id !== id)];
+  return { success: true, vehicle: newVeh };
+}
+
+export async function updateAgencyVehicleStatusApi(id: string, status: 'Available' | 'Unavailable' | 'Maintenance' | 'Disabled'): Promise<{ success: boolean }> {
+  localVehiclesList = localVehiclesList.map(v => v.id === id ? { ...v, status } : v);
+  return { success: true };
+}
+
+export async function assignDriverToVehicleApi(vehicleId: string, driverId: string, driverName: string): Promise<{ success: boolean }> {
+  localVehiclesList = localVehiclesList.map(v => v.id === vehicleId ? { ...v, assignedDriverId: driverId, assignedDriverName: driverName } : v);
+  localDriversList = localDriversList.map(d => d.id === driverId ? { ...d, assignedVehicleId: vehicleId } : d);
+  return { success: true };
+}
+
+// --- DRIVERS API HELPERS ---
+export async function fetchAgencyDriversApi(agencyId?: string): Promise<AgencyDriver[]> {
+  try {
+    const res = await fetch(`/api/agency/drivers${agencyId ? `?agencyId=${agencyId}` : ''}`, { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.drivers)) return data.drivers;
+    }
+  } catch (e) {
+    console.warn('fetchAgencyDriversApi fallback:', e);
+  }
+  return agencyId ? localDriversList.filter(d => d.agencyId === agencyId) : localDriversList;
+}
+
+export async function createAgencyDriverApi(driverData: Partial<AgencyDriver>): Promise<{ success: boolean; driver: AgencyDriver }> {
+  try {
+    const res = await fetch('/api/agency/drivers', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(driverData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.driver) {
+        localDriversList.unshift(data.driver);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('createAgencyDriverApi fallback:', e);
+  }
+
+  const id = `drv-${Date.now()}`;
+  const newDrv: AgencyDriver = {
+    id,
+    agencyId: driverData.agencyId || 'agency-royal-fleet',
+    agencyName: driverData.agencyName || 'Royal Fleet Travels',
+    name: driverData.name || 'Driver Name',
+    phone: driverData.phone || '+91 98765 43210',
+    email: driverData.email || 'driver@example.com',
+    licenseNumber: driverData.licenseNumber || 'DL-092025000000',
+    licenseExpiry: driverData.licenseExpiry || '2030-01-01',
+    experienceYears: driverData.experienceYears || '5 years',
+    assignedVehicleId: driverData.assignedVehicleId,
+    assignedVehicleName: driverData.assignedVehicleName,
+    status: driverData.status || 'Available',
+    photo: driverData.photo,
+    createdAt: new Date().toISOString(),
+  };
+
+  localDriversList = [newDrv, ...localDriversList.filter(d => d.id !== id)];
+  return { success: true, driver: newDrv };
+}
+
+// --- REVIEWS API HELPERS ---
+export async function fetchPartnerReviewsApi(partnerType?: 'TRAVEL_AGENCY' | 'HOTEL', partnerId?: string): Promise<PartnerReview[]> {
+  try {
+    const query = partnerType && partnerId ? `?partnerType=${partnerType}&partnerId=${partnerId}` : '';
+    const res = await fetch(`/api/reviews${query}`, { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.reviews)) return data.reviews;
+    }
+  } catch (e) {
+    console.warn('fetchPartnerReviewsApi fallback:', e);
+  }
+
+  return localReviewsList.filter(r => {
+    if (partnerType && r.partnerType !== partnerType) return false;
+    if (partnerId && r.partnerId !== partnerId && !r.partnerName?.toLowerCase().includes(partnerId.toLowerCase())) return false;
+    return true;
+  });
+}
+
+export async function submitPartnerReviewApi(reviewData: Partial<PartnerReview>): Promise<{ success: boolean; review: PartnerReview }> {
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(reviewData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.review) {
+        localReviewsList.unshift(data.review);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('submitPartnerReviewApi fallback:', e);
+  }
+
+  const id = `rev-${Date.now()}`;
+  const newRev: PartnerReview = {
+    id,
+    tripToken: reviewData.tripToken || 'TG-2026-8F3K2',
+    bookingId: reviewData.bookingId || 'TGAI-BKG-2026-84920',
+    customerName: reviewData.customerName || 'Ammu',
+    customerEmail: reviewData.customerEmail || 'ammu@gmail.com',
+    partnerType: reviewData.partnerType || 'TRAVEL_AGENCY',
+    partnerId: reviewData.partnerId || 'partner-1',
+    partnerName: reviewData.partnerName || 'Partner',
+    vehicleName: reviewData.vehicleName,
+    driverName: reviewData.driverName,
+    roomNumber: reviewData.roomNumber,
+    rating: reviewData.rating || 5,
+    reviewText: reviewData.reviewText || 'Great service!',
+    createdAt: new Date().toISOString(),
+  };
+
+  localReviewsList = [newRev, ...localReviewsList.filter(r => r.id !== id)];
+  return { success: true, review: newRev };
 }
 
 

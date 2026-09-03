@@ -1,8 +1,9 @@
-import React from 'react';
-import { Mail, Phone, ShieldCheck, Compass, History, LogOut, ArrowRight, Sparkles, Building2, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, Phone, ShieldCheck, Compass, History, LogOut, ArrowRight, Sparkles, Building2, ArrowLeft, Star } from 'lucide-react';
 import { AuthRoleUser } from '../services/api';
 import { Booking } from '../types';
 import { formatINR } from '../utils/pricing';
+import { CustomerRatingModal } from './CustomerRatingModal';
 
 interface UserProfileScreenProps {
   currentUser: AuthRoleUser;
@@ -25,6 +26,7 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
   onLogout,
   onSelectBookingTicket,
 }) => {
+  const [ratingBooking, setRatingBooking] = useState<Booking | null>(null);
   const isSpecialAdmin = currentUser.role !== 'USER';
   const displayUserId = currentUser.id || currentUser.userId || 'TG-USER-82F4K91';
 
@@ -100,53 +102,33 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
       <div className="max-w-4xl w-full mx-auto my-auto z-10 space-y-6">
         
         {/* User Card */}
-        <div className="ui-card-luxury p-6 sm:p-8 shadow-[0_10px_50px_rgba(0,0,0,0.9)] border border-[#D4AF37]/30 relative">
-          
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 pb-6 border-b border-[#D4AF37]/20">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-              <div className="w-18 h-18 rounded-2xl gold-gradient-bg text-black flex items-center justify-center text-3xl font-extrabold shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+        <div className="ui-card-luxury p-6 relative overflow-hidden shadow-2xl border border-[#D4AF37]/35">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl gold-gradient-bg text-black font-extrabold text-2xl flex items-center justify-center border-2 border-[#D4AF37] shadow-lg">
                 {currentUser.name.charAt(0).toUpperCase()}
               </div>
-
               <div>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-serif-luxury">
-                    {currentUser.name}
-                  </h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 font-mono-tech">
-                    <ShieldCheck className="w-3 h-3" />
-                    <span>Verified Guest</span>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-white font-serif-luxury">{currentUser.name}</h2>
+                  <span className="px-2 py-0.5 rounded-md bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#F3E5AB] text-[10px] font-mono-tech font-bold uppercase">
+                    {currentUser.role}
                   </span>
                 </div>
-
-                <div className="text-zinc-400 text-xs sm:text-sm space-y-0.5">
-                  <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>{currentUser.email}</span>
-                  </div>
-                  {currentUser.phone && (
-                    <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
-                      <span>{currentUser.phone}</span>
-                    </div>
-                  )}
+                <div className="text-xs text-zinc-400 font-mono-tech flex flex-wrap items-center gap-3 pt-1">
+                  <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-[#D4AF37]" />{currentUser.email}</span>
+                  <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-[#D4AF37]" />{currentUser.phone || '+91 98765 43210'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Permanent User ID Box */}
-            <div className="bg-[#0a0a0f] p-4 rounded-2xl border border-[#D4AF37]/30 text-center sm:text-right min-w-[200px]">
-              <div className="text-[10px] uppercase tracking-wider text-[#F3E5AB] font-semibold mb-1 font-mono-tech">
-                Permanent User ID
-              </div>
-              <div className="text-base sm:text-lg font-extrabold text-white tracking-wider font-mono-tech">
-                {displayUserId}
-              </div>
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-mono-tech text-zinc-500 block">User Account ID</span>
+              <span className="text-xs font-mono-tech font-bold text-[#F3E5AB]">{displayUserId}</span>
             </div>
           </div>
 
-          {/* Action Hub */}
-          <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-6 pt-4 border-t border-[#D4AF37]/20 flex flex-col sm:flex-row gap-3">
             <button
               type="button"
               id="start-journey-btn"
@@ -168,7 +150,6 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               <span>My Trips ({userBookings.length})</span>
             </button>
           </div>
-
         </div>
 
         {/* Recent Bookings */}
@@ -192,10 +173,9 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
               {userBookings.slice(0, 2).map((b) => (
                 <div
                   key={b.id}
-                  onClick={() => onSelectBookingTicket(b)}
-                  className="p-4 rounded-xl bg-[#0e0e15] border border-[#D4AF37]/25 hover:border-[#D4AF37] transition-all cursor-pointer flex flex-col justify-between shadow-sm"
+                  className="p-4 rounded-xl bg-[#0e0e15] border border-[#D4AF37]/25 hover:border-[#D4AF37] transition-all flex flex-col justify-between shadow-sm space-y-3"
                 >
-                  <div>
+                  <div onClick={() => onSelectBookingTicket(b)} className="cursor-pointer">
                     <div className="flex items-center justify-between text-xs mb-2 font-mono-tech">
                       <span className="text-[#F3E5AB] font-bold">{b.id}</span>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-950/60 text-emerald-400 border border-emerald-500/40">
@@ -212,12 +192,30 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-[#D4AF37]/15 flex items-center justify-between text-xs">
+                  <div className="pt-2 border-t border-[#D4AF37]/15 flex items-center justify-between text-xs font-mono-tech">
                     <span className="text-zinc-400">{b.vehicle.name}</span>
-                    <span className="text-sm font-bold text-[#F3E5AB] font-mono-tech">
+                    <span className="text-sm font-bold text-[#F3E5AB]">
                       {formatINR(b.pricing.total)}
                     </span>
                   </div>
+
+                  {(b.status === 'COMPLETED' || b.status === 'Completed') && (
+                    <div className="pt-1">
+                      {!b.reviewSubmitted ? (
+                        <button
+                          onClick={() => setRatingBooking(b)}
+                          className="w-full py-2 rounded-xl gold-gradient-bg text-black font-bold text-xs flex items-center justify-center gap-1 shadow-md cursor-pointer"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-black" />
+                          <span>Rate Completed Trip</span>
+                        </button>
+                      ) : (
+                        <div className="text-center text-[10px] font-mono-tech font-bold text-amber-400">
+                          ✓ Rating Submitted
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -225,6 +223,13 @@ export const UserProfileScreen: React.FC<UserProfileScreenProps> = ({
         )}
 
       </div>
+
+      <CustomerRatingModal
+        isOpen={Boolean(ratingBooking)}
+        booking={ratingBooking}
+        onClose={() => setRatingBooking(null)}
+        onSubmitSuccess={() => setRatingBooking(null)}
+      />
 
       <div className="text-center text-[11px] text-zinc-400 z-10">
         © 2026 TourGuide AI — Luxury Travel Platform

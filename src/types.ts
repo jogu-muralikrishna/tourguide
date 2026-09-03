@@ -320,6 +320,12 @@ export interface Booking {
   createdAt: string;
   updatedAt?: string;
   qrPayload?: string;
+  tripToken?: string;
+  assignedRoomNumber?: string;
+  driverName?: string;
+  driverPhone?: string;
+  completedAt?: string;
+  reviewSubmitted?: boolean;
 }
 
 export type Trip = Booking;

@@ -9,10 +9,12 @@ import {
   Car, 
   Building2, 
   Sparkles,
-  Trash2
+  Trash2,
+  Star
 } from 'lucide-react';
 import { Booking } from '../types';
 import { formatINR } from '../utils/pricing';
+import { CustomerRatingModal } from './CustomerRatingModal';
 
 interface MyTripsModalProps {
   isOpen: boolean;
@@ -35,6 +37,7 @@ export const MyTripsModal: React.FC<MyTripsModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>(initialTab);
+  const [ratingBooking, setRatingBooking] = useState<Booking | null>(null);
 
   if (!isOpen) return null;
 
@@ -212,6 +215,22 @@ export const MyTripsModal: React.FC<MyTripsModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#D4AF37]/15">
+                    {(b.status === 'COMPLETED' || b.status === 'Completed') && (
+                      !b.reviewSubmitted ? (
+                        <button
+                          onClick={() => setRatingBooking(b)}
+                          className="px-3 py-1.5 rounded-xl gold-gradient-bg text-black font-bold text-xs flex items-center gap-1 shadow-md cursor-pointer hover:scale-105 transition-all"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-black" />
+                          <span>Rate Experience</span>
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-amber-400 font-bold font-mono-tech px-2 py-1 rounded bg-amber-950/60 border border-amber-500/30">
+                          ✓ Review Submitted
+                        </span>
+                      )
+                    )}
+
                     {isConfirmed && (
                       <button
                         onClick={() => onCancelBooking(b.id)}
@@ -228,7 +247,7 @@ export const MyTripsModal: React.FC<MyTripsModalProps> = ({
                       className="ui-btn-primary py-2 px-3.5 text-xs font-bold"
                     >
                       <Ticket className="w-3.5 h-3.5 text-black" />
-                      <span>View Voucher</span>
+                      <span>Ticket</span>
                     </button>
                   </div>
                 </div>
@@ -238,6 +257,13 @@ export const MyTripsModal: React.FC<MyTripsModalProps> = ({
         </div>
 
       </div>
+
+      <CustomerRatingModal
+        isOpen={Boolean(ratingBooking)}
+        booking={ratingBooking}
+        onClose={() => setRatingBooking(null)}
+        onSubmitSuccess={() => setRatingBooking(null)}
+      />
 
     </div>
   );
