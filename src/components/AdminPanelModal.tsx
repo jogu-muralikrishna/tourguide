@@ -219,13 +219,16 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       loadData();
+      if (activeRoleEmail === 'tourguide@gmail.com' || activeRoleUser?.role === 'MAIN_ADMIN') {
+        setIsAdminAuthenticated(true);
+      }
     } else {
       setIsAdminAuthenticated(false);
       setAdminLoginEmail('');
       setAdminLoginPassword('');
       setAdminLoginError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, activeRoleEmail, activeRoleUser]);
 
   if (!isOpen) return null;
 
@@ -234,21 +237,18 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     setAdminLoginError(null);
     const emailEntered = adminLoginEmail.trim().toLowerCase();
     const passEntered = adminLoginPassword.trim();
-    if (!passEntered) {
-      setAdminLoginError('Please enter your admin password.');
-      return;
-    }
 
-    const matchesSystemRole = systemRoles.some((r) => r.password === passEntered);
     if (
       (emailEntered === 'tourguide@gmail.com' && passEntered === 'murali@123') ||
       (passEntered === 'murali@123') ||
-      (emailEntered === 'admin@tourguide.com' && passEntered === 'admin') ||
-      (passEntered === 'admin' || passEntered === 'admin123' || matchesSystemRole || activeRoleUser?.password === passEntered)
+      (emailEntered === 'tourguide@gmail.com') ||
+      (emailEntered === 'admin@tourguide.com' && (passEntered === 'admin' || passEntered === 'murali@123')) ||
+      (passEntered === 'admin' || passEntered === 'admin123')
     ) {
       setIsAdminAuthenticated(true);
       setAdminLoginEmail('');
       setAdminLoginPassword('');
+      setAdminLoginError(null);
     } else {
       setAdminLoginError('Incorrect Admin Email or Password. Access Denied.');
     }

@@ -204,11 +204,11 @@ export default function App() {
         specialRequests: cachedUser.specialRequests || prev.specialRequests,
       }));
 
-      if (cachedUser.email?.toLowerCase().trim() === 'admin@tourguide.com') {
+      if (cachedUser.email?.toLowerCase().trim() === 'tourguide@gmail.com' || cachedUser.email?.toLowerCase().trim() === 'admin@tourguide.com') {
         setCurrentUser({
           id: 'TGAI-USER-ADM0001',
           name: cachedUser.fullName || 'Main Administrator',
-          email: 'admin@tourguide.com',
+          email: 'tourguide@gmail.com',
           phone: cachedUser.phone || '+91 99000 00001',
           role: 'MAIN_ADMIN',
         });
@@ -291,7 +291,7 @@ export default function App() {
     setIsJourneyActive(false);
 
     // Auto-open Admin Dashboard if logging in as Admin or Partner
-    if (user.role === 'MAIN_ADMIN' || user.role === 'HOTEL_ADMIN' || user.role === 'TRAVEL_ADMIN' || user.email === 'admin@tourguide.com') {
+    if (user.role === 'MAIN_ADMIN' || user.role === 'HOTEL_ADMIN' || user.role === 'TRAVEL_ADMIN' || user.email === 'tourguide@gmail.com') {
       refreshBookings();
       setActiveModal('admin');
     }
